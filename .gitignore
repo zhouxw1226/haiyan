@@ -3,9 +3,21 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+# Files for the Dalvik VM
+*.dex
+
+# Java class files
+*.class
+
 # Generated files
-photos/
-WebContent/photos/
+WebContent/WEB-INF/classes
+bin/
+gen/
+target/
+
+# Gradle files
+.gradle/
+build/
 
 # SVN Files
 *.svn
