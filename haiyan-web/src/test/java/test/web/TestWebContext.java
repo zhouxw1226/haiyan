@@ -2,9 +2,9 @@ package test.web;
 
 import haiyan.cache.CacheUtil;
 import haiyan.cache.EHDataCache;
-import haiyan.com.intf.web.IWebContext;
 import haiyan.common.CloseUtil;
 import haiyan.common.intf.database.IDBManager;
+import haiyan.common.intf.web.IWebContext;
 import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.DBContextFactory;
