@@ -1,4 +1,4 @@
-package haiyan.com.intf.web;
+package haiyan.common.intf.web;
 
 import haiyan.common.intf.session.IContext;
 import haiyan.common.intf.session.IWebSession;

@@ -1,7 +1,7 @@
 package haiyan.web.session;
 
-import haiyan.com.intf.web.IWebContext;
 import haiyan.common.intf.factory.IFactory;
+import haiyan.common.intf.web.IWebContext;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;

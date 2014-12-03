@@ -1,7 +1,7 @@
 package haiyan.web.session;
 
-import haiyan.com.intf.web.IWebContext;
 import haiyan.common.StringUtil;
+import haiyan.common.intf.web.IWebContext;
 import haiyan.common.session.AppContext;
 
 import java.io.IOException;
