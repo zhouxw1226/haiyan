@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Haiyan xsi:noNamespaceSchemaLocation="../haiyan.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<table realTable="SYSCACHE" name="SYSCACHE" description="系统缓存">
+		<id name="ID" description="ID" javaType="string">
+			<component type="hidden" url="#"/>
+		</id>
+		<field name="K" description="KEY" displayOnly="false" javaType="string" lazyLoad="false">
+			<component type="text" readOnly="true" colspan="1"/>
+		</field>
+		<field name="VALUE" description="VALUE" displayOnly="false" javaType="string" lazyLoad="false">
+			<component type="text" readOnly="true" colspan="1"/>
+		</field>
+		<field name="PROP1" description="PROP1" displayOnly="false" javaType="string" lazyLoad="false">
+			<component type="text" readOnly="false" colspan="1"/>
+		</field>
+		<field name="PROP2" description="PROP2" displayOnly="false" javaType="string" lazyLoad="false">
+			<component type="text" readOnly="false" colspan="1"/>
+		</field>
+		<Operation save="true" saveAndAdd="false" saveAndAddCopy="false" queryPageDelete="false" queryPageAdd="false"/>
+	</table>
+</Haiyan>

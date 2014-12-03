@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Haiyan xsi:noNamespaceSchemaLocation="../haiyan-config.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<table name="SYS" description="矩阵">
+		<id name="ID" javaType="string"/>
+		<field name="CODE"  javaType="string" description="编码" />
+		<field name="NAME" javaType="string" description="名称" />
+		<!--
+		<pluginInterceptor className="haiyan.interceptor.ConfigInterceptor" methodName="initTable" pluginName="initTable" type="before"/>
+		-->
+		<pluginInterceptor className="haiyan.interceptor.ConfigInterceptor" methodName="exp" pluginName="initTable" type="before"/>
+	</table>
+</Haiyan>

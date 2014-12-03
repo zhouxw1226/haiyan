@@ -1,0 +1,15 @@
+#Thu Oct 09 10:27:38 CST 2014
+haiyan.config.castorgen.root.CertificateMapping=haiyan.config.castorgen.root.descriptors.CertificateMappingDescriptor
+haiyan.config.castorgen.root.JdbcURL=haiyan.config.castorgen.root.descriptors.JdbcURLDescriptor
+haiyan.config.castorgen.root.LDAP=haiyan.config.castorgen.root.descriptors.LDAPDescriptor
+haiyan.config.castorgen.root.Resource=haiyan.config.castorgen.root.descriptors.ResourceDescriptor
+haiyan.config.castorgen.root.DataSource=haiyan.config.castorgen.root.descriptors.DataSourceDescriptor
+haiyan.config.castorgen.root.Functions=haiyan.config.castorgen.root.descriptors.FunctionsDescriptor
+haiyan.config.castorgen.root.DbSource=haiyan.config.castorgen.root.descriptors.DbSourceDescriptor
+haiyan.config.castorgen.root.UserRegistry=haiyan.config.castorgen.root.descriptors.UserRegistryDescriptor
+haiyan.config.castorgen.root.Config=haiyan.config.castorgen.root.descriptors.ConfigDescriptor
+haiyan.config.castorgen.root.TableConfigFilePath=haiyan.config.castorgen.root.descriptors.TableConfigFilePathDescriptor
+haiyan.config.castorgen.root.Security=haiyan.config.castorgen.root.descriptors.SecurityDescriptor
+haiyan.config.castorgen.root.Database=haiyan.config.castorgen.root.descriptors.DatabaseDescriptor
+haiyan.config.castorgen.root.WebApp=haiyan.config.castorgen.root.descriptors.WebAppDescriptor
+haiyan.config.castorgen.root.Customerize=haiyan.config.castorgen.root.descriptors.CustomerizeDescriptor

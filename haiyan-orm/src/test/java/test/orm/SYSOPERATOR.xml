@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Haiyan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../haiyan.xsd">
+	<table name="SYSOPERATOR" description="人员">
+		<id name="ID" javaType="string">
+			<component type="hidden" url="#"/>
+		</id>
+		<field name="CODE" description="登录名" javaType="string" nullAllowed="false">
+			<component type="text"/>
+		</field>
+		<field name="NAME" description="姓名" javaType="string" nullAllowed="false">
+			<component type="text"/>
+		</field>
+		<field name="PASSWORD" description="密码" javaType="string" createable="true" updateable="false" defaultValue="D033E22AE348AEB566FC214AEC3585C4DA997">
+			<component type="hidden"/>
+		</field>
+		<field name="PASSWORD2" description="确认密码" javaType="string" displayOnly="true">
+			<component type="hidden"/>
+		</field>
+		<field name="ROLE" description="角色" javaType="string" displayOnly="true" mappingTable="SYSUSERROLE" 
+			   referenceTable="SYSROLE" referenceField="ID" displayReferenceField="NAME" multipleSelect="true">
+			<component type="combo" />
+			<queryCondition type="none"/>
+			<listColumn noquery="true"/>
+		</field>
+		<field name="CHILDREN" description="管辖人员" javaType="string" displayOnly="true" mappingTable="SYSUSERUSER" 
+			   referenceTable="SYSOPERATOR_CHILDREN" referenceField="ID" displayReferenceField="NAME" multipleSelect="true">
+			<component type="combo" />
+			<queryCondition type="none"/>
+			<listColumn noquery="true"/>
+		</field>
+		<field name="SEX" description="性别" javaType="string" defaultValue="男">
+			<component type="dropdown">
+				<option displayName="男" value="男"/>
+				<option displayName="女" value="女"/>
+			</component>
+		</field>
+		<field name="USED" description="是否使用" javaType="string" defaultValue="1" nullAllowed="false">
+			<component type="dropdown">
+				<option displayName="是" value="1"/>
+				<option displayName="否" value="0"/>
+			</component>
+		</field>
+		<field name="EMAIL" description="EMAIL" javaType="string">
+			<component type="text"/>
+		</field>
+		<field name="YEARS_OLD" description="年龄" javaType="string">
+			<component type="text"/>
+		</field>
+		<field name="MOBILE_PHONE" description="手机" javaType="string">
+			<component type="text"/>
+		</field>
+		<field name="ORGAID" description="所属部门" javaType="string">
+			<component type="combo" referenceTable="SYSORGA" quickQueryConditionField="NAME,CODE" displayReferenceField="NAME" referenceField="ID"/>
+		</field>
+		<!--
+			<field name="NOLONGERUSE" description="不再使用" javaType="string">
+				<component type="dropdown" defaultValue="0" colspan="3">
+					<option displayName="是" value="1"/>
+					<option displayName="否" value="0"/>
+				</component>
+			</field>
+			-->
+		<javascript hostPage="ids"><![CDATA[
+			Hy.onReady(function(){
+				if (typeof(__grid)!='undefined') 
+					__grid.getView().getRowClass=function(rec, rowIndex, rowParams, store){
+						if (rec.get('USED')=='0') {
+							return 'x-gray readOnly';
+						} else {
+							return '';
+						}
+					}
+			});
+		]]></javascript>
+		<pluginInterceptor methodName="exp" parameter="If(IsEmpty(Get(ID)),Warning({Error}),DBSQL({update SYSOPERATOR set PASSWORD='D033E22AE348AEB566FC214AEC3585C4DA997' where ID='}&amp;Get(ID)&amp;{'}))" pluginName="reset" type="before"/>
+		<pluginInterceptor className="haiyan.interceptor.FlowmisInterceptor" methodName="transPassword" pluginName="save" type="before"/>
+		<pluginOperation name="reset" oprName="重置密码" hostPage="edit" tblevel="2" img="reset" action="plugin({},{reset})+brk()"/>
+		<Operation selectedHidden="true" queryPageQueryEdit="true" queryPageDelete="false"/>
+	</table>
+</Haiyan>

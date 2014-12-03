@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Haiyan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../haiyan.xsd">
+	<table name="TEST_DBM" description="DBM测试表单" realTable="TEST_DBM">
+		<!-- colspan="4" -->
+		<id name="ID" description="ID" javaType="string">
+			<component type="hidden" url=""/>
+		</id>
+		<field name="PID" description="上级" displayOnly="false" javaType="string" lazyLoad="false">
+			<component type="combo" readOnly="false" quickQueryConditionField="NAME" displayReferenceField="NAME" referenceField="ID" referenceTable="TEST_DBM"/>
+			<queryCondition type="equal"/>
+		</field>
+		<!-- -->
+		<field name="CODE" description="1to1编码" displayOnly="false" javaType="string" lazyLoad="false">
+			<!-- one2oneField="CODE" one2oneTable="TEST_ONE2ONE" -->
+			<component type="text" readOnly="false"/>
+			<queryCondition type="blurMatching"/>
+		</field>
+		<field name="NAME" description="1to1名称" displayOnly="false" javaType="string" lazyLoad="false">
+			<!--  one2oneField="NAME" one2oneTable="TEST_ONE2ONE" -->
+			<component type="text" readOnly="false"/>
+			<queryCondition type="blurMatching"/>
+			<listColumn style="remoteSort:true;sortName:t_1.NAME"/>
+		</field>
+		<field name="MONEY" description="金额" displayOnly="false" javaType="bigDecimal" lazyLoad="false">
+			<component type="text" readOnly="false" colspan="3" minFractionDigit="2" maxFractionDigit="5"/>
+			<!--  validator="^-?\d+.\d{2}$" validatorText="“名称“ 必须为数字金额" -->
+			<queryCondition type="equal"/>
+			<listColumn noedit="false" noquery="false"/>
+		</field>
+		<!-- -->
+		<field name="CDATE" description="时间" displayOnly="false" javaType="date" lazyLoad="false">
+			<component type="date" colspan="3" readOnly="false"/>
+			<queryCondition type="region"/>
+		</field>
+		<field name="IMAGES" description="图像" displayOnly="false" javaType="string" lazyLoad="false">
+			<component type="image" readOnly="false" colspan="3" style="imageWidth:250;imageHeight:200;"/>
+			<queryCondition type="equal"/>
+			<listColumn noedit="false" noquery="false"/>
+		</field>
+		<!-- -->
+		<field name="ORGA_ID" description="1to1单选" displayOnly="false" javaType="string" lazyLoad="false">
+			<!-- one2oneField="ORGA_ID" one2oneTable="TEST_ONE2ONE" -->
+			<component type="combo" readOnly="false" displayReferenceField="NAME" referenceField="ID" referenceTable="SYSORGA" quickQueryConditionField="NAME" action="SetValue(OPER_IDS,{})+SetValue(__OPER_IDS__NAME,{})"/>
+			<queryCondition type="equal"/>
+		</field>
+		<field name="OPER_IDS" description="1to1多选(被前者约束)" displayOnly="false" javaType="string" lazyLoad="true">
+			<!-- one2oneField="OPER_IDS" one2oneTable="TEST_ONE2ONE" -->
+			<component type="combo" readOnly="false" displayReferenceField="NAME" referenceField="ID" referenceTable="SYSOPERATOR" quickQueryConditionField="NAME" multipleSelect="true" restrictiveFields="ORGA_ID" conditionFields="ORGAID"/>
+			<queryCondition type="equal"/>
+		</field>
+		<!-- -->
+		<field name="STATUS" description="状态" displayOnly="false" javaType="string" lazyLoad="false">
+			<component type="dropdown" readOnly="false">
+				<option displayName="编制" value="0"/>
+				<option displayName="人事审批" value="1"/>
+				<option displayName="总经理审批" value="2"/>
+				<option displayName="公司下达" value="3"/>
+			</component>
+			<queryCondition type="equal"/>
+		</field>
+		<field name="TYPE" description="动态表选择" displayOnly="false" javaType="string" lazyLoad="false">
+			<component type="dropdown" readOnly="false">
+				<option displayName="操作员" value="SYSOPERATOR"/>
+				<option displayName="组织机构" value="SYSORGA"/>
+			</component>
+			<queryCondition type="equal"/>
+		</field>
+		<!-- -->
+		<field name="MEMO" description="意见(不允许后台修改)" displayOnly="true" javaType="string" lazyLoad="false">
+			<component type="textArea" colspan="3" readOnly="false" style="width:800px;height:80px;"/>
+			<queryCondition type="equal"/>
+			<listColumn noedit="false" noquery="false"/>
+		</field>
+		<field name="BLOBTEXT" description="大对象数据" displayOnly="false" javaType="dbBlob" lazyLoad="false">
+			<component type="fckeditor" colspan="3" readOnly="false" style="width:800;height:200;"/>
+			<queryCondition type="equal"/>
+			<listColumn noedit="false" noquery="false"/>
+		</field>
+		<field name="TESTSQL" javaType="string" description="调试SQL">
+			<component type="textArea" colspan="3" url="#" style="width:800px;height:100px;"/>
+			<queryCondition type="none"/>
+			<listColumn noquery="true"/>
+		</field>
+		<!-- -->
+		<field name="WFBILLID" javaType="string" description="WFBILLID">
+			<component type="hidden"/>
+			<queryCondition type="none"/>
+			<listColumn noquery="true"/>
+		</field>
+		<!-- -->
+		<querySQL methodName="exp"><![CDATA[
+			{(select *
+				from TEST_DBM
+				where CODE like '}&SQLSafe(GetPara(TEST))&{%')}
+		]]></querySQL>
+		<!--
+		<queryFilter>
+			<pluggedFilter methodName="exp" parameter="
+			If(InRole(sp,wm),
+				{ and t_1.ID in (select ORDER_ID from V_WM_OUTPRE  where PRODUCTID in (select ID from T_WM_SDBPRODUCT where SUPPLIER='}&amp;GetUser(SUPPLIER)&amp;{' and WAREHOUSE='}&amp;GetUser(WAREHOUSEID)&amp;{')) },
+				{ and t_1.ID in (select ORDER_ID from V_WM_OUTPRE  where PRODUCTID in (select ID from T_WM_SDBPRODUCT where WAREHOUSE='}&amp;GetUser(WAREHOUSEID)&amp;{')) }
+			)"/>
+		</queryFilter>
+		-->
+		<!--
+		<isSelectable className="" methodName="" parameter=""/>
+		<isShowable className="" methodName="" parameter=""/>
+		-->
+		<pluginInterceptor methodName="initDB" pluginName="initDB" type="before"><![CDATA[
+			create or replace view V_TEST_DBM as
+				(select * from TEST_DBM)
+		]]></pluginInterceptor>
+		<pluginInterceptor methodName="exp" pluginName="save" parameter="If(IsEmpty(Get(WFBILLID)),true,DBSQL({update SYSWFBILL set BILLID='}&amp;Get(ID)&amp;{' where ID='}&amp;Get(WFBILLID)&amp;{'}))" type="after"/>
+		<pluginInterceptor methodName="exp" pluginName="edit" parameter="if(inrole(admin),true,disbtns(testSQL))" type="before"/>
+		<!-- -->
+		<pluginOperation name="testOne" oprName="查看一对一表单" hostPage="edit" tblevel="1" className="haiyan.plugin.BshPlugin" action="openWin({edit.do?__opr_data=TEST_ONE2ONE&amp;ID=}&amp;Get(ID))+break()"><![CDATA[
+		]]></pluginOperation>
+		<pluginOperation name="testSQL" oprName="调试SQL" hostPage="edit" tblevel="1" className="haiyan.plugin.BshPlugin"><![CDATA[
+		    context.getDBM().executeUpdate(form.get("TESTSQL"),null);
+		]]></pluginOperation>
+		<!--
+		<pluginOperation name="dbtest" className="haiyan.plugin.BshPlugin" oprName="生成测试数据" hostPage="edit"><![CDATA[
+			 new java.lang.Thread(new java.lang.Runnable() {				
+				final ITableContext context = DBContextFactory.createDBContext();
+				context.setDBM();
+				public void run() {
+					try {
+						for (int i = 1; i <= 4000; i++) {
+							IRecord form = context.getDBM().createRecord();
+							form.set("CODE", "CODE_" + (Math.random()*100/100));
+							form.set("NAME", DateUtil.getLastTime());
+							try {
+								context.getDBM().insert("TEST_DBM", form, context);
+							} catch (Throwable e) {
+								throw new RuntimeException(e);
+							}
+							if (i % 1000 == 0 && i > 1) {
+								try {
+									dbm.commit();
+								} catch (Throwable e) {
+									e.printStackTrace();
+								}
+								try {
+									context.openTransaction();
+								} catch (Throwable e) {
+									e.printStackTrace();
+								}
+							}
+						}
+					} finally {
+						context.close();
+					}
+				}
+			}).start();
+		]]></pluginOperation>
+		-->
+	</table>
+	<!--
+	<table name="TEST_DBM2" description="DBM测试表单2" realTable="TEST_DBM2">
+		<id name="ID" description="ID" javaType="bigDecimal">
+			<component type="hidden" url="#"/>
+		</id>
+		<field name="CODE" description="1to1编码" displayOnly="false" javaType="string" lazyLoad="false" one2oneField="CODE" one2oneTable="TEST_ONE2ONE">
+			<component type="text" readOnly="false"/>
+			<queryCondition type="equal"/>
+		</field>
+		<field name="NAME" description="1to1名称" displayOnly="false" javaType="string" lazyLoad="false" one2oneField="NAME" one2oneTable="TEST_ONE2ONE">
+			<component type="text" readOnly="false"/>
+			<queryCondition type="equal"/>
+		</field>
+		<field name="WFBILLID" javaType="string" description="WFBILLID">
+			<component type="hidden"/>
+			<queryCondition type="none"/>
+			<listColumn noquery="true"/>
+		</field>
+		<querySQL methodName="exp"><![CDATA[
+			{(select ID, CODE, NAME, WFBILLID, HYVERSION
+				from TEST_DBM2
+				where CODE not like '}&SQLSafe(GetPara(TEST))&{%')}
+		]]></querySQL>
+		<isShowable className="" methodName="isShowable" parameter=""/>
+		<pluginInterceptor methodName="bsh" pluginName="test" parameter="TEST_DBM.bsh" type="before"/>
+		<pluginInterceptor methodName="bsh" pluginName="test2" parameter="TEST_DBM2.bsh" type="before"/>
+		<pluginOperation name="test" oprName="test" hostPage="query" tblevel="1"><![CDATA[
+		]]></pluginOperation>
+		<pluginOperation name="test2" oprName="test2" hostPage="query" tblevel="1"><![CDATA[
+		]]></pluginOperation>
+	</table>
+	-->
+</Haiyan>

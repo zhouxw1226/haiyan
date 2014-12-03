@@ -1,0 +1,63 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>haiyan</groupId>
+	<artifactId>haiyan-config</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>haiyan-config</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>haiyan</groupId>
+			<artifactId>haiyan-common</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<!-- -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>hamcrest-core</artifactId>
+					<groupId>org.hamcrest</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- -->
+		<dependency>
+			<groupId>org.codehaus.castor</groupId>
+			<artifactId>castor</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.castor</groupId>
+			<artifactId>castor-xml-schema</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.castor</groupId>
+			<artifactId>castor-codegen</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>velocity</groupId>
+			<artifactId>velocity</artifactId>
+			<version>1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>xerces</groupId>
+			<artifactId>xercesImpl</artifactId>
+			<version>2.4.0</version>
+		</dependency>
+	</dependencies>
+</project>

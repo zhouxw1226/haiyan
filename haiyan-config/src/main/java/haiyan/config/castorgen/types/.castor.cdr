@@ -1,0 +1,9 @@
+#Sat Nov 29 19:45:38 CST 2014
+haiyan.config.castorgen.types.ExternalProgramTypeType=haiyan.config.castorgen.types.descriptors.ExternalProgramTypeTypeDescriptor
+haiyan.config.castorgen.types.JavascriptHostPageType=haiyan.config.castorgen.types.descriptors.JavascriptHostPageTypeDescriptor
+haiyan.config.castorgen.types.QueryConditionTypeType=haiyan.config.castorgen.types.descriptors.QueryConditionTypeTypeDescriptor
+haiyan.config.castorgen.types.CustomeizeLayoutForType=haiyan.config.castorgen.types.descriptors.CustomeizeLayoutForTypeDescriptor
+haiyan.config.castorgen.types.PageViewHostPageType=haiyan.config.castorgen.types.descriptors.PageViewHostPageTypeDescriptor
+haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType=haiyan.config.castorgen.types.descriptors.AbstractCommonFieldJavaTypeTypeDescriptor
+haiyan.config.castorgen.types.PluginOperationHostPageType=haiyan.config.castorgen.types.descriptors.PluginOperationHostPageTypeDescriptor
+haiyan.config.castorgen.types.PageViewTypeType=haiyan.config.castorgen.types.descriptors.PageViewTypeTypeDescriptor

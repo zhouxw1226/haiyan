@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Haiyan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../haiyan.xsd">
+	<table name="SYSUSERROLE" description="用户-角色">
+		<id name="ID" javaType="string"/>
+		<field name="USERID" description="用户" javaType="string" length="50" referenceTable="SYSOPERATOR" displayReferenceField="NAME">
+			<component type="combo" />
+			<queryCondition type="equal"/>
+			<listColumn noquery="false" width="400"/>
+		</field>
+		<field name="ROLEID" description="角色" javaType="string" length="50" referenceTable="SYSROLE" displayReferenceField="NAME">
+			<component type="combo" />
+			<queryCondition type="equal"/>
+			<listColumn noquery="false" width="400"/>
+		</field>
+		<Operation selectedHidden="true"/>
+	</table>
+</Haiyan>

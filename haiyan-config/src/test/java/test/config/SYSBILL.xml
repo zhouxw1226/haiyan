@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Haiyan xsi:noNamespaceSchemaLocation="../haiyan-config.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<bill name="SYSBILL" description="矩阵单据">
+		<billTable name="SYS1" dbName="SYS" description="SYS" tableIndex="1" />
+		<billTable name="SYS2" dbName="SYS" description="SYS" tableIndex="2" />
+		<billID name="ID1" dbName="ID" description="ID" tableIndex="1"/>
+		<billID name="ID2" dbName="ID" description="ID" tableIndex="2"/>
+		<billField name="CODE1" dbName="CODE" description="编码" tableIndex="1">
+			<listColumn noquery="true"/>
+		</billField>
+		<billField name="NAME1" dbName="NAME"  description="名称" tableIndex="1" >
+			<listColumn noquery="false"/>
+		</billField>
+		<billField name="CODE2" dbName="CODE" description="编码" tableIndex="2">
+			<listColumn noquery="true"/>
+		</billField>
+		<billField name="NAME2" dbName="NAME" description="名称" tableIndex="2" >
+			<listColumn noquery="false"/>
+		</billField>
+		<!--
+		<pluginInterceptor className="haiyan.interceptor.ConfigInterceptor" methodName="initBill" pluginName="initBill" type="before"/>
+		-->
+		<pluginInterceptor className="haiyan.interceptor.ConfigInterceptor" methodName="exp" pluginName="initBill" type="before"/>
+	</bill>
+</Haiyan>

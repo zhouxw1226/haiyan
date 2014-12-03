@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Haiyan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../haiyan.xsd">
+	<table name="SYSROLE" description="角色">
+		<id name="ID" javaType="string">
+			<component type="hidden" url="#"/>
+		</id>
+		<field name="HEADID" description="HEADID" javaType="string">
+			<component type="hidden" />
+		</field>
+		<field name="CODE" description="编码" javaType="string">
+			<component type="text"/>
+		</field>
+		<field name="NAME" description="名称" javaType="string">
+			<component type="text"/>
+		</field>
+		<field name="CATALOG" description="可访问" javaType="string" displayOnly="true" 
+			   mappingTable="SYSCATAROLEMAP" multipleSelect="true" referenceTable="SYSCATALOG" displayReferenceField="NAME" colspan="3">
+			<component type="combo" className="haiyan.component.TreeFieldCCNodeComponent" />
+			<queryCondition type="none"/>
+			<listColumn noquery="true"/>
+		</field>
+		<field name="PID" description="上级角色" javaType="string" 
+			   quickQueryConditionField="NAME" referenceTable="SYSROLE" displayReferenceField="NAME">
+			<component type="combo" className="haiyan.component.TreeFieldComponent" />
+		</field>
+		<field name="TYPE" javaType="string" description="包含方式" defaultValue="0">
+			<component type="dropdown" url="#"><!-- type="userDefined" className="haiyan.component.RadioComponent" -->
+				<option displayName="独立" value="0"/>
+				<option displayName="继承上级" value="1"/>
+				<option displayName="继承所有" value="2"/>
+			</component>
+			<queryCondition type="none"/>
+			<listColumn noquery="true"/>
+		</field>
+		<field name="HYVERSION" javaType="string" description="HYVERSION">
+			<component type="hidden"/>
+		</field>
+		<field name="SUBGRID" javaType="string" description="所属用户" displayOnly="true"  referenceTable="SYSUSERROLE" parameter="{&amp;ROLEID=}&amp;If(IsEmpty(Get(ID)),-1,Get(ID))" readOnly="true">
+			<component type="grid" referenceField="ROLEID" style="width:520;height:160;toolbar:no;" colspan="4"/>
+			<queryCondition type="none"/>
+			<listColumn noquery="true"/>
+		</field>
+		<PageView showField="NAME,CODE" type="gentree" title="树形索引"/>
+		<PageView showField="*" type="querybyform" title="列表索引"/>
+		<pluginInterceptor className="haiyan.interceptor.SaveInterceptor" methodName="complete" pluginName="save" type="after"/>
+		<pluginInterceptor className="haiyan.interceptor.DeleteInterceptor" methodName="complete" pluginName="delete" type="after"/>
+		<Operation selectedHidden="true"/>
+	</table>
+</Haiyan>

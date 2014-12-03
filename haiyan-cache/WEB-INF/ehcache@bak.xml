@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" updateCheck="false">
+	<diskStore path="java.io.tmpdir/ehcacheSrc"/>
+	<!--
+		<cacheManagerPeerProviderFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
+			properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1, multicastGroupPort=4446, timeToLive=32" />
+		<cacheManagerPeerListenerFactory class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+			properties="hostName=localhost, port=40001,socketTimeoutMillis=2000" />
+			-->
+	<!--
+		<cacheManagerPeerProviderFactory 
+			class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"
+			properties="connect=TCP(start_port=7800):
+			TCPPING(initial_hosts=1.1.8.30[7800],1.1.8.34[7800];port_range=10;timeout=3000;num_initial_members=3;up_thread=true;down_thread=true):
+			VERIFY_SUSPECT(timeout=1500;down_thread=false;up_thread=false):
+			pbcast.NAKACK(down_thread=true;up_thread=true;gc_lag=100;retransmit_timeout=3000):
+			pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=false;print_local_addr=true;down_thread=true;up_thread=true)"
+			propertySeparator="::" />
+			-->
+	<cacheManagerPeerProviderFactory 
+		class="net.sf.ehcache.distribution.jgroups.JGroupsCacheManagerPeerProviderFactory"
+		properties="connect=UDP(mcast_addr=231.12.21.132;mcast_port=45566;ip_ttl=32;mcast_send_buf_size=150000;mcast_recv_buf_size=80000):
+		PING(timeout=2000;num_initial_members=6):
+		MERGE2(min_interval=5000;max_interval=10000):
+		FD_SOCK:
+		VERIFY_SUSPECT(timeout=1500):
+		pbcast.NAKACK(gc_lag=10;retransmit_timeout=3000):
+		UNICAST(timeout=5000):
+		pbcast.STABLE(desired_avg_gossip=20000):
+		FRAG:
+		pbcast.GMS(join_timeout=5000;join_retry_timeout=2000;shun=false;print_local_addr=true)"
+		propertySeparator="::"
+		/>
+	<defaultCache 
+		maxElementsInMemory="20000" 
+		eternal="true" 
+		timeToIdleSeconds="0" 
+		timeToLiveSeconds="0"
+		overflowToDisk="true" 
+		diskPersistent="true" 
+		diskExpiryThreadIntervalSeconds="60000" 
+		maxElementsOnDisk="0" 
+		memoryStoreEvictionPolicy="LRU"
+		>
+		<!--
+			<cacheEventListenerFactory 
+				class="net.sf.ehcache.distribution.RMICacheReplicatorFactory" 
+				properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true, replicateUpdatesViaCopy=false, replicateRemovals=true " />
+			-->
+		<cacheEventListenerFactory 
+			class="net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory"
+			properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true, replicateUpdatesViaCopy=true, replicateRemovals=true"/>
+		<bootstrapCacheLoaderFactory class="net.sf.ehcache.distribution.jgroups.JGroupsBootstrapCacheLoaderFactory"/>
+	</defaultCache>
+	<!-- -->
+	<cache name="Haiyan.DATAS.TESTCACHE" 
+		maxElementsInMemory="20000" 
+		eternal="false" 
+		timeToIdleSeconds="0" 
+		timeToLiveSeconds="0"
+		overflowToDisk="true" 
+		diskPersistent="true" 
+		diskExpiryThreadIntervalSeconds="60000" 
+		maxElementsOnDisk="0" 
+		memoryStoreEvictionPolicy="LRU"
+		>
+		<!--
+			<cacheEventListenerFactory 
+				class="net.sf.ehcache.distribution.RMICacheReplicatorFactory" 
+				properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true,replicateUpdatesViaCopy=false, replicateRemovals=true " />
+			-->
+		<cacheEventListenerFactory 
+			class="net.sf.ehcache.distribution.jgroups.JGroupsCacheReplicatorFactory"
+			properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true, replicateUpdatesViaCopy=true, replicateRemovals=true"/>
+		<bootstrapCacheLoaderFactory class="net.sf.ehcache.distribution.jgroups.JGroupsBootstrapCacheLoaderFactory"/>
+	</cache>
+	<!--
+		官方文档:
+		=====================================================================================
+			1.Provider.Auto:Configuration for server1 and server2
+
+		<cacheManagerPeerProviderFactory
+			class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
+			properties="peerDiscovery=automatic, multicastGroupAddress=230.0.0.1, multicastGroupPort=4446, timeToLive=32"/>
+		=====================================================================================
+			2.Provider.Manual:Configuration for server1
+
+		<cacheManagerPeerProviderFactory
+			class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
+			properties="peerDiscovery=manual,rmiUrls=//server2:40001/sampleCache11|//server2:40001/sampleCache12"/>
+		=====================================================================================
+			2.Provider.Manual:Configuration for server2
+
+		<cacheManagerPeerProviderFactory
+			class="net.sf.ehcache.distribution.RMICacheManagerPeerProviderFactory"
+			properties="peerDiscovery=manual,rmiUrls=//server1:40001/sampleCache11|//server1:40001/sampleCache12"/>
+		=====================================================================================
+			PeerListener:Configuration for server1 and server2
+
+		<cacheManagerPeerListenerFactory
+			class="net.sf.ehcache.distribution.RMICacheManagerPeerListenerFactory"
+			properties="hostName=localhost, port=40001, socketTimeoutMillis=2000"/>
+		=====================================================================================
+
+		<cache name="sampleCache11"
+			  maxElementsInMemory="10"
+			  eternal="false"
+			  timeToIdleSeconds="100"
+			  timeToLiveSeconds="100"
+			  overflowToDisk="false">
+		<cacheEventListenerFactory
+			class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"
+			properties="replicateAsynchronously=true, replicatePuts=true, replicateUpdates=true, replicateUpdatesViaCopy=false, replicateRemovals=true "/>
+		</cache>
+		=====================================================================================
+
+		<cache name="sampleCache12"
+			  maxElementsInMemory="10"
+			  eternal="true"
+			  overflowToDisk="false"
+			  memoryStoreEvictionPolicy="LFU">
+		   <cacheEventListenerFactory
+			   class="net.sf.ehcache.distribution.RMICacheReplicatorFactory"/>
+		</cache>
+		=====================================================================================
+		-->
+</ehcache>
