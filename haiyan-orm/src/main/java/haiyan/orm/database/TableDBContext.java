@@ -39,7 +39,7 @@ public class TableDBContext extends AppContext implements ITableDBContext {
 		return UUID.randomUUID().toString();
 	}
 	@Override
-	public boolean isAlive() {
+	public Boolean isAlive() {
 		ITableDBManager dbm = this.getDBM();
 		if (dbm==null)
 			return false;
