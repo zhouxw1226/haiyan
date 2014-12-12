@@ -30,5 +30,11 @@ public interface IUser extends IUserSession, Serializable {
 	void setProperty(String key, Object value);
 	void setProperties(Map<String, Object> properties);
 	Map<?, ?> getProperties();
+	void setSex(String sex);
+	String getSex();
+	void setEmail(String email);
+	String getEmail();
+	void setMobile(String mobile);
+	String getMobile();
 }
  

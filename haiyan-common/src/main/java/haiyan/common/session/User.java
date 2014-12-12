@@ -26,7 +26,12 @@ public class User implements IUser, Serializable { // Externalizable
 	private String deptID;
 	private String DSN;
 	private IRole[] roles;
-	private boolean alive;
+	private Boolean alive;
+	private String languageName;
+	private String sex;
+	private String email;
+	private String mobile;
+	//@Table("SYSOPERATOR")
 	public User() {
 	}
 	User(String ID, String code, String name) {
@@ -102,7 +107,6 @@ public class User implements IUser, Serializable { // Externalizable
 	public void setName(String name) {
 		this.name = name;
 	}
-	private String languageName;
 	@SetMethod("languageName")
 	@Override
 	public void setLanguageName(String languageName) {
@@ -113,33 +117,66 @@ public class User implements IUser, Serializable { // Externalizable
 	public String getLanguageName() {
 		return this.languageName;
 	}
+	@Override
 	public void setProperty(String key, Object value) {
 		this.properties.put(key, value);
 	}
-	
+	@Override
 	public Object getProperty(String key) {
 		return this.properties.get(key);
 	}
 	@SetMethod("properties")
+	@Override
 	public void setProperties(Map<String, Object> properties) {
 		this.properties = properties;
 	}
 	@GetMethod("properties")
+	@Override
 	public Map<?, ?> getProperties() {
 		return this.properties;
 	}
 	@GetMethod("alive")
 	@Override
-	public boolean isAlive() {
+	public Boolean isAlive() {
 		return alive;
 	}
 	@SetMethod("alive")
 	@Override
-	public void setAlive(boolean alive) {
+	public void setAlive(Boolean alive) {
 		this.alive = alive;
 	}
 	@Override
 	public void close() throws IOException {
+	}
+	@SetMethod("sex")
+	@Override
+	public void setSex(String sex) {
+		this.sex = sex;
+	}
+	@GetMethod("sex")
+	@Override
+	public String getSex() {
+		return this.sex;
+	}
+	@SetMethod("email")
+	@Override
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	@GetMethod("email")
+	@Override
+	public String getEmail() {
+		return this.email;
+	}
+	@SetMethod("mobile")
+	@Override
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+	@GetMethod("mobile")
+	@Override
+	public String getMobile() {
+		return this.mobile;
 	}
 
 }

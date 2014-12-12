@@ -57,7 +57,7 @@ public class WebContext extends AppContext implements IWebContext{
 		return o!=null;
 	}
 	@Override
-	public boolean isAlive() {
+	public Boolean isAlive() {
 		return req!=null && res!=null && !res.isCommitted();
 	}
 	@Override
