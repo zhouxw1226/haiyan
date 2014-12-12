@@ -1,4 +1,4 @@
 haiyan
 ======
 
-develop platform of enterprise and internet 
+java develop platform of enterprise and internet 
