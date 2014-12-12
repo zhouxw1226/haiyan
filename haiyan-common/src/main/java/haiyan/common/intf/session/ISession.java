@@ -9,12 +9,10 @@ import java.io.Closeable;
  *
  */
 public interface ISession extends Closeable {
-
 	/**
 	 * 是否存活
 	 * 
 	 * @return
 	 */
-	boolean isAlive();
-	
+	Boolean isAlive();
 }

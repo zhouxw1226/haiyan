@@ -24,12 +24,12 @@ public class AppContext implements IAppContext {
 
 	public AppContext() { 
 	}
-	private boolean alive;
+	private Boolean alive;
 	@Override
-	public boolean isAlive() {
+	public Boolean isAlive() {
 		return alive;
 	}
-	public void setAlive(boolean alive) {
+	public void setAlive(Boolean alive) {
 		this.alive = alive;
 	}
 	private IContext parent;

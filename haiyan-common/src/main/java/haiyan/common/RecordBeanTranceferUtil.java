@@ -21,7 +21,7 @@ public class RecordBeanTranceferUtil {
 			if(!method.isAnnotationPresent(GetMethod.class))
 				continue;
 			GetMethod getMethod = method.getAnnotation(GetMethod.class);
-			String key = getMethod.value();
+			String key = getMethod.value().toUpperCase();
 			Object value = null;
 			try {
 				value = method.invoke(obj);
@@ -39,8 +39,8 @@ public class RecordBeanTranceferUtil {
 		for(Method method : methods){
 			if(!method.isAnnotationPresent(SetMethod.class))
 				continue;
-			SetMethod getMethod = method.getAnnotation(SetMethod.class);
-			String key = getMethod.value();
+			SetMethod setMethod = method.getAnnotation(SetMethod.class);
+			String key = setMethod.value().toUpperCase();
 			Object value = record.get(key);
 			try {
 				method.invoke(obj,value);

@@ -140,7 +140,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		this.setAutoCommit(false); // 如果此时没有conn也可以作为后面创建conn的依据
 	}
 	@Override
-	public boolean isAlive() {
+	public Boolean isAlive() {
 		try {
 			return this.connection != null && !this.connection.isClosed();
 		}catch(Throwable e){

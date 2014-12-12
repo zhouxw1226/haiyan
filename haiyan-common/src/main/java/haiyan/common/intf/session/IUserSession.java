@@ -7,5 +7,5 @@ package haiyan.common.intf.session;
  *
  */
 public interface IUserSession extends ISession {
-	public void setAlive(boolean b);
+	public void setAlive(Boolean b);
 }
