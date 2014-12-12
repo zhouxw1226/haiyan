@@ -146,7 +146,7 @@ public class TestDomainManager {
 			IDBRecord queryRow = dbm.createRecord();
 			queryRow.set("NAME", "%create%");
 			{
-				int count = dbm.countBy(context, table, queryRow);
+				long count = dbm.countBy(context, table, queryRow);
 				System.err.println("count:"+count);
 			}
 			{

@@ -43,16 +43,16 @@ public class MySqlPageFactory extends SQLWrapPageFactory {
 	}
 	@Override
 	public void setSelectPS(PreparedStatement selectPS, int index,
-			int currPageNO, int maxPageRecordCount) throws SQLException {
-		int startRowNum = (currPageNO - 1) * maxPageRecordCount;
-		selectPS.setLong(index, startRowNum);
-		selectPS.setLong(index + 1, maxPageRecordCount);
+			int currPage, int count) throws SQLException {
+		int startRow = (currPage - 1) * count;
+		selectPS.setLong(index, startRow);
+		selectPS.setInt(index + 1, count);
 	}
 	@Override
 	public void setSelectPSByLimit(PreparedStatement selectPS, int index,
-			int startRowNum, int count) throws SQLException {
-		selectPS.setLong(index, startRowNum);
-		selectPS.setLong(index + 1, count);
+			long startRow, int count) throws SQLException {
+		selectPS.setLong(index, startRow);
+		selectPS.setInt(index + 1, count);
 	}
 
 }

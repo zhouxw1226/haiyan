@@ -19,7 +19,7 @@ import java.sql.SQLException;
 class MySqlSQLRender extends SQLRender {
 
 	@Override
-	protected Query dealWithSelectQueryByLimit(Query selectQuery, final int startRowNum, final int count) {
+	protected Query dealWithSelectQueryByLimit(Query selectQuery, final long startNum, final int count) {
 		// oracle OraclePage listener
 		QueryListener ql = new QueryListener() {
 			@Override
@@ -31,7 +31,7 @@ class MySqlSQLRender extends SQLRender {
 			@Override
 			public void setSelectPS(PreparedStatement selectPS, int lastIndex)
 					throws SQLException {
-				((SQLWrapPageFactory) getPageFactory(null, null, null)).setSelectPSByLimit(selectPS, lastIndex, startRowNum, count);
+				((SQLWrapPageFactory) getPageFactory(null, null, null)).setSelectPSByLimit(selectPS, lastIndex, startNum, count);
 			}
 		};
 		selectQuery.addListener(ql);

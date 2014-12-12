@@ -42,17 +42,16 @@ public class OraclePageFactory extends SQLWrapPageFactory {
 	}
 	@Override
 	public void setSelectPS(PreparedStatement selectPS, int index,
-			int currPageNO, int maxPageRecordCount) throws SQLException {
-		int startRowNum = (currPageNO - 1) * maxPageRecordCount;
-		selectPS.setLong(index, startRowNum + maxPageRecordCount);
-		selectPS.setLong(index + 1, startRowNum);
-		//DebugUtil.debug(">setSelectPS:" + (startRowNum + maxPageRecordCount) + "," + startRowNum);
+			int currPage, int count) throws SQLException {
+		long startRow = (currPage - 1) * count;
+		selectPS.setLong(index, startRow + count);
+		selectPS.setLong(index + 1, startRow);
 	}
 	@Override
 	public void setSelectPSByLimit(PreparedStatement selectPS, int index,
-			int startRowNum, int count) throws SQLException {
-		selectPS.setLong(index, startRowNum + count);
-		selectPS.setLong(index + 1, startRowNum);
+			long startRow, int count) throws SQLException {
+		selectPS.setLong(index, startRow + count);
+		selectPS.setLong(index + 1, startRow);
 	}
 
 }
