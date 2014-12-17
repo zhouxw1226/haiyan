@@ -50,7 +50,7 @@ public class DBBillManagerFactory implements IFactory {
 			return this.context.getDSN();
 		}
 		@Override
-		public boolean isAlive() {
+		public Boolean isAlive() {
 			return context.isAlive();
 		}
 		@Override
