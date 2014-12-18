@@ -18,13 +18,13 @@ import java.sql.PreparedStatement;
  */
 public interface ITableSQLRender extends ISQLRender {
 
-	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, int startNum, int count) throws Throwable;
+	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, long startRow, int count) throws Throwable;
 	IDBResultSet selectBy(ITableDBContext context, Table table, IDBRecord record, ISQLRecordFactory factory, int maxPageRecordCount, int currPageNO) throws Throwable;
 	IDBResultSet selectBy(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, int maxPageRecordCount, int currPageNO) throws Throwable;
 	void loopBy( ITableDBContext context, Table table, IDBRecord record, ISQLRecordFactory factory, IDBRecordCallBack callback) throws Throwable;
 	void loopBy(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, IDBRecordCallBack callback) throws Throwable;
-	int countBy(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
-	int countBy(ITableDBContext context, Table table, IDBFilter filter) throws Throwable;
+	long countBy(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
+	long countBy(ITableDBContext context, Table table, IDBFilter filter) throws Throwable;
 	void insertPreparedStatement(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields, String newID) throws Throwable;
 	void updatePreparedStatementValue(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields) throws Throwable;
 	PreparedStatement getDeletePreparedStatement(ITableDBContext context, Table table, String[] ids) throws Throwable;

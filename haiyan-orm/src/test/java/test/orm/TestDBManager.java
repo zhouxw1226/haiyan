@@ -7,7 +7,6 @@ import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBRecordCallBack;
 import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.session.IUser;
-import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Table;
 import haiyan.config.intf.database.ITableDBManager;
 import haiyan.config.intf.session.ITableDBContext;
@@ -146,7 +145,7 @@ public class TestDBManager {
 			IDBRecord queryRow = dbm.createRecord();
 			queryRow.set("NAME", "%test%");
 			{
-				int count = dbm.countBy(context, table, queryRow);
+				long count = dbm.countBy(context, table, queryRow);
 				System.err.println("count:"+count);
 			}
 			{

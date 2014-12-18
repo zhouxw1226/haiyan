@@ -1382,7 +1382,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		}
 	}
 	@Override
-	public int countBy(final ITableDBContext context, final Table table, IDBFilter filter) throws Throwable {
+	public long countBy(final ITableDBContext context, final Table table, IDBFilter filter) throws Throwable {
 		return countBy(context, table, filter, null);
 	}
 	/**
@@ -1393,7 +1393,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @return
 	 * @throws Throwable
 	 */
-	public int countBy(final ITableDBContext context, final Table table, IDBFilter filter,
+	public long countBy(final ITableDBContext context, final Table table, IDBFilter filter,
 			int... args) throws Throwable {
 		try {
 			return getSQLRender().countBy(context, table, filter);
@@ -1407,7 +1407,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		}
 	}
 	@Override
-	public int countBy(final ITableDBContext context, final Table table, IDBRecord record) throws Throwable {
+	public long countBy(final ITableDBContext context, final Table table, IDBRecord record) throws Throwable {
 		return countBy(context, table, record, null);
 	}
 	/**
@@ -1418,7 +1418,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @return
 	 * @throws Throwable
 	 */
-	public int countBy(final ITableDBContext context, final Table table, IDBRecord record, int... args) throws Throwable {
+	public long countBy(final ITableDBContext context, final Table table, IDBRecord record, int... args) throws Throwable {
 		try {
 			return getSQLRender().countBy(context, table, record);
 		} catch (SQLException ex) {
@@ -1431,22 +1431,22 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		}
 	}
 	@Override
-	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, int startNum, int count) throws Throwable {
+	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, long startNum, int count) throws Throwable {
 		return selectByLimit(context, table, filter, startNum, count, null);
 	}/**
 	 * @param table
 	 * @param filter
-	 * @param startNum
+	 * @param startRow
 	 * @param count
 	 * @param context
 	 * @return Page
 	 * @throws Throwable
 	 */
 	protected IDBResultSet selectByLimit(final ITableDBContext context, final Table table, IDBFilter filter,
-			int startNum, int count, int... args) throws Throwable {
+			long startRow, int count, int... args) throws Throwable {
 		try {
 			ISQLRecordFactory factory = getPageRecordFactory(context, table); //, DBManager.DBBATCHSESSION);
-			IDBResultSet page = getSQLRender().selectByLimit(context, table, filter, factory, startNum, count);
+			IDBResultSet page = getSQLRender().selectByLimit(context, table, filter, factory, startRow, count);
 			factory = null;
 			// for (Iterator<?> iter = page.getData().iterator();
 			// iter.hasNext();) {
@@ -1462,7 +1462,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			if (isDBCorrect(ex)) {
 				this.tableErrHandle(getSQLRender().getSQL());
 				if (isDeep(args))
-					return selectBy(context, table, filter, startNum, count, getDeep(args));
+					return selectByLimit(context, table, filter, startRow, count, getDeep(args));
 			}
 			throw ex;
 		}

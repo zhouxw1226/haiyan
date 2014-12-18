@@ -2,6 +2,7 @@ package haiyan.web.orm;
 
 import haiyan.common.StringUtil;
 import haiyan.common.VarUtil;
+import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
@@ -16,6 +17,9 @@ public class RequestRecord extends DBRecord {
 
 	public RequestRecord(ServletRequest req, ServletResponse res, Table table) throws Throwable {
 		super();
+		parseRequest(req, table, this);
+	}
+	public static void parseRequest(ServletRequest req, Table table, IDBRecord record) throws Throwable {
 		for (Field field:table.getField()) {
 			Object v = null;
 			String uiName = field.getUiname();
@@ -31,7 +35,7 @@ public class RequestRecord extends DBRecord {
 			}
 			if (!StringUtil.isEmpty(v)) {
 				String dbName = field.getName();
-				this.set(dbName, v);
+				record.set(dbName, v);
 			} else if (!field.isNullAllowed()) {
 				//throw Warning("not allow empty value, field="+);
 			}

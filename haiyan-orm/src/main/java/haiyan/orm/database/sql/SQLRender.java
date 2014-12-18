@@ -9,6 +9,7 @@ import haiyan.common.DebugUtil;
 import haiyan.common.InvokeUtil;
 import haiyan.common.PropUtil;
 import haiyan.common.StringUtil;
+import haiyan.common.VarUtil;
 import haiyan.common.config.DataConstant;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.IDBFilter;
@@ -646,7 +647,7 @@ class SQLRender implements ITableSQLRender {
 	 * @param maxPageRecordCount
 	 * @return Query
 	 */
-	protected Query dealWithSelectQueryByLimit(Query selectQuery, int startNum, int count) {
+	protected Query dealWithSelectQueryByLimit(Query selectQuery, long startNum, int count) {
 		//return selectQuery;
 		throw new Warning("Not Support!");
 	}
@@ -815,7 +816,7 @@ class SQLRender implements ITableSQLRender {
 		}
 	}
 	@Override
-	public int countBy(ITableDBContext context, Table table, IDBFilter filter)
+	public long countBy(ITableDBContext context, Table table, IDBFilter filter)
 			throws Throwable {
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
@@ -837,7 +838,7 @@ class SQLRender implements ITableSQLRender {
 	}
 	@Override
 	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, 
-			int startRowNum, int count) throws Throwable {
+			long startRowNum, int count) throws Throwable {
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		//String sFilterC = calFilter(context, table, pTableAlias, filter, false);
@@ -890,7 +891,7 @@ class SQLRender implements ITableSQLRender {
 		return pg;
 	}
 	@Override
-	public int countBy(ITableDBContext context, Table table, IDBRecord record)
+	public long countBy(ITableDBContext context, Table table, IDBRecord record)
 			throws Throwable {
 		DebugUtil.debug("##countByRecord:" + record);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
@@ -910,7 +911,7 @@ class SQLRender implements ITableSQLRender {
 			rs = countQry.build(getConnection(context)).executeQuery();
 			if (rs != null) {
 				if (rs.next())
-					return rs.getInt(1);
+					return rs.getLong(1);
 			}
 		} finally {
 			CloseUtil.close(rs);
@@ -961,10 +962,10 @@ class SQLRender implements ITableSQLRender {
 		Query selectQry = new Query(pTable.getSQL(), sFilter);
 		dealExtFilter(context, table, selectQry, filter);
 		//
-		int recordCount = this.countBy(context, table, filter);
+		long recordCount = this.countBy(context, table, filter);
 		int currPageNO = 1;
 		int maxPageRecordCount = DBPage.MAXCOUNTPERQUERY;
-		int totalPage = recordCount / maxPageRecordCount + (recordCount % maxPageRecordCount > 0 ? 1 : 0);
+		int totalPage = VarUtil.toInt(recordCount / maxPageRecordCount + (recordCount % maxPageRecordCount > 0 ? 1 : 0));
 		for (; currPageNO <= totalPage; currPageNO++) { // 分批处理数据
 			selectQry.clearListener();
 			selectQry = dealWithSelectQuery(selectQry, currPageNO, maxPageRecordCount); // NOTICE for wrapSQL
@@ -989,10 +990,10 @@ class SQLRender implements ITableSQLRender {
 		Query selectQry = new Query(pTable.getSQL(), sFilter, criticalItems, orderByItems);
 		dealExtFilter(context, table, selectQry, null);
 		//
-		int recordCount = this.countBy(context, table, record);
+		long recordCount = this.countBy(context, table, record);
 		int currPageNO = 1;
 		int maxPageRecordCount = DBPage.MAXCOUNTPERQUERY;
-		int totalPage = recordCount / maxPageRecordCount + (recordCount % maxPageRecordCount > 0 ? 1 : 0);
+		int totalPage = VarUtil.toInt(recordCount / maxPageRecordCount + (recordCount % maxPageRecordCount > 0 ? 1 : 0));
 		for (; currPageNO <= totalPage; currPageNO++) {
 			selectQry.clearListener();
 			selectQry = dealWithSelectQuery(selectQry, currPageNO, maxPageRecordCount); // NOTICE for wrapSQL

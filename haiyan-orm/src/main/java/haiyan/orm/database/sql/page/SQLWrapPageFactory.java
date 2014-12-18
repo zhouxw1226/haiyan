@@ -74,7 +74,7 @@ public abstract class SQLWrapPageFactory extends SQLDBPageFactory {
 	 * @throws SQLException
 	 */
 	public abstract void setSelectPSByLimit(PreparedStatement selectPS, int lastIndex,
-			int startRowNum, int count) throws SQLException;
+			long startNum, int count) throws SQLException;
 	// DebugUtil.debug("startnum:"+startRowNum+"
 	// endnum:"+startRowNum+maxPageRecordCount);
 	@Override

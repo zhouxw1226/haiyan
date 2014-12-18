@@ -32,7 +32,7 @@ public class UnitOfWorkDBManager extends SQLTableDBManager {
 	}
 	@Override
 	protected IDBResultSet selectByLimit(final ITableDBContext context, final Table table, IDBFilter filter,
-			int startNum, int count, int... args) throws Throwable {
+			long startNum, int count, int... args) throws Throwable {
 		return super.selectByLimit(context, table, filter, startNum, count, args);
 	}
 	protected IDBResultSet selectBy(final ITableDBContext context, final Table table, IDBFilter filter,
