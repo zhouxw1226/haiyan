@@ -2,6 +2,7 @@ package haiyan.config.intf.database;
 
 import haiyan.common.intf.database.IDBFilter;
 import haiyan.common.intf.database.IDBManager;
+import haiyan.common.intf.database.IDatabase;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBRecordCallBack;
 import haiyan.common.intf.database.orm.IDBResultSet;
@@ -41,5 +42,6 @@ public interface ITableDBManager extends IDBManager {
 	
 	Object[][] getResultArray(String SQL, int colNum, Object[] paras) throws Throwable;
 	int executeUpdate(String SQL, Object[] paras) throws Throwable;
+	IDatabase getDatabase();
 
 }

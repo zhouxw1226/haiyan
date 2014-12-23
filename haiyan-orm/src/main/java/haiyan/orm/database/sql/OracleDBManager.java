@@ -21,12 +21,12 @@ import haiyan.config.intf.database.sql.ITableSQLRender;
  * 
  * @author zhouxw
  */
-class OracleDBManager extends SQLTableDBManager {
+public class OracleDBManager extends SQLTableDBManager {
 	/**
 	 * @param conn
 	 * @param notSameConn
 	 */
-	OracleDBManager(ISQLDatabase db) {
+	protected OracleDBManager(ISQLDatabase db) {
 		super(db);
 	}
 	@Override

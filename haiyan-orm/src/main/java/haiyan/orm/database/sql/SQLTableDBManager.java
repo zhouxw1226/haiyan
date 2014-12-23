@@ -10,6 +10,7 @@ import haiyan.common.config.DataConstant;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.IDBClear;
 import haiyan.common.intf.database.IDBFilter;
+import haiyan.common.intf.database.IDatabase;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBRecordCacheManager;
 import haiyan.common.intf.database.orm.IDBRecordCallBack;
@@ -70,6 +71,10 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 */
 	public SQLTableDBManager(ISQLDatabase db) {
 		this.database = db;
+	}
+	@Override
+	public IDatabase getDatabase() {
+		return this.database;
 	}
 	@Override
 	public String getDSN() {
@@ -1433,7 +1438,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	@Override
 	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, long startNum, int count) throws Throwable {
 		return selectByLimit(context, table, filter, startNum, count, null);
-	}/**
+	}
+	/**
 	 * @param table
 	 * @param filter
 	 * @param startRow
