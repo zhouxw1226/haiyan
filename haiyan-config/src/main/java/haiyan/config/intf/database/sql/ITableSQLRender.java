@@ -18,6 +18,7 @@ import java.sql.PreparedStatement;
  */
 public interface ITableSQLRender extends ISQLRender {
 
+	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord record, ISQLRecordFactory factory, long startRow, int count) throws Throwable;
 	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, long startRow, int count) throws Throwable;
 	IDBResultSet selectBy(ITableDBContext context, Table table, IDBRecord record, ISQLRecordFactory factory, int maxPageRecordCount, int currPageNO) throws Throwable;
 	IDBResultSet selectBy(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, int maxPageRecordCount, int currPageNO) throws Throwable;

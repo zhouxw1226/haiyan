@@ -4,12 +4,13 @@ import java.util.Collection;
 
 public interface IDBResultSet {
 
-	int getTotalRecordCount();
+	void setTotalRecordCount(long c);
+	long getTotalRecordCount();
+	void setActiveRecord(int index);
 	IDBRecord getRecord(int i);
 	Collection<IDBRecord> getRecords();
 	void setTableName(String name);
 	String getTableName();
-	void setActiveRecord(int index);
 	IDBRecord getActiveRecord();
 
 }

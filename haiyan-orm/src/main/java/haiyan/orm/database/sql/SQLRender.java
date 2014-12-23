@@ -797,23 +797,23 @@ class SQLRender implements ITableSQLRender {
 	 * @param filter
 	 */
 	private void dealExtFilter(ITableDBContext context, Table table, Query query, IDBFilter filter) {
-		if (filter!=null)
-			query.addFilter(filter);
-		if (context!=null) {
-			Object o = context.getAttribute("__extendFilter." + table.getName());
-			if (o!=null) {
-				SQLDBFilter extFilter = null;
-				if (o instanceof SQLDBFilter) 
-					extFilter = (SQLDBFilter)o;
-				else
-					extFilter = new SQLDBFilter(o.toString());
-				//SQLDBFilterFactory.createBFilter();
-				//new Filter(o.toString(), null); // @deprecated
-				//if (extFilter!=null) {
-				query.addFilter(extFilter);
-				//}
-			}
-		}
+//		if (filter!=null)
+//			query.addFilter(filter);
+//		if (context!=null) {
+//			Object o = context.getAttribute("__extendFilter." + table.getName());
+//			if (o!=null) {
+//				SQLDBFilter extFilter = null;
+//				if (o instanceof SQLDBFilter) 
+//					extFilter = (SQLDBFilter)o;
+//				else
+//					extFilter = new SQLDBFilter(o.toString());
+//				//SQLDBFilterFactory.createBFilter();
+//				//new Filter(o.toString(), null); // @deprecated
+//				//if (extFilter!=null) {
+//				query.addFilter(extFilter);
+//				//}
+//			}
+//		}
 	}
 	@Override
 	public long countBy(ITableDBContext context, Table table, IDBFilter filter)
@@ -847,6 +847,29 @@ class SQLRender implements ITableSQLRender {
 		String sFilter = calFilter(context, table, pTableAlias, filter, true);
 		Query selectQry = new Query(pTable.getSQL(), sFilter);
 		dealExtFilter(context, table, selectQry, filter);
+		
+		selectQry = dealWithSelectQueryByLimit(selectQry, startRowNum, count);
+		mainSQL = selectQry.getSQL(); // 4 log
+		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
+		SQLDBPageFactory pf = getPageFactory(
+				selectQry.buildWithScrollCursor(getConnection(context)), //
+				factory);
+		DBPage pg = pf.getPage(count, 1);
+		return pg;
+	} 
+	@Override
+	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord queryRecord, ISQLRecordFactory factory, 
+			long startRowNum, int count) throws Throwable {
+		DebugUtil.debug("##selectByLimit:" + queryRecord);
+		PrimaryTable pTable = getBaseSelectSQL(context, table);
+		String pTableAlias = pTable.getFirstTableAlias();
+		// Items
+		ArrayList<CriticalItem> criticalItems = getCriticalItems(table, queryRecord, pTable, null, context);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(queryRecord, null);
+		String sFilter = calFilter(context, table, pTableAlias, null, true);
+		Query selectQry = new Query(pTable.getSQL(), sFilter,
+				criticalItems, orderByItems);
+		dealExtFilter(context, table, selectQry, null);
 		
 		selectQry = dealWithSelectQueryByLimit(selectQry, startRowNum, count);
 		mainSQL = selectQry.getSQL(); // 4 log
@@ -919,15 +942,15 @@ class SQLRender implements ITableSQLRender {
 		return -1;
 	}
 	@Override
-	public IDBResultSet selectBy(final ITableDBContext context, Table table, IDBRecord queryForm,
+	public IDBResultSet selectBy(final ITableDBContext context, Table table, IDBRecord queryRecord,
 			ISQLRecordFactory factory, final int maxPageRecordCount,
 			final int currPageNO) throws Throwable {
-		DebugUtil.debug("##selectBy:" + queryForm);
+		DebugUtil.debug("##selectBy:" + queryRecord);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		// Items
-		ArrayList<CriticalItem> criticalItems = getCriticalItems(table, queryForm, pTable, null, context);
-		ArrayList<OrderByItem> orderByItems = getOrderByItems(queryForm, null);
+		ArrayList<CriticalItem> criticalItems = getCriticalItems(table, queryRecord, pTable, null, context);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(queryRecord, null);
 		//
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
 		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC,
@@ -1250,17 +1273,17 @@ class SQLRender implements ITableSQLRender {
 	private final static String getPluginQueryFilter(ITableDBContext context, Table table, String tableAlias, boolean hasOrderBy)
 			throws Throwable {
 		String result = "";
-		// extend filter
-		if (context != null) {
-			SQLDBFilter extendFilter = (SQLDBFilter)context.getAttribute("__extendFilter." + table.getName());
-			if (extendFilter != null) {
-				int s = result.lastIndexOf("order by");
-				if (s >= 0) { // 补充过滤
-					result = result.substring(0, s) + extendFilter.getSql() + result.substring(s);
-				} else
-					result += extendFilter.getSql();
-			}
-		}
+//		// extend filter
+//		if (context != null) {
+//			SQLDBFilter extendFilter = (SQLDBFilter)context.getAttribute("__extendFilter." + table.getName());
+//			if (extendFilter != null) {
+//				int s = result.lastIndexOf("order by");
+//				if (s >= 0) { // 补充过滤
+//					result = result.substring(0, s) + extendFilter.getSql() + result.substring(s);
+//				} else
+//					result += extendFilter.getSql();
+//			}
+//		}
 		// getPluginQueryFilter
 		PluggedFilter[] filters = SQLDBFilterFactory.getQueryFilter(context, table, tableAlias);
 		if (filters != null) {
