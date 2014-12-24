@@ -36,5 +36,9 @@ public interface IUser extends IUserSession, Serializable {
 	String getEmail();
 	void setMobile(String mobile);
 	String getMobile();
+	String getRights();
+	void setRights(String rights);
+	String getPortrait();
+	void setPortrait(String portrait);
 }
  
