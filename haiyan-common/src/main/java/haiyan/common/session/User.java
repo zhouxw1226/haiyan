@@ -10,6 +10,7 @@ import haiyan.common.intf.session.IUser;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,8 @@ public class User implements IUser, Serializable { // Externalizable
 	private String sex;
 	private String email;
 	private String mobile;
+	private String portrait;
+	private String[] rights;
 	//@Table("SYSOPERATOR")
 	public User() {
 	}
@@ -177,6 +180,29 @@ public class User implements IUser, Serializable { // Externalizable
 	@Override
 	public String getMobile() {
 		return this.mobile;
+	}
+	@GetMethod("portrait")
+	@Override
+	public String getPortrait() {
+		return portrait;
+	}
+	@SetMethod("portrait")
+	@Override
+	public void setPortrait(String portrait) {
+		this.portrait = portrait;
+	}
+	@GetMethod("rights")
+	@Override
+	public String getRights() {
+		return Arrays.toString(rights);
+	}
+	@SetMethod("rights")
+	@Override
+	public void setRights(String rights) {
+		if(rights == null)
+			this.rights = new String[]{"LOGIN"};
+		else
+			this.rights = rights.split(";");
 	}
 
 }
