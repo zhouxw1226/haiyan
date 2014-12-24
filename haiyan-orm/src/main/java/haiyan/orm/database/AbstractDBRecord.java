@@ -6,6 +6,7 @@ import haiyan.common.config.DataConstant;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Option;
+import haiyan.config.castorgen.Table;
 import haiyan.config.util.NamingUtil;
 
 import java.math.BigDecimal;
@@ -531,6 +532,28 @@ public abstract class AbstractDBRecord implements IDBRecord {
             return false;
         return true;
     }
+	public static Map<String, Object> filterIndexRecord(Table table, IDBRecord record) {
+		Map<String,Object> map = new HashMap<String,Object>();
+		for (Field field:table.getField()) {
+			if (!field.isIndexAllowed())
+				continue;
+			if (!StringUtil.isEmpty(field.getReferenceTable())) {
+				String name = NamingUtil.getDisplayFieldAlias(field);
+				map.put(name, record.get(name));
+			} else if (field.getOptionCount()>0) {
+				for (Option option:field.getOption()) {
+					if (option.getValue().equals(record.get(field.getName()))) {
+						String name = NamingUtil.getDisplayFieldAlias(field);
+						map.put(name, option.getDisplayName());
+					}
+				}
+			} else {
+				String name = field.getName();
+				map.put(name, record.get(name));
+			}
+		}
+		return map;
+	}
 }
 ///**
 //* @param table

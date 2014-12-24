@@ -290,6 +290,12 @@
 		</xs:annotation>
 		<xs:complexContent>
 			<xs:extension base="AbstractCommonField">
+				<xs:attribute name="indexAllowed" type="xs:boolean" use="optional"
+					default="false">
+					<xs:annotation>
+						<xs:documentation>allow indexl</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
 				<xs:attribute name="nullAllowed" type="xs:boolean" use="optional"
 					default="true">
 					<xs:annotation>

@@ -32,6 +32,11 @@ public class NamingUtil {
 	/**
 	 * 
 	 */
+	public final static String _OPTION = "option";
+	
+	/**
+	 * 
+	 */
 	public final static String _START = "start";
 	/**
 	 * 

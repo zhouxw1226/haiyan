@@ -13,6 +13,8 @@ package haiyan.config.castorgen;
 
 import haiyan.common.intf.config.IBillConfig;
 
+import haiyan.common.intf.config.IBillConfig;
+
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
 

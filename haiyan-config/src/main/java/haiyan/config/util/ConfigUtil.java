@@ -1737,8 +1737,11 @@ public class ConfigUtil {
     public final static String[] getDisplayRefFields(AbstractField field) {
         if (field instanceof Field && ((Field)field).getDisplayReferenceField() != null)
             return ((Field)field).getDisplayReferenceField().split(",");
-        else
+        else {
+        	if (field.getOptionCount()>0)
+        		return new String[]{NamingUtil._OPTION};
             return new String[0];
+        }
     }
     /**
      * @param field

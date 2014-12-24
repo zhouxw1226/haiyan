@@ -6,31 +6,28 @@ import java.lang.reflect.Method;
 
 public class DebugUtil {
 	public static ILogger logger = new ILogger() {
-
 		@Override
 		public void debug(Object info) {
 			System.out.println(info);
 		}
-
 		@Override
 		public void warn(Object info) {
 			System.out.println(info);
 		}
-
 		@Override
 		public void error(Object info) {
-			System.err.println(info);
+			if (info instanceof Throwable) 
+				((Throwable)info).printStackTrace();
+			else
+				System.err.println(info);
 		}
-
 		@Override
 		public void error(Object info, Throwable ex) {
 			ex.printStackTrace();
 			System.err.println(info);
 		}
-		
 	};
 	private static int connNum = 0;
-
 	/**
 	 * 
 	 */
@@ -38,7 +35,6 @@ public class DebugUtil {
 		connNum++;
 		debug(">------------------------------------------< connNum=" + connNum);
 	}
-
 	/**
 	 * 
 	 */

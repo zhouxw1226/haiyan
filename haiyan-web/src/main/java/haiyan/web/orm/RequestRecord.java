@@ -14,25 +14,25 @@ import javax.servlet.ServletResponse;
 public class RequestRecord extends DBRecord {
 
 	private static final long serialVersionUID = 1L;
-
 	public RequestRecord(ServletRequest req, ServletResponse res, Table table) throws Throwable {
 		super();
 		parseRequest(req, table, this);
 	}
-	public static void parseRequest(ServletRequest req, Table table, IDBRecord record) throws Throwable {
+	public RequestRecord(ServletRequest req, ServletResponse res, Table table, boolean useDefault) throws Throwable {
+		super();
+		parseRequest(req, table, this, useDefault);
+	}
+	public static void parseRequest(ServletRequest req, Table table, IDBRecord record, boolean useDefault) throws Throwable {
 		for (Field field:table.getField()) {
 			Object v = null;
 			String uiName = field.getUiname();
 			if (!StringUtil.isEmpty(uiName)) {
 				v = getValue(req, uiName);
 			} 
-			if (StringUtil.isEmpty(v)) {
+			if (StringUtil.isEmpty(v) && useDefault) {
 				v = field.getDefaultValue(); 
 			}
-			// TODO 转成各种数据类型
-			if (field.getJavaType()==AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
-				v = VarUtil.toBigDecimal(v);
-			}
+			v = transValueType(field, v);
 			if (!StringUtil.isEmpty(v)) {
 				String dbName = field.getName();
 				record.set(dbName, v);
@@ -40,6 +40,16 @@ public class RequestRecord extends DBRecord {
 				//throw Warning("not allow empty value, field="+);
 			}
 		}
+	}
+	public static void parseRequest(ServletRequest req, Table table, IDBRecord record) throws Throwable {
+		parseRequest(req, table, record, true);
+	}
+	private static Object transValueType(Field field, Object v) {
+		// TODO 转成各种数据类型
+		if (field.getJavaType()==AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
+			v = VarUtil.toBigDecimal(v);
+		}
+		return v;
 	}
 	private static String getValue(ServletRequest req, String key) throws Throwable {
 		String v = (String) (req.getParameter(key)==null?req.getAttribute(key):req.getParameter(key));

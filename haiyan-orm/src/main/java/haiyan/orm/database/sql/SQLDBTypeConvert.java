@@ -103,7 +103,6 @@ public class SQLDBTypeConvert {
         AbstractCommonFieldJavaTypeType type = field.getJavaType();
         value = StringUtil.isBlankOrNull(value) ? null : value;
         if (AbstractCommonFieldJavaTypeType.BIGDECIMAL==type) {
-            // DebugUtil.debug(">>" + index + "=" + value);
             BigDecimal b = toBigDecimal(value, field);
             if (b == null)
                 ps.setNull(index, Types.NUMERIC);
@@ -115,8 +114,9 @@ public class SQLDBTypeConvert {
                 if (value instanceof String && value.toString().indexOf(",") >= 0) {
                     value = value.toString().substring(0, value.toString().indexOf(","));
                 }
-            } 
-            ps.setTimestamp(index, toTimestamp(value, field));
+            }
+            java.sql.Timestamp t = toTimestamp(value, field);
+            ps.setTimestamp(index, t);
         } else if (AbstractCommonFieldJavaTypeType.STRING==type) {
             ps.setString(index, VarUtil.toString(value));
         } else if (AbstractCommonFieldJavaTypeType.BLOB==type) {
@@ -272,10 +272,6 @@ public class SQLDBTypeConvert {
     public static java.sql.Timestamp toTimestamp(Object date, AbstractField field) throws Throwable {
         if (date==null)
         	return null;
-        String dateStyle = DEFAULT_DATESTYLE;
-        if (!StringUtil.isBlankOrNull(field.getDataStyle())) {
-            dateStyle = field.getDataStyle();
-        }
         if (date instanceof java.util.Date) {
             return new java.sql.Timestamp(((java.util.Date)date).getTime());
         }
@@ -302,6 +298,10 @@ public class SQLDBTypeConvert {
             if (time.endsWith("\\"))
                 time = time.substring(0, time.length() - 1);
             // DebugUtil.debug(time + " " + time.length());
+            String dateStyle = DEFAULT_DATESTYLE;
+            if (!StringUtil.isBlankOrNull(field.getDataStyle())) {
+                dateStyle = field.getDataStyle();
+            }
             SimpleDateFormat sdf = new SimpleDateFormat(dateStyle);
             result = new java.sql.Timestamp(sdf.parse(time).getTime() + (isPhp ? 8 * 60 * 60 * 1000 : 0));
         } else {
