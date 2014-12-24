@@ -470,8 +470,8 @@ public class SQLDBTypeConvert {
         }
         String result = "";
         for (int j = 0; j < values.length; j++) {
-            String keyValue = table.getName() + NamingUtil.DELIMITER
-                    + field.getName() + NamingUtil.DELIMITER + values[j];
+            String keyValue = table.getName() + NamingUtil._DELIMITER
+                    + field.getName() + NamingUtil._DELIMITER + values[j];
             // if (j != 0)
             if (result.length() > 0)
                 result += " "; // 分隔符
