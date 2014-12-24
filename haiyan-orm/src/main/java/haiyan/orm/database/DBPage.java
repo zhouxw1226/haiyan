@@ -139,7 +139,7 @@ public class DBPage implements Serializable, IDBResultSet {
 	 * @return int
 	 */
 	public long getTotalRecordCount() {
-		if (this.totalRecordCount==0&&this.records.size()>0) // 临时列表大小
+		if (this.totalRecordCount==0 && this.records.size()>0) // 临时列表大小
 			return this.records.size();
 		return this.totalRecordCount; // db设置的值
 	}

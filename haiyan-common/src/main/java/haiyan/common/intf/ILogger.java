@@ -20,23 +20,25 @@ public interface ILogger {
 	 * 
 	 */
 	public static class ILoggerAdapter implements ILogger {
-
+		@Override
 		public void debug(Object info) {
 			System.out.println(info);
 		}
-
-		public void error(Object info) {
+		@Override
+		public void warn(Object info) {
 			System.err.println(info);
 		}
-
+		@Override
+		public void error(Object info) {
+			if (info instanceof Throwable) 
+				((Throwable)info).printStackTrace();
+			else
+				System.err.println(info);
+		}
+		@Override
 		public void error(Object info, Throwable ex) {
 			System.err.println(info);
 			ex.printStackTrace();
 		}
-
-		public void warn(Object info) {
-			System.err.println(info);
-		}
-
 	}
 }

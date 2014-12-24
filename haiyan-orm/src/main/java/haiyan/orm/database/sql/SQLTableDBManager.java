@@ -1486,11 +1486,11 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @return Page
 	 * @throws Throwable
 	 */
-	protected IDBResultSet selectByLimit(final ITableDBContext context, final Table table, IDBRecord record,
+	protected IDBResultSet selectByLimit(final ITableDBContext context, final Table table, IDBRecord queryRecord,
 			long startRow, int count, int... args) throws Throwable {
 		try {
 			ISQLRecordFactory factory = getPageRecordFactory(context, table); //, DBManager.DBBATCHSESSION);
-			IDBResultSet page = getSQLRender().selectByLimit(context, table, record, factory, startRow, count);
+			IDBResultSet page = getSQLRender().selectByLimit(context, table, queryRecord, factory, startRow, count);
 			factory = null;
 			// for (Iterator<?> iter = page.getData().iterator();
 			// iter.hasNext();) {
@@ -1506,7 +1506,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			if (isDBCorrect(ex)) {
 				this.tableErrHandle(getSQLRender().getSQL());
 				if (isDeep(args))
-					return selectByLimit(context, table, record, startRow, count, getDeep(args));
+					return selectByLimit(context, table, queryRecord, startRow, count, getDeep(args));
 			}
 			throw ex;
 		}

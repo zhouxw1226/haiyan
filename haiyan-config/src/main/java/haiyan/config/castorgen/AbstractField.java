@@ -22,6 +22,16 @@ implements java.io.Serializable
     //--------------------------/
 
     /**
+     * allow indexl
+     */
+    private boolean _indexAllowed = false;
+
+    /**
+     * keeps track of state for field: _indexAllowed
+     */
+    private boolean _has_indexAllowed;
+
+    /**
      * allow null
      */
     private boolean _nullAllowed = true;
@@ -92,6 +102,13 @@ implements java.io.Serializable
 
     /**
      */
+    public void deleteIndexAllowed(
+    ) {
+        this._has_indexAllowed= false;
+    }
+
+    /**
+     */
     public void deleteLength(
     ) {
         this._has_length= false;
@@ -138,6 +155,17 @@ implements java.io.Serializable
     public java.lang.String getDefaultValue(
     ) {
         return this._defaultValue;
+    }
+
+    /**
+     * Returns the value of field 'indexAllowed'. The field
+     * 'indexAllowed' has the following description: allow indexl
+     * 
+     * @return the value of field 'IndexAllowed'.
+     */
+    public boolean getIndexAllowed(
+    ) {
+        return this._indexAllowed;
     }
 
     /**
@@ -198,6 +226,16 @@ implements java.io.Serializable
     }
 
     /**
+     * Method hasIndexAllowed.
+     * 
+     * @return true if at least one IndexAllowed has been added
+     */
+    public boolean hasIndexAllowed(
+    ) {
+        return this._has_indexAllowed;
+    }
+
+    /**
      * Method hasLength.
      * 
      * @return true if at least one Length has been added
@@ -235,6 +273,17 @@ implements java.io.Serializable
     public boolean hasNullAllowed(
     ) {
         return this._has_nullAllowed;
+    }
+
+    /**
+     * Returns the value of field 'indexAllowed'. The field
+     * 'indexAllowed' has the following description: allow indexl
+     * 
+     * @return the value of field 'IndexAllowed'.
+     */
+    public boolean isIndexAllowed(
+    ) {
+        return this._indexAllowed;
     }
 
     /**
@@ -283,6 +332,18 @@ implements java.io.Serializable
     public void setDefaultValue(
             final java.lang.String defaultValue) {
         this._defaultValue = defaultValue;
+    }
+
+    /**
+     * Sets the value of field 'indexAllowed'. The field
+     * 'indexAllowed' has the following description: allow indexl
+     * 
+     * @param indexAllowed the value of field 'indexAllowed'.
+     */
+    public void setIndexAllowed(
+            final boolean indexAllowed) {
+        this._indexAllowed = indexAllowed;
+        this._has_indexAllowed = true;
     }
 
     /**
