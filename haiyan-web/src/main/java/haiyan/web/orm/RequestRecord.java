@@ -29,11 +29,11 @@ public class RequestRecord extends DBRecord {
 			if (!StringUtil.isEmpty(uiName)) {
 				v = getValue(req, uiName);
 			} 
-			if (StringUtil.isEmpty(v) && useDefault) {
+			if (StringUtil.isEmpty(v) && (useDefault || !field.isNullAllowed())) {
 				v = field.getDefaultValue(); 
 			}
-			v = transValueType(field, v);
 			if (!StringUtil.isEmpty(v)) {
+				v = transValueType(field, v);
 				String dbName = field.getName();
 				record.set(dbName, v);
 			} else if (!field.isNullAllowed()) {

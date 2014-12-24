@@ -1759,6 +1759,11 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 					String id = rs.getString(1);
 					record.set(table.getId().getName(), (id == null ? null : id.toString()));
 				}
+				@Override // 依赖映射
+				public void dealWithReferenceTable(Table table,
+						int tableIndex, Field field, Object[] globalVars) {
+					
+				}
 				@Override // 外键映射
 				public int dealWithDisplayField(Table table, int tableIndex,
 						int index, Field mainField, Object[] globalVars)
@@ -1795,10 +1800,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 					Field displayField = ConfigUtil.getFieldByName(refTable, ConfigUtil.getDisplayRefFields(mainField)[0]);
 					String value = SQLDBTypeConvert.getValue(context, rs, getClear(), index, table, displayField);
 					record.set(associatedField.getName(), value);
-				}
-				@Override // 依赖映射
-				public void dealWithReferenceTable(Table table,
-						int tableIndex, Field field, Object[] globalVars) {
 				}
 				@Override // 嵌入值
 				public void dealWithComputeField(Table table, int index,
