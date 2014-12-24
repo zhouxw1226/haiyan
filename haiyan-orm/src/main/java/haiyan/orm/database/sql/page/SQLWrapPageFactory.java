@@ -129,9 +129,9 @@ public abstract class SQLWrapPageFactory extends SQLDBPageFactory {
 			for (int i = 0; i < maxPageRecordCount; i++) {
 				if (selectRS.next()) {
 					// 如果cache里有 就不要花时间build BO 了
-					IDBRecord form = (IDBRecord) factory.getRecord(selectRS);
-					if (form != null)
-						pageData.add(form); // 可能再次更新cache但必须否则像findByPK就不会更新了
+					IDBRecord record = (IDBRecord) factory.getRecord(selectRS);
+					if (record != null)
+						pageData.add(record); // 可能再次更新cache但必须否则像findByPK就不会更新了
 					else
 						recordCount--;
 				} else {

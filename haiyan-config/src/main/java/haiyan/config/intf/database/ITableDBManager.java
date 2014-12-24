@@ -32,14 +32,14 @@ public interface ITableDBManager extends IDBManager {
 	void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable;
 
 	IDBRecord select(ITableDBContext context, Table table, String id) throws Throwable;
-	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, long startRow, int count) throws Throwable;
 	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord record, long startRow, int count) throws Throwable;
+	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, long startRow, int count) throws Throwable;
 	IDBResultSet select(ITableDBContext context, Table table, IDBRecord record, int maxPageCount, int page) throws Throwable;
 	IDBResultSet select(ITableDBContext context, Table table, IDBFilter filter, int maxPageCount, int page) throws Throwable;
 	void loopBy(ITableDBContext context, Table table, IDBRecord record, IDBRecordCallBack callback) throws Throwable;
 	void loopBy(ITableDBContext context, Table table, IDBFilter filter, IDBRecordCallBack callback) throws Throwable;
-	long countBy(ITableDBContext context, Table table, IDBFilter filter) throws Throwable;
 	long countBy(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
+	long countBy(ITableDBContext context, Table table, IDBFilter filter) throws Throwable;
 	
 	Object[][] getResultArray(String SQL, int colNum, Object[] paras) throws Throwable;
 	int executeUpdate(String SQL, Object[] paras) throws Throwable;
