@@ -10,6 +10,7 @@ import haiyan.common.config.DataConstant;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.IDBClear;
 import haiyan.common.intf.database.IDBFilter;
+import haiyan.common.intf.database.IDatabase;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBRecordCacheManager;
 import haiyan.common.intf.database.orm.IDBRecordCallBack;
@@ -70,6 +71,10 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 */
 	public SQLTableDBManager(ISQLDatabase db) {
 		this.database = db;
+	}
+	@Override
+	public IDatabase getDatabase() {
+		return this.database;
 	}
 	@Override
 	public String getDSN() {
@@ -1433,7 +1438,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	@Override
 	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, long startNum, int count) throws Throwable {
 		return selectByLimit(context, table, filter, startNum, count, null);
-	}/**
+	}
+	/**
 	 * @param table
 	 * @param filter
 	 * @param startRow
@@ -1463,6 +1469,44 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 				this.tableErrHandle(getSQLRender().getSQL());
 				if (isDeep(args))
 					return selectByLimit(context, table, filter, startRow, count, getDeep(args));
+			}
+			throw ex;
+		}
+	}
+	@Override
+	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord record, long startNum, int count) throws Throwable {
+		return selectByLimit(context, table, record, startNum, count, null);
+	}
+	/**
+	 * @param table
+	 * @param filter
+	 * @param startRow
+	 * @param count
+	 * @param context
+	 * @return Page
+	 * @throws Throwable
+	 */
+	protected IDBResultSet selectByLimit(final ITableDBContext context, final Table table, IDBRecord record,
+			long startRow, int count, int... args) throws Throwable {
+		try {
+			ISQLRecordFactory factory = getPageRecordFactory(context, table); //, DBManager.DBBATCHSESSION);
+			IDBResultSet page = getSQLRender().selectByLimit(context, table, record, factory, startRow, count);
+			factory = null;
+			// for (Iterator<?> iter = page.getData().iterator();
+			// iter.hasNext();) {
+			// IRecord form = (IRecord) iter.next();
+			// if (form == null) {
+			// continue;
+			// }
+			// MappingTableManager.queryMappingTable(table, form, form.get(table.getId().getName()), this, context);
+			// // One2OneTableManager.queryOne2OneTable(table, element, element.get(table.getId().getName()), this, context);
+			// }
+			return page;
+		} catch (SQLException ex) {
+			if (isDBCorrect(ex)) {
+				this.tableErrHandle(getSQLRender().getSQL());
+				if (isDeep(args))
+					return selectByLimit(context, table, record, startRow, count, getDeep(args));
 			}
 			throw ex;
 		}

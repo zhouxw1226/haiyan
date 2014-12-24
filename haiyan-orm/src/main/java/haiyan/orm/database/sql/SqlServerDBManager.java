@@ -23,13 +23,13 @@ import java.util.ArrayList;
  * 
  * @author zhouxw
  */
-class SqlServerDBManager extends SQLTableDBManager {
+public class SqlServerDBManager extends SQLTableDBManager {
 
 	/**
 	 * @param conn
 	 * @param notSameConn
 	 */
-	SqlServerDBManager(ISQLDatabase db) {
+	protected SqlServerDBManager(ISQLDatabase db) {
 		super(db);
 	}
 	@Override

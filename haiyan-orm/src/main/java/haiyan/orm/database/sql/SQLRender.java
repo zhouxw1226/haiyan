@@ -391,21 +391,23 @@ class SQLRender implements ITableSQLRender {
 				upperValue, SQLDBTypeConvert.getJavaType(field));
 		return item;
 	}
-
 	/**
-	 * @param queryForm
+	 * @param context
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
-	 * @return CriticalItem
+	 * @return
 	 * @throws Throwable
 	 */
-	protected CriticalItem getInCriticalItem(IDBRecord queryForm, Table table,
-			Field field, String fullFieldName, ITableDBContext context)
+	protected CriticalItem getInCriticalItem(ITableDBContext context, IDBRecord queryRecord, Table table, 
+			Field field, String fullFieldName)
 			throws Throwable {
-		if (StringUtil.isBlankOrNull(queryForm.get(field.getName())))
+		if (queryRecord==null)
 			return null;
-		String[] args = (String[])queryForm.get(field.getName());
+		if (StringUtil.isBlankOrNull(queryRecord.get(field.getName())))
+			return null;
+		String[] args = (String[])queryRecord.get(field.getName());
 		ArrayList<String> argList = new ArrayList<String>();
 		if (args != null)
 			for (int i = 0; i < args.length; i++) {
@@ -440,47 +442,44 @@ class SQLRender implements ITableSQLRender {
 	 * @return ArrayList<CriticalItem>
 	 * @throws Throwable
 	 */
-	protected ArrayList<CriticalItem> getCriticalItems(Table table,
-			IDBRecord queryRecord, PrimaryTable pTable, CriticalItem[] cItems,
-			ITableDBContext context) throws Throwable {
+	protected ArrayList<CriticalItem> getCriticalItems(ITableDBContext context, Table table, 
+			PrimaryTable pTable, IDBRecord queryRecord, CriticalItem[] cItems) throws Throwable {
+		if (context==null)
+			return null;
 		ArrayList<CriticalItem> critcalItems = new ArrayList<CriticalItem>();
-		if (queryRecord != null) {
-			Field[] fields = table.getField();
-			for (Field field:fields) {
-				CriticalItem item = null;
-				if (field.getQueryCondition() != null && field.getQueryCondition().getType() != null) {
-					QueryConditionTypeType condType = field.getQueryCondition().getType();
-					String fullFieldName = SQLDBHelper.getCriticalFieldName(table, field, pTable);
-					if (condType.equals(QueryConditionTypeType.NONE)
-						|| condType.equals(QueryConditionTypeType.DISPLAYONLY)) { // none displyonly
-						continue;
-					} else if (condType.equals(QueryConditionTypeType.EQUAL)) { // equal
-						item = getEqualCriticalItem(queryRecord, table, field, fullFieldName);
-					} else if (condType.equals(QueryConditionTypeType.BLURMATCHING)) { // like
-						item = getLikeCriticalItem(queryRecord, table, field, fullFieldName);
-					} else if (condType.equals(QueryConditionTypeType.REGION)) { // region
-						item = getBetweenCriticalItem(queryRecord, table, field, fullFieldName);
-					} else if (condType.equals(QueryConditionTypeType.IN)) { // in
-						item = getInCriticalItem(queryRecord, table, field, fullFieldName, context);
-					}
-				} else {
-					item = getDefaultCriticalItem(table, field, queryRecord, pTable);
+		Field[] fields = table.getField();
+		for (Field field:fields) {
+			CriticalItem item = null;
+			if (field.getQueryCondition() != null && field.getQueryCondition().getType() != null) {
+				QueryConditionTypeType condType = field.getQueryCondition().getType();
+				String fullFieldName = SQLDBHelper.getCriticalFieldName(table, field, pTable);
+				if (condType.equals(QueryConditionTypeType.NONE)
+					|| condType.equals(QueryConditionTypeType.DISPLAYONLY)) { // none displyonly
+					continue;
+				} else if (condType.equals(QueryConditionTypeType.EQUAL)) { // equal
+					item = getEqualCriticalItem(queryRecord, table, field, fullFieldName);
+				} else if (condType.equals(QueryConditionTypeType.BLURMATCHING)) { // like
+					item = getLikeCriticalItem(queryRecord, table, field, fullFieldName);
+				} else if (condType.equals(QueryConditionTypeType.REGION)) { // region
+					item = getBetweenCriticalItem(queryRecord, table, field, fullFieldName);
+				} else if (condType.equals(QueryConditionTypeType.IN)) { // in
+					item = getInCriticalItem(context, queryRecord, table, field, fullFieldName);
 				}
-				if (item != null) {
-					critcalItems.add(item);
-				}
-				if (item != null && queryRecord != null && queryRecord.get(DataConstant.ALL_RELATIONOPR) != null) {
-					// TODO can't do in this way
-					// if (critcalItems.size() > 1)
-					item.setRelationOpr((String)queryRecord.get(DataConstant.ALL_RELATIONOPR));
-				}
+			} else {
+				item = getDefaultCriticalItem(table, field, queryRecord, pTable);
 			}
-			if (!StringUtil.isBlankOrNull(queryRecord.get(table.getId().getName()))) {
-				CriticalItem item = new EqualCriticalItem("t_1." + table.getId().getName(), 
-					CriticalItem.getItemValue(queryRecord, table.getId().getName(), table, table.getId()), 
-					SQLDBTypeConvert.getJavaType(table.getId()));
+			if (item != null) {
 				critcalItems.add(item);
 			}
+			if (item != null && queryRecord != null && queryRecord.get(DataConstant.ALL_RELATIONOPR) != null) {
+				item.setRelationOpr((String)queryRecord.get(DataConstant.ALL_RELATIONOPR));
+			}
+		}
+		if (queryRecord!=null && !StringUtil.isBlankOrNull(queryRecord.get(table.getId().getName()))) {
+			CriticalItem item = new EqualCriticalItem("t_1." + table.getId().getName(), 
+				CriticalItem.getItemValue(queryRecord, table.getId().getName(), table, table.getId()), 
+				SQLDBTypeConvert.getJavaType(table.getId()));
+			critcalItems.add(item);
 		}
 		if (cItems != null) {
 			for (int j = 0; j < cItems.length; j++) {
@@ -630,7 +629,7 @@ class SQLRender implements ITableSQLRender {
 	 * @return PageFactory
 	 */
 	protected SQLDBPageFactory getPageFactory(PreparedStatement selectPS, ISQLRecordFactory factory) {
-		return new GeneralDBPageFactory( selectPS, factory);
+		return new GeneralDBPageFactory(selectPS, factory);
 	}
 	/**
 	 * @param selectQuery
@@ -648,28 +647,28 @@ class SQLRender implements ITableSQLRender {
 	 * @return Query
 	 */
 	protected Query dealWithSelectQueryByLimit(Query selectQuery, long startNum, int count) {
-		//return selectQuery;
 		throw new Warning("Not Support!");
 	}
 	/**
-	 * @param record
+	 * @param context
 	 * @param oItems
 	 * @return ArrayList<OrderByItem>
 	 */
-	protected ArrayList<OrderByItem> getOrderByItems(IDBRecord record, OrderByItem[] oItems) {
+	protected ArrayList<OrderByItem> getOrderByItems(ITableDBContext context, OrderByItem[] oItems) {
 		ArrayList<OrderByItem> orderItems = new ArrayList<OrderByItem>();
-		if (record != null) {
+		if (context != null) {
 			String[] orderByFields, orderByMethods;
-			orderByFields = SQLDBTypeConvert.toStringArray(record.get(NamingUtil.ORDER_BY_FIELD_NAME));
-			orderByMethods = SQLDBTypeConvert.toStringArray(record.get(NamingUtil.ORDER_BY_METHOD_NAME));
+			orderByFields = SQLDBTypeConvert.toStringArray(context.getAttribute(NamingUtil.ORDER_BY_FIELD_NAME));
+			orderByMethods = SQLDBTypeConvert.toStringArray(context.getAttribute(NamingUtil.ORDER_BY_METHOD_NAME));
 			if (orderByFields != null) {
 				for (int i = 0; i < orderByMethods.length; i++) {
 					OrderByItem item = new OrderByItem(orderByFields[i], orderByMethods[i]);
 					orderItems.add(item);
 				}
 			}
-			String sort=(String)record.get(DataConstant.SORTNAME)
-				,dir=(String)record.get(DataConstant.SORTMETHOD);
+			// NOTICE 兼容处理
+			String sort=(String)context.getAttribute(DataConstant.SORTNAME)
+				,dir=(String)context.getAttribute(DataConstant.SORTMETHOD);
 			if (!StringUtil.isEmpty(sort) && !StringUtil.isEmpty(dir)) {
 				OrderByItem item = new OrderByItem(sort, dir);
 				orderItems.add(item);
@@ -681,7 +680,6 @@ class SQLRender implements ITableSQLRender {
 			}
 		}
 		return orderItems;
-		// return (OrderByItem[]) orderItems.toArray(new OrderByItem[0]);
 	}
 	private transient ExpUtil exp = null;
 	@Override
@@ -790,6 +788,7 @@ class SQLRender implements ITableSQLRender {
 		DebugUtil.debug("------update().end------");
 		return ps;
 	}
+	// ========================================================================================================================= //
 	/**
 	 * @param context
 	 * @param table
@@ -797,32 +796,35 @@ class SQLRender implements ITableSQLRender {
 	 * @param filter
 	 */
 	private void dealExtFilter(ITableDBContext context, Table table, Query query, IDBFilter filter) {
-		if (filter!=null)
-			query.addFilter(filter);
-		if (context!=null) {
-			Object o = context.getAttribute("__extendFilter." + table.getName());
-			if (o!=null) {
-				SQLDBFilter extFilter = null;
-				if (o instanceof SQLDBFilter) 
-					extFilter = (SQLDBFilter)o;
-				else
-					extFilter = new SQLDBFilter(o.toString());
-				//SQLDBFilterFactory.createBFilter();
-				//new Filter(o.toString(), null); // @deprecated
-				//if (extFilter!=null) {
-				query.addFilter(extFilter);
-				//}
-			}
-		}
+//		if (filter!=null)
+//			query.addFilter(filter);
+//		if (context!=null) {
+//			Object o = context.getAttribute("__extendFilter." + table.getName());
+//			if (o!=null) {
+//				SQLDBFilter extFilter = null;
+//				if (o instanceof SQLDBFilter) 
+//					extFilter = (SQLDBFilter)o;
+//				else
+//					extFilter = new SQLDBFilter(o.toString());
+//				//SQLDBFilterFactory.createBFilter();
+//				//new Filter(o.toString(), null); // @deprecated
+//				//if (extFilter!=null) {
+//				query.addFilter(extFilter);
+//				//}
+//			}
+//		}
 	}
 	@Override
 	public long countBy(ITableDBContext context, Table table, IDBFilter filter)
 			throws Throwable {
+		DebugUtil.debug("##countByFilter:" + filter);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
+		// count
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
-		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC);
+		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC); // count不需要order
 		dealExtFilter(context, table, countQry, filter);
+		// deal
 		mainSQL = countQry.getSQL(); // 4 log
 		ResultSet rs = null;
 		try {
@@ -837,75 +839,20 @@ class SQLRender implements ITableSQLRender {
 		return -1;
 	}
 	@Override
-	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, 
-			long startRowNum, int count) throws Throwable {
-		PrimaryTable pTable = getBaseSelectSQL(context, table);
-		String pTableAlias = pTable.getFirstTableAlias();
-		//String sFilterC = calFilter(context, table, pTableAlias, filter, false);
-		//Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC);
-		//dealExtFilter(context, table, countQry, filter);
-		String sFilter = calFilter(context, table, pTableAlias, filter, true);
-		Query selectQry = new Query(pTable.getSQL(), sFilter);
-		dealExtFilter(context, table, selectQry, filter);
-		
-		selectQry = dealWithSelectQueryByLimit(selectQry, startRowNum, count);
-		mainSQL = selectQry.getSQL(); // 4 log
-		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
-		SQLDBPageFactory pf = getPageFactory(
-				selectQry.buildWithScrollCursor(getConnection(context)), //
-				factory);
-		DBPage pg = pf.getPage(count, 1);
-		return pg;
-	} 
-    @Override
-	public IDBResultSet selectBy(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, 
-			final int maxPageRecordCount, final int currPageNO) throws Throwable {
-		PrimaryTable pTable = getBaseSelectSQL(context, table);
-		String pTableAlias = pTable.getFirstTableAlias();
-		// 
-		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
-//		String sCoundSQL; // NOTICE 可能是联立SQL无法取count(id)
-////		Id id = table.getId();
-////		if (id!=null) {
-////			sCoundSQL = "select count(*) from " + pTable.getFormSQL();
-////		} else {
-//			sCoundSQL = "select count(*) from " + pTable.getFormSQL();
-////		}
-		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC);
-		dealExtFilter(context, table, countQry, filter);
-		
-		String sFilter = calFilter(context, table, pTableAlias, filter, true);
-		Query selectQry = new Query(pTable.getSQL(), sFilter);
-		dealExtFilter(context, table, selectQry, filter);
-		
-		selectQry = dealWithSelectQuery(selectQry, currPageNO, maxPageRecordCount);
-		mainSQL = selectQry.getSQL(); // 4 log
-		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
-		SQLDBPageFactory pf = getPageFactory( //
-				countQry.build(getConnection(context)), //
-				selectQry.buildWithScrollCursor(getConnection(context)), //
-				factory);
-		DBPage pg = pf.getPage(maxPageRecordCount, currPageNO);
-		// 2008-10-09 zhouxw
-		// pg.setVisCompPage(getSPMVisCompMap(context, table));
-		return pg;
-	}
-	@Override
-	public long countBy(ITableDBContext context, Table table, IDBRecord record)
+	public long countBy(ITableDBContext context, Table table, IDBRecord queryRecord)
 			throws Throwable {
-		DebugUtil.debug("##countByRecord:" + record);
+		DebugUtil.debug("##countByRecord:" + queryRecord);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
-		//
-		ArrayList<CriticalItem> criticalItems = getCriticalItems(table, record, pTable, null, context);
-		// ArrayList<OrderByItem> orderByItems = getOrderByItems(queryForm, null);
-		//
+		// items
+		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
+//		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
-		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC,
-				criticalItems, null);
+		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
 		dealExtFilter(context, table, countQry, null);
 		mainSQL = countQry.getSQL(); // 4 log
-		//
+		// deal
 		ResultSet rs = null;
 		try {
 			rs = countQry.build(getConnection(context)).executeQuery();
@@ -919,26 +866,116 @@ class SQLRender implements ITableSQLRender {
 		return -1;
 	}
 	@Override
-	public IDBResultSet selectBy(final ITableDBContext context, Table table, IDBRecord queryForm,
-			ISQLRecordFactory factory, final int maxPageRecordCount,
-			final int currPageNO) throws Throwable {
-		DebugUtil.debug("##selectBy:" + queryForm);
+	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, 
+			long startRowNum, int count) throws Throwable {
+		DebugUtil.debug("##selectByFilterLimit:" + filter);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
-		// Items
-		ArrayList<CriticalItem> criticalItems = getCriticalItems(table, queryForm, pTable, null, context);
-		ArrayList<OrderByItem> orderByItems = getOrderByItems(queryForm, null);
-		//
+		// items
+//		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		// count
+		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
+		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC); // count不需要order
+		dealExtFilter(context, table, countQry, filter);
+		// main
+		String sFilter = calFilter(context, table, pTableAlias, filter, true);
+		Query selectQry = new Query(pTable.getSQL(), sFilter, orderByItems);
+		dealExtFilter(context, table, selectQry, filter);
+		// deal
+		selectQry = dealWithSelectQueryByLimit(selectQry, startRowNum, count);
+		mainSQL = selectQry.getSQL(); // 4 log
+		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
+		SQLDBPageFactory pf = getPageFactory(
+				countQry.build(getConnection(context)), //
+				selectQry.buildWithScrollCursor(getConnection(context)), //
+				factory);
+		DBPage pg = pf.getPage(count, 1);
+		return pg;
+	} 
+	@Override
+	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord queryRecord, ISQLRecordFactory factory, 
+			long startRowNum, int count) throws Throwable {
+		DebugUtil.debug("##selectByRecordLimit:" + queryRecord);
+		PrimaryTable pTable = getBaseSelectSQL(context, table);
+		String pTableAlias = pTable.getFirstTableAlias();
+		// items
+		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
-		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC,
-				criticalItems, null); // count不需要order
+		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC); // count不需要order
 		dealExtFilter(context, table, countQry, null);
-		//
+		// main
 		String sFilter = calFilter(context, table, pTableAlias, null, true);
-		Query selectQry = new Query(pTable.getSQL(), sFilter,
-				criticalItems, orderByItems);
+		Query selectQry = new Query(pTable.getSQL(), sFilter, criticalItems, orderByItems);
 		dealExtFilter(context, table, selectQry, null);
-		//
+		// deal
+		selectQry = dealWithSelectQueryByLimit(selectQry, startRowNum, count);
+		mainSQL = selectQry.getSQL(); // 4 log
+		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
+		SQLDBPageFactory pf = getPageFactory(
+				countQry.build(getConnection(context)), //
+				selectQry.buildWithScrollCursor(getConnection(context)), //
+				factory);
+		DBPage pg = pf.getPage(count, 1);
+		return pg;
+	} 
+    @Override
+	public IDBResultSet selectBy(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, 
+			final int maxPageRecordCount, final int currPageNO) throws Throwable {
+		DebugUtil.debug("##selectByFilter:" + filter);
+		PrimaryTable pTable = getBaseSelectSQL(context, table);
+		String pTableAlias = pTable.getFirstTableAlias();
+		// items
+//		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		// count
+//		String sCoundSQL; // NOTICE 可能是联立SQL无法取count(id)
+////		Id id = table.getId();
+////		if (id!=null) {
+////			sCoundSQL = "select count(*) from " + pTable.getFormSQL();
+////		} else {
+//			sCoundSQL = "select count(*) from " + pTable.getFormSQL();
+////		}
+		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
+		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC); // count不需要order
+		dealExtFilter(context, table, countQry, filter);
+		// main
+		String sFilter = calFilter(context, table, pTableAlias, filter, true);
+		Query selectQry = new Query(pTable.getSQL(), sFilter, orderByItems);
+		dealExtFilter(context, table, selectQry, filter);
+		// deal
+		selectQry = dealWithSelectQuery(selectQry, currPageNO, maxPageRecordCount);
+		mainSQL = selectQry.getSQL(); // 4 log
+		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
+		SQLDBPageFactory pf = getPageFactory( //
+				countQry.build(getConnection(context)), //
+				selectQry.buildWithScrollCursor(getConnection(context)), //
+				factory);
+		DBPage pg = pf.getPage(maxPageRecordCount, currPageNO);
+		// 2008-10-09 zhouxw
+		// pg.setVisCompPage(getSPMVisCompMap(context, table));
+		return pg;
+	}
+	@Override
+	public IDBResultSet selectBy(final ITableDBContext context, Table table, IDBRecord queryRecord, ISQLRecordFactory factory, 
+			final int maxPageRecordCount, final int currPageNO) throws Throwable {
+		DebugUtil.debug("##selectByRecord:" + queryRecord);
+		PrimaryTable pTable = getBaseSelectSQL(context, table);
+		String pTableAlias = pTable.getFirstTableAlias();
+		// items
+		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		// count
+		String sFilterC = calFilter(context, table, pTableAlias, null, false);
+		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
+		dealExtFilter(context, table, countQry, null);
+		// main
+		String sFilter = calFilter(context, table, pTableAlias, null, true);
+		Query selectQry = new Query(pTable.getSQL(), sFilter, criticalItems, orderByItems);
+		dealExtFilter(context, table, selectQry, null);
+		// deal
 		selectQry = dealWithSelectQuery(selectQry, currPageNO, maxPageRecordCount);
 		mainSQL = selectQry.getSQL(); // 4 log
 		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
@@ -957,11 +994,14 @@ class SQLRender implements ITableSQLRender {
 		DebugUtil.debug("##loopByFilter:" + filter);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
-		// 
+		// items
+//		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		// main
 		String sFilter = calFilter(context, table, pTableAlias, filter, true);
-		Query selectQry = new Query(pTable.getSQL(), sFilter);
+		Query selectQry = new Query(pTable.getSQL(), sFilter, orderByItems);
 		dealExtFilter(context, table, selectQry, filter);
-		//
+		// deal
 		long recordCount = this.countBy(context, table, filter);
 		int currPageNO = 1;
 		int maxPageRecordCount = DBPage.MAXCOUNTPERQUERY;
@@ -971,36 +1011,36 @@ class SQLRender implements ITableSQLRender {
 			selectQry = dealWithSelectQuery(selectQry, currPageNO, maxPageRecordCount); // NOTICE for wrapSQL
 			mainSQL = selectQry.getSQL(); // 4 log
 			// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
-			SQLDBPageFactory pf = getPageFactory(null, selectQry.buildWithScrollCursor(getConnection(context)), factory);
+			SQLDBPageFactory pf = getPageFactory(
+					selectQry.buildWithScrollCursor(getConnection(context)), 
+					factory);
 			pf.dealPage(maxPageRecordCount, currPageNO, callback);
 		}
 	}
 	@Override
-	public void loopBy(ITableDBContext context, Table table, IDBRecord record,
+	public void loopBy(ITableDBContext context, Table table, IDBRecord queryRecord,
 			ISQLRecordFactory factory, final IDBRecordCallBack callback) throws Throwable {
-		DebugUtil.debug("##loopByRecord:" + record);
-		// try {
+		DebugUtil.debug("##loopByRecord:" + queryRecord);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
-		// Items
-		ArrayList<CriticalItem> criticalItems = getCriticalItems(table, record, pTable, null, context);
-		ArrayList<OrderByItem> orderByItems = getOrderByItems(record, null); // count不需要order
-		// 
+		// items
+		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		// main
 		String sFilter = calFilter(context, table, pTableAlias, null, true);
 		Query selectQry = new Query(pTable.getSQL(), sFilter, criticalItems, orderByItems);
 		dealExtFilter(context, table, selectQry, null);
-		//
-		long recordCount = this.countBy(context, table, record);
+		// deal
+		long recordCount = this.countBy(context, table, queryRecord);
 		int currPageNO = 1;
 		int maxPageRecordCount = DBPage.MAXCOUNTPERQUERY;
 		int totalPage = VarUtil.toInt(recordCount / maxPageRecordCount + (recordCount % maxPageRecordCount > 0 ? 1 : 0));
 		for (; currPageNO <= totalPage; currPageNO++) {
 			selectQry.clearListener();
 			selectQry = dealWithSelectQuery(selectQry, currPageNO, maxPageRecordCount); // NOTICE for wrapSQL
-			mainSQL = selectQry.getSQL();  // 4 log
+			mainSQL = selectQry.getSQL(); // 4 log
 			// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 			SQLDBPageFactory pf = getPageFactory(
-					null, 
 					selectQry.buildWithScrollCursor(getConnection(context)), 
 					factory);
 			pf.dealPage(maxPageRecordCount, currPageNO, callback);
@@ -1010,15 +1050,15 @@ class SQLRender implements ITableSQLRender {
 	public PreparedStatement getSelectPreparedStatement(ITableDBContext context, Table table, String id) throws Throwable {
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
-		//
+		// main
 		mainSQL = pTable.getSQL();
 		mainSQL += " where " + pTableAlias + "." + table.getId().getName() + "=? ";
-		//
 		DebugUtil.debug(">selectByPK(Table=" + table.getName() + ",ID=" + id + "):" + mainSQL);
-		//
+		// deal
 		PreparedStatement ps = null;
 		ps = getConnection(context).prepareStatement(mainSQL);
-		// ps.setInt(1,id);
+		//ps.setInt(1,id);
+		//ps.setObject(1, id);
 		ps.setString(1, id);
 		return ps;
 	}
@@ -1036,14 +1076,7 @@ class SQLRender implements ITableSQLRender {
 	private Connection getConnection(ITableDBContext context, boolean openTrans) throws Throwable {
 		return ((SQLTableDBManager)context.getDBM()).getConnection(openTrans);
 	}
-//	/**
-//	 * @deprecated 
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see com.haiyan.genmis.db.SQLRender#findAllFromTopLevelPreStat(
-//	 *      com.haiyan.genmis.castorgen.Table,
-//	 *      com.haiyan.genmis.core.IContext)
-//	 */
+//  @Deprecated 
 //	public PreparedStatement findAllFromTopLevelPreStat(ITableContext context, Table table) throws Throwable {
 //		// try {
 //		PrimaryTable pTable = getBaseSelectSQL(context, table);
@@ -1063,14 +1096,7 @@ class SQLRender implements ITableSQLRender {
 //		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 //		return getConnection(context).prepareStatement(mainSQL);
 //	}
-//	/**
-//	 * @deprecated
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see com.haiyan.genmis.db.SQLRender#findChildrenByPIDPreStat(
-//	 *      com.haiyan.genmis.castorgen.Table, java.lang.String,
-//	 *      com.haiyan.genmis.core.IContext)
-//	 */
+//  @Deprecated 
 //	public PreparedStatement findChildrenByPIDPreStat(ITableContext context, Table table, String pID) throws Throwable {
 //		// try {
 //		Field parentField = ConfigUtil.searchChildTableRefField(table, table);
@@ -1101,14 +1127,7 @@ class SQLRender implements ITableSQLRender {
 //		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 //		return getConnection(context).prepareStatement(mainSQL);
 //	}
-//	/**
-//	 * @deprecated 
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see com.haiyan.genmis.db.SQLRender#findXLoadByPIDPreStat(
-//	 *      com.haiyan.genmis.castorgen.Table, java.lang.String,
-//	 *      java.lang.String, com.haiyan.genmis.core.IContext)
-//	 */
+//  @Deprecated 
 //	public PreparedStatement findXLoadByPIDPreStat(ITableContext context, Table table, String pID,
 //			String showFields) throws Throwable {
 //		// try {
@@ -1139,16 +1158,7 @@ class SQLRender implements ITableSQLRender {
 //		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 //		return getConnection(context).prepareStatement(mainSQL);
 //	}
-//
-//	/**
-//	 * @deprecated 
-//	 * (non-Javadoc)
-//	 * 
-//	 * @see com.haiyan.genmis.db.SQLRender#findXLoadPIDsPreStat(
-//	 *      com.haiyan.genmis.castorgen.Table,
-//	 *      com.haiyan.genmis.castorgen.Field,
-//	 *      com.haiyan.genmis.core.IContext)
-//	 */
+//  @Deprecated 
 //	public PreparedStatement findXLoadPIDsPreStat(ITableContext context, Table table,
 //			Field parentField) throws Throwable {
 //		// try {
@@ -1175,14 +1185,7 @@ class SQLRender implements ITableSQLRender {
 //		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 //		return getConnection(context).prepareStatement(mainSQL);
 //	}
-//
-//	/**
-//	 * @param table
-//	 * @param tableAlias
-//	 * @param context
-//	 * @return String
-//	 * @throws Throwable
-//	 */
+//  @Deprecated 
 //	private final String getQueryTreeExtendFilter(ITableContext context, Table table, String tableAlias) throws Throwable {
 //		if (context == null)
 //			return "";
@@ -1209,7 +1212,6 @@ class SQLRender implements ITableSQLRender {
 //		}
 //		return result;
 //	}
-
 	/**
 	 * @param table
 	 * @param pTableAlias
@@ -1250,17 +1252,17 @@ class SQLRender implements ITableSQLRender {
 	private final static String getPluginQueryFilter(ITableDBContext context, Table table, String tableAlias, boolean hasOrderBy)
 			throws Throwable {
 		String result = "";
-		// extend filter
-		if (context != null) {
-			SQLDBFilter extendFilter = (SQLDBFilter)context.getAttribute("__extendFilter." + table.getName());
-			if (extendFilter != null) {
-				int s = result.lastIndexOf("order by");
-				if (s >= 0) { // 补充过滤
-					result = result.substring(0, s) + extendFilter.getSql() + result.substring(s);
-				} else
-					result += extendFilter.getSql();
-			}
-		}
+//		// extend filter
+//		if (context != null) {
+//			SQLDBFilter extendFilter = (SQLDBFilter)context.getAttribute("__extendFilter." + table.getName());
+//			if (extendFilter != null) {
+//				int s = result.lastIndexOf("order by");
+//				if (s >= 0) { // 补充过滤
+//					result = result.substring(0, s) + extendFilter.getSql() + result.substring(s);
+//				} else
+//					result += extendFilter.getSql();
+//			}
+//		}
 		// getPluginQueryFilter
 		PluggedFilter[] filters = SQLDBFilterFactory.getQueryFilter(context, table, tableAlias);
 		if (filters != null) {

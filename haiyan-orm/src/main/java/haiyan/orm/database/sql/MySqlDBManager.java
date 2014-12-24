@@ -28,11 +28,11 @@ import java.util.ArrayList;
  * 
  * @author zhouxw
  */
-class MySqlDBManager extends SQLTableDBManager {
+public class MySqlDBManager extends SQLTableDBManager {
     /**
      * @param conn
      */
-    MySqlDBManager(ISQLDatabase db) {
+    protected MySqlDBManager(ISQLDatabase db) {
         super(db);
     }
     @Override

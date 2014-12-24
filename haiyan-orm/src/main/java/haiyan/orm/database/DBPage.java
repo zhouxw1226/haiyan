@@ -23,7 +23,7 @@ public class DBPage implements Serializable, IDBResultSet {
 	public static transient int MAXNUMPERPAGE = 100;
 	private int maxPageRecordCount = MAXNUMPERPAGE;
 	private int currPageNO = 1;
-	private int totalRecordCount = 0;
+	private long totalRecordCount = 0;
 	private String tableName;
 	private List<IDBRecord> records = null; // new PageList<IRecord>();
 	public DBPage() {
@@ -138,7 +138,7 @@ public class DBPage implements Serializable, IDBResultSet {
 	 * 
 	 * @return int
 	 */
-	public int getTotalRecordCount() {
+	public long getTotalRecordCount() {
 		if (this.totalRecordCount==0&&this.records.size()>0) // 临时列表大小
 			return this.records.size();
 		return this.totalRecordCount; // db设置的值
@@ -148,7 +148,7 @@ public class DBPage implements Serializable, IDBResultSet {
 	 * 
 	 * @param i
 	 */
-	public void setTotalRecordCount(int i) {
+	public void setTotalRecordCount(long i) {
 		this.totalRecordCount = i;
 	}
 	/**
@@ -160,8 +160,8 @@ public class DBPage implements Serializable, IDBResultSet {
 		if (this.maxPageRecordCount == 0) {
 			return 0;
 		}
-		int pageCount = this.getTotalRecordCount() / this.maxPageRecordCount;
-		int temp = this.getTotalRecordCount() % this.maxPageRecordCount;
+		int pageCount = (int)(this.getTotalRecordCount() / this.maxPageRecordCount);
+		int temp = (int)(this.getTotalRecordCount() % this.maxPageRecordCount);
 		if (temp > 0) {
 			pageCount += 1;
 		}
@@ -239,7 +239,6 @@ public class DBPage implements Serializable, IDBResultSet {
 			return null;
 		return this.getRecord(activeIndex);
 	}
-
 }
 ///**
 //* @param jsonArray

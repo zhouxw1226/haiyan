@@ -38,7 +38,18 @@ public class Query {
 		this.sqlBody = sqlMain;
 		this.sqlFilter = sqlFilter;
 	}
-	
+	/**
+	 * @param sqlMain
+	 * @param sqlFilter
+	 * @param orderByItems
+	 */
+	public Query(String sqlMain, String sqlFilter, ArrayList<OrderByItem> orderByItems) {
+		this.sqlBody = sqlMain;
+		this.sqlFilter = sqlFilter;
+		if (orderByItems != null) {
+			this.orderByItems=orderByItems;
+		}
+	}
 	/**
 	 * @param sqlMain
 	 * @param sqlFilter
@@ -55,7 +66,6 @@ public class Query {
 			this.orderByItems=orderByItems;
 		}
 	}
-
 //	/**
 //	 * @param sqlMain
 //	 *            sql test1.a,test2.b from test1,test2 where test1.ID=test2.xxID
@@ -77,14 +87,12 @@ public class Query {
 //			}
 //		}
 //	}
-	
 	/**
 	 * @param f
 	 */
 	public void addFilter(IDBFilter f) {
 		this.filters.add(f);
 	}
-
 	/**
 	 * @param items
 	 * @return ArrayList
@@ -98,7 +106,6 @@ public class Query {
 		}
 		return validItems;
 	}
-
 	/**
 	 * 
 	 * @param ps
@@ -121,7 +128,6 @@ public class Query {
 			((QueryListener) listeners.get(i)).setSelectPS(ps, number);
 		}
 	}
-
 	/**
 	 * @param sql
 	 * @return String
@@ -155,7 +161,6 @@ public class Query {
 		}
 		return sql;
 	}
-
 	/**
 	 * @param con
 	 * @return PreparedStatement
@@ -165,7 +170,6 @@ public class Query {
 			throws SQLException {
 		return build(con, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 	}
-
 	/**
 	 * @param con
 	 * @param resultSetType
@@ -183,7 +187,6 @@ public class Query {
 		setValue(ps);
 		return ps;
 	}
-
 	/**
 	 * for count(*)
 	 * 
@@ -201,21 +204,18 @@ public class Query {
 		setValue(ps);
 		return ps;
 	}
-
 	/**
 	 * @param ql
 	 */
 	public void addListener(QueryListener ql) {
 		listeners.add(ql);
 	}
-
 	/**
 	 * 
 	 */
 	public void clearListener() {
 		listeners.clear();
 	}
-
 	/**
 	 * @return String
 	 */
@@ -268,7 +268,6 @@ public class Query {
 		}
 		return sql.toString();
 	}
-
 	/**
 	 * sqlBody
 	 * 
@@ -277,7 +276,6 @@ public class Query {
 	public String getSqlBody() {
 		return this.sqlBody;
 	}
-
 	/**
 	 * @param sqlBody
 	 *            The sqlBody to set
@@ -285,5 +283,4 @@ public class Query {
 	public void setSqlBody(String sqlBody) {
 		this.sqlBody = sqlBody;
 	}
-
 }

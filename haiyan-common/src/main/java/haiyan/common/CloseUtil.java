@@ -10,6 +10,14 @@ import javax.naming.Context;
 
 public class CloseUtil {
 
+//	public static void close(AutoCloseable c) {
+//		if (c != null)
+//			try {
+//				c.close();
+//			} catch (Throwable ignore) {
+//			}
+//	}
+
 	public static final void close(Closeable c) {
 		if (c != null)
 			try {
