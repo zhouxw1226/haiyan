@@ -85,6 +85,9 @@ public class PathUtil {
 		return getHome()+File.separator+"WEB-INF";
 	}
     private static String HOME = null;
+    public static final Properties getEnvVars() throws Throwable {
+    	return ReadEnv.getEnvVars();
+    }
     /**
      * @return
      */

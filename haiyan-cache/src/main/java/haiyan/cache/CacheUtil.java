@@ -16,6 +16,9 @@ import java.util.Map;
  */
 public class CacheUtil {
 	private static IDataCache CACHE;
+	public static final void setDataCache(IDataCache c) {
+		CACHE = c;
+	}
 	public static final IDataCache getDataCache() {
 		if (CACHE == null)
 			synchronized (CacheUtil.class) {
@@ -36,9 +39,6 @@ public class CacheUtil {
 				}
 			}
 		return CACHE;
-	}
-	public static final void setDataCache(IDataCache c) {
-		CACHE = c;
 	}
 	public static Object setData(String tbl, Object id, Object form) {
 		return getDataCache().setData(tbl, id, form);
@@ -61,28 +61,28 @@ public class CacheUtil {
 	public static void clearData(String key) {
 		getDataCache().clearData(key);
 	}
-	// -------------------- list opr --------------------//
-	public static Object setListData(String cacheID, Object id, Object o) {
-		return getDataCache().setLocalData(cacheID, id, o);
-	}
-	public static Object getListData(String cacheID, Object id) {
-		return getDataCache().getLocalData(cacheID, id);
-	}
-	public static boolean addListData(String cacheID, Object o) {
-		return getDataCache().addListData(cacheID, o);
-	}
-	public static boolean removeListData(String cacheID, Object o) {
-		return getDataCache().removeListData(cacheID, o);
-	}
-	public static int getDataSize(String cacheID) {
-		return getDataCache().getDataSize(cacheID);
-	}
-	public static int getIndexOf(String cacheID, Object o) {
-		return getDataCache().getIndexOf(cacheID, o);
-	}
-	public static int getLastIndexOf(String cacheID, Object o) {
-		return getDataCache().getLastIndexOf(cacheID, o);
-	}
+//	// -------------------- list opr --------------------//
+//	public static Object setListData(String cacheID, Object id, Object o) {
+//		return getDataCache().setLocalData(cacheID, id, o);
+//	}
+//	public static Object getListData(String cacheID, Object id) {
+//		return getDataCache().getLocalData(cacheID, id);
+//	}
+//	public static boolean addListData(String cacheID, Object o) {
+//		return getDataCache().addListData(cacheID, o);
+//	}
+//	public static boolean removeListData(String cacheID, Object o) {
+//		return getDataCache().removeListData(cacheID, o);
+//	}
+//	public static int getDataSize(String cacheID) {
+//		return getDataCache().getDataSize(cacheID);
+//	}
+//	public static int getIndexOf(String cacheID, Object o) {
+//		return getDataCache().getIndexOf(cacheID, o);
+//	}
+//	public static int getLastIndexOf(String cacheID, Object o) {
+//		return getDataCache().getLastIndexOf(cacheID, o);
+//	}
 	// -------------------- table --------------------//
 	private static Map<String,ITableConfig> TABLE_CACHE = new HashMap<String,ITableConfig>();
 	public static void setTable(String tbl, ITableConfig table) {

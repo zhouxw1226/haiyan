@@ -18,12 +18,12 @@ public interface IDataCache {
 	Object getData(String cacheID, Object key); // 获取缓存（如果本地缓存不存在获取集群状态）
 	Object updateData(String cacheID, Object key, Object ele); // 更新缓存（commit->同时更新集群状态）
 	Object deleteData(String cacheID, Object key); // 删除记录（commit->同时更新集群状态）
-	boolean addListData(String cacheID, Object ele); // 增加临时列表记录 session beans
-	boolean removeListData(String cacheID, Object key); // 删除临时列表记录 session beans
+//	boolean addListData(String cacheID, Object ele); // 增加临时列表记录 session beans
+//	boolean removeListData(String cacheID, Object key); // 删除临时列表记录 session beans
 	void clearData(String cacheID); // 清空本地缓存
-	int getDataSize(String cacheID); // 获取临时列表对象 session beans‘s size
-	int getIndexOf(String key, Object o); // 获取临时列表对象索引
-	int getLastIndexOf(String key, Object o); // 获取临时列表对象最后索引
+//	int getDataSize(String cacheID); // 获取临时列表对象 session beans‘s size
+//	int getIndexOf(String key, Object o); // 获取临时列表对象索引
+//	int getLastIndexOf(String key, Object o); // 获取临时列表对象最后索引
 	// ------------------------------------ //
 	ITableConfig setTable(String sKey, ITableConfig table);
 	ITableConfig getTable(String sKey);

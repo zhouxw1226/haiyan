@@ -12,8 +12,6 @@ import haiyan.common.intf.session.IUser;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -133,12 +131,12 @@ public class EHDataCache extends AbstractDataCache {
     private int getSize(Ehcache cache) {
         return cache.getDiskStoreSize();
     }
-    private Object getObjectValue(Ehcache cache, Object key) {
-        Element ele = cache.get(key);
-        if (ele != null)
-            return ele.getObjectValue();
-        return null;
-    }
+//    private Object getObjectValue(Ehcache cache, Object key) {
+//        Element ele = cache.get(key);
+//        if (ele != null)
+//            return ele.getObjectValue();
+//        return null;
+//    }
     private Object getValue(Ehcache cache, Object key) {
         try {
             Element ele = cache.get(key);
@@ -174,16 +172,6 @@ public class EHDataCache extends AbstractDataCache {
 	        		manager.addCache(key);
 	        }
         Cache cache = manager.getCache(key);
-//        if (cache == null) {
-//            cache = manager.getCache(key);
-            // // (String name, int maxElementsInMemory, boolean overflowToDisk,
-            // // boolean eternal, long timeToLiveSeconds, long
-            // timeToIdleSeconds)
-            // cache = new Cache("Haiyan.TABLES", maxElementsInMemory,
-            // overflowToDisk, eternal, timeToLiveSeconds,
-            // timeToIdleSeconds);
-            // manager.addCache(cache);
-//        }
         return cache;
     }
     // for local cache
@@ -202,7 +190,6 @@ public class EHDataCache extends AbstractDataCache {
         Element ele = cache.get(sKey);
         if (ele == null)
             return null;
-        // Serializable
         ITableConfig table = (ITableConfig) ele.getValue();
         return table;
     }
@@ -241,16 +228,6 @@ public class EHDataCache extends AbstractDataCache {
 	        		manager.addCache(key);
 	        }
         Cache cache = manager.getCache(key);
-//        if (cache == null) {
-//            cache = manager.getCache(key);
-            // // (String name, int maxElementsInMemory, boolean overflowToDisk,
-            // // boolean eternal, long timeToLiveSeconds, long
-            // timeToIdleSeconds)
-            // cache = new Cache("Haiyan.BILLS", maxElementsInMemory,
-            // overflowToDisk, eternal, timeToLiveSeconds,
-            // timeToIdleSeconds);
-            // manager.addCache(cache);
-//        }
         return cache;
     }
     // for local cache
@@ -291,10 +268,6 @@ public class EHDataCache extends AbstractDataCache {
                 continue;
             ITableConfig bill = (ITableConfig) obj;
             list.add(bill.getName());
-            // Element ele = cache.get(sID);
-            // // Serializable
-            // ITable table = (ITable) ele.getValue();
-            // list.add(table.getName());
         }
         return list.toArray(new String[0]);
     }
@@ -308,29 +281,12 @@ public class EHDataCache extends AbstractDataCache {
 	        		manager.addCache(key);
 	        }
         Cache cache = manager.getCache(key);
-//        if (cache == null) {
-//            cache = manager.getCache(key);
-            // // (String name, int maxElementsInMemory, boolean overflowToDisk,
-            // // boolean eternal, long timeToLiveSeconds, long
-            // timeToIdleSeconds)
-            // cache = new Cache("Haiyan.USERS", maxElementsInMemory,
-            // overflowToDisk, !eternal, timeToLiveSeconds,
-            // timeToIdleSeconds);
-            // manager.addCache(cache);
-//        }
         return cache;
     }
     @Override
     public IUser setUser(String sID, IUser user) {
-        // System.out.println(manager.getDiskStorePath());
         Ehcache cache = getUserCache();
-//        for (int i = 0; i < 1001; i++) {
         cache.put(new Element(sID, user));
-//        }
-        // long elementsInMemory = getSize(cache);
-        // DebugUtil.debug(">cache.size=" + elementsInMemory);
-        // //
-        // manager.shutdown();
         cache.flush();
         return user;
     }
@@ -342,12 +298,6 @@ public class EHDataCache extends AbstractDataCache {
             return null;
         IUser user = (IUser) obj;
         return user;
-        // Element ele = cache.get(sID);
-        // if (ele == null)
-        // return null;
-        // // Serializable
-        // IUser user = (IUser) ele.getValue();
-        // return user;
     }
     @Override
     public boolean removeUser(String sID) {
@@ -360,14 +310,6 @@ public class EHDataCache extends AbstractDataCache {
 	public boolean containsUser(String sessionId) {
 		return getUser(sessionId)!=null;
 	}
-//    public boolean containsUser(String sessionId) {
-//        Ehcache cache = getUserCache();
-//        for (Object sID : cache.getKeys()) {
-//            if (sessionId.equals(sID))
-//                return true;
-//        }
-//        return false;
-//    }
     /** 
      * 
      * 遍历这么大量数据 失去了Cache的意义
@@ -383,13 +325,6 @@ public class EHDataCache extends AbstractDataCache {
             IUser user = (IUser) obj;
             if (userID.equals(user.getId()))
                 return user;
-            // Element ele = cache.get(sID);
-            // if (ele == null)
-            // continue;
-            // // Serializable
-            // IUser user = (IUser) ele.getValue();
-            // if (userID.equals(user.getId()))
-            // return user;
         }
         return null;
     }
@@ -407,13 +342,6 @@ public class EHDataCache extends AbstractDataCache {
             IUser user = (IUser) obj;
             if (userCode.equals(user.getCode()))
                 return user;
-            // Element ele = cache.get(sID);
-            // if (ele == null)
-            // continue;
-            // // Serializable
-            // IUser user = (IUser) ele.getValue();
-            // if (userCode.equals(user.getCode()))
-            // return user;
         }
         return null;
     }
@@ -434,12 +362,6 @@ public class EHDataCache extends AbstractDataCache {
             list.add(user);
             if (list.size() > 2000) // NOTICE 只允许显示开头2000个用户
                 break;
-            // Element ele = cache.get(sID);
-            // // Serializable
-            // IUser user = (IUser) ele.getValue();
-            // list.add(user);
-            // if (list.size() > 2000) // 只允许显示开头2000个用户
-            // break;
         }
         return list.toArray(new IUser[0]);
     }
@@ -448,8 +370,8 @@ public class EHDataCache extends AbstractDataCache {
         return getSize(cache);
     }
     // --------------------- data cache --------------------- //
-    private Ehcache getDataCache(String cacheID) {
-        String key = "Haiyan.DATAS." + cacheID;
+    private Ehcache getDataCache() {
+        String key = "Haiyan.DATAS";
         CacheManager manager = getManager();
     	if (!manager.cacheExists(key))
 	        synchronized (manager) {
@@ -457,22 +379,12 @@ public class EHDataCache extends AbstractDataCache {
 	        		manager.addCache(key);
 	        }
         Cache cache = manager.getCache(key);
-//        if (cache == null) {
-//            cache = manager.getCache(key);
-            // // (String name, int maxElementsInMemory, boolean overflowToDisk,
-            // // boolean eternal, long timeToLiveSeconds, long
-            // timeToIdleSeconds)
-            // cache = new Cache("Haiyan.DATAS." + ID, maxElementsInMemory,
-            // overflowToDisk, !eternal, timeToLiveSeconds,
-            // timeToIdleSeconds);
-            // manager.addCache(cache);
-//        }
         return cache;
     }
     @Override
     public Object setLocalData(String cacheID, Object key, Object ele) {
-        Ehcache cache = getDataCache(cacheID);
-        cache.put(new Element(key, ele));
+        Ehcache cache = getDataCache();
+        cache.put(new Element(key+"@"+cacheID, ele));
         cache.flush();
         return ele;
     }
@@ -486,8 +398,8 @@ public class EHDataCache extends AbstractDataCache {
     }
     @Override
     public Object getLocalData(String cacheID, Object key) {
-    	Ehcache cache = getDataCache(cacheID);
-        Element ele = cache.get(key);
+    	Ehcache cache = getDataCache();
+        Element ele = cache.get(key+"@"+cacheID);
         if (ele != null)
             return ele.getObjectValue();
         return null;
@@ -501,152 +413,153 @@ public class EHDataCache extends AbstractDataCache {
         Element ele = cache.get(key);
         if (ele != null) {
             obj = ele.getObjectValue();
-            cache.remove(key); // cache.remove(ele);
+            cache.remove(key);
         }
         cache.flush();
         return obj;
     }
     @Override
 	public Object removeLocalData(String cacheID, Object key) {
-        Ehcache cache = getDataCache(cacheID);
-        return removeLocalData(cache, key);
+        Ehcache cache = getDataCache();
+        return removeLocalData(cache, key+"@"+cacheID);
     }
 	@Override
 	public Object deleteData(String cacheID, Object key) {
         return removeLocalData(cacheID, key);
     }
     @Override
+    @Deprecated
     public void clearData(String cacheID) {
-        Ehcache cache = getDataCache(cacheID);
-        cache.removeAll();
-        cache.flush();
+//        Ehcache cache = getDataCache();
+//        cache.removeAll();
+//        cache.flush();
     }
-    // -------------------------------------------------------------------------- //
-    private Ehcache getListCache(String cacheID) {
-        String key = "Haiyan.LIST." + cacheID;
-        CacheManager manager = getManager();
-    	if (!manager.cacheExists(key))
-	        synchronized (manager) {
-	        	if (!manager.cacheExists(key))
-	        		manager.addCache(key);
-	        }
-        Cache cache = manager.getCache(key);
-//        if (cache == null) {
-//            cache = manager.getCache(key);
-            // // (String name, int maxElementsInMemory, boolean overflowToDisk,
-            // // boolean eternal, long timeToLiveSeconds, long
-            // timeToIdleSeconds)
-            // cache = new Cache("Haiyan.DATAS." + ID, maxElementsInMemory,
-            // overflowToDisk, !eternal, timeToLiveSeconds,
-            // timeToIdleSeconds);
-            // manager.addCache(cache);
+//    // -------------------------------------------------------------------------- //
+//    private Ehcache getListCache() {
+//        String key = "Haiyan.LIST";
+//        CacheManager manager = getManager();
+//    	if (!manager.cacheExists(key))
+//	        synchronized (manager) {
+//	        	if (!manager.cacheExists(key))
+//	        		manager.addCache(key);
+//	        }
+//        Cache cache = manager.getCache(key);
+////        if (cache == null) {
+////            cache = manager.getCache(key);
+//            // // (String name, int maxElementsInMemory, boolean overflowToDisk,
+//            // // boolean eternal, long timeToLiveSeconds, long
+//            // timeToIdleSeconds)
+//            // cache = new Cache("Haiyan.DATAS." + ID, maxElementsInMemory,
+//            // overflowToDisk, !eternal, timeToLiveSeconds,
+//            // timeToIdleSeconds);
+//            // manager.addCache(cache);
+////        }
+//        return cache;
+//    }
+//	// for temp-local list 
+//	private boolean addListData(String cacheID, Collection<?> c) {
+//		Ehcache cache = getListCache();
+//		int size = getSize(cache);
+//		Iterator<?> iter = c.iterator();
+//		while (iter.hasNext()) {
+//			int i = size++;
+//			Object ele = iter.next();
+//			cache.put(new Element(i, ele));
+//		}
+//		cache.flush();
+//		return true;
+//	}
+//    // for temp-local list
+//	@Override
+//    public boolean addListData(String cacheID, Object ele) {
+//    	if (ele instanceof Collection)
+//    		return addListData(cacheID, (Collection<?>)ele);
+//        Ehcache cache = getListCache(cacheID);
+//        int i = getSize(cache);
+//        cache.put(new Element(i, ele));
+//        cache.flush();
+//        return true;
+//    }
+//    // for temp-local list
+//    @Override
+//    public int getDataSize(String cacheID) {
+//        Ehcache cache = getListCache(cacheID);
+//        return getSize(cache);
+//    }
+//    // for temp-local list
+//    @Override
+//    public int getIndexOf(String cacheID, Object o) {
+//        Ehcache cache = getListCache(cacheID);
+//        int size = getSize(cache);
+//        if (o == null) {
+//            for (int i = 0; i < size; i++) {
+//                Object obj = getObjectValue(cache, i);
+//                if (obj == null)
+//                    return i;
+//            }
+//        } else {
+//            for (int i = 0; i < size; i++) {
+//                Object obj = getObjectValue(cache, i);
+//                if (o.equals(obj))
+//                    return i;
+//            }
 //        }
-        return cache;
-    }
-	// for temp-local list 
-	private boolean addListData(String cacheID, Collection<?> c) {
-		Ehcache cache = getListCache(cacheID);
-		int size = getSize(cache);
-		Iterator<?> iter = c.iterator();
-		while (iter.hasNext()) {
-			int i = size++;
-			Object ele = iter.next();
-			cache.put(new Element(i, ele));
-		}
-		cache.flush();
-		return true;
-	}
-    // for temp-local list
-	@Override
-    public boolean addListData(String cacheID, Object ele) {
-    	if (ele instanceof Collection)
-    		return addListData(cacheID, (Collection<?>)ele);
-        Ehcache cache = getListCache(cacheID);
-        int i = getSize(cache);
-        cache.put(new Element(i, ele));
-        cache.flush();
-        return true;
-    }
-    // for temp-local list
-    @Override
-    public int getDataSize(String cacheID) {
-        Ehcache cache = getListCache(cacheID);
-        return getSize(cache);
-    }
-    // for temp-local list
-    @Override
-    public int getIndexOf(String cacheID, Object o) {
-        Ehcache cache = getListCache(cacheID);
-        int size = getSize(cache);
-        if (o == null) {
-            for (int i = 0; i < size; i++) {
-                Object obj = getObjectValue(cache, i);
-                if (obj == null)
-                    return i;
-            }
-        } else {
-            for (int i = 0; i < size; i++) {
-                Object obj = getObjectValue(cache, i);
-                if (o.equals(obj))
-                    return i;
-            }
-        }
-        return -1;
-    }
-    // for temp-local list
-    @Override
-    public int getLastIndexOf(String cacheID, Object o) {
-        Ehcache cache = getListCache(cacheID);
-        int size = getSize(cache);
-        if (o == null) {
-            for (int i = size - 1; i >= 0; i--) {
-                Object obj = getObjectValue(cache, i);
-                if (obj == null)
-                    return i;
-            }
-        } else {
-            for (int i = size - 1; i >= 0; i--) {
-                Object obj = getObjectValue(cache, i);
-                if (o.equals(obj))
-                    return i;
-            }
-        }
-        return -1;
-    }
-	@Override
-    public boolean removeListData(String cacheID, Object o) {
-        Ehcache cache = getListCache(cacheID);
-        int size = getSize(cache);
-        if (o == null) {
-            for (int i = 0; i < size; i++) {
-                // Element ele = cache.get(i);
-                // if (ele != null && ele.getObjectValue() == null) {
-                // // cache.remove(i);
-                // removeData(cache, i);
-                // return true;
-                // }
-                Object obj = getObjectValue(cache, i);
-                if (obj == null) {
-                	removeLocalData(cache, i);
-                    return true;
-                }
-            }
-        } else {
-            for (int i = 0; i < size; i++) {
-                // Element ele = cache.get(i);
-                // if (ele != null && o.equals(ele.getObjectValue())) {
-                // // cache.remove(i);
-                // removeData(cache, i);
-                // return true;
-                // }
-                Object obj = getObjectValue(cache, i);
-                if (o.equals(obj)) {
-                	removeLocalData(cache, i);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
+//        return -1;
+//    }
+//    // for temp-local list
+//    @Override
+//    public int getLastIndexOf(String cacheID, Object o) {
+//        Ehcache cache = getListCache(cacheID);
+//        int size = getSize(cache);
+//        if (o == null) {
+//            for (int i = size - 1; i >= 0; i--) {
+//                Object obj = getObjectValue(cache, i);
+//                if (obj == null)
+//                    return i;
+//            }
+//        } else {
+//            for (int i = size - 1; i >= 0; i--) {
+//                Object obj = getObjectValue(cache, i);
+//                if (o.equals(obj))
+//                    return i;
+//            }
+//        }
+//        return -1;
+//    }
+//	@Override
+//    public boolean removeListData(String cacheID, Object o) {
+//        Ehcache cache = getListCache(cacheID);
+//        int size = getSize(cache);
+//        if (o == null) {
+//            for (int i = 0; i < size; i++) {
+//                // Element ele = cache.get(i);
+//                // if (ele != null && ele.getObjectValue() == null) {
+//                // // cache.remove(i);
+//                // removeData(cache, i);
+//                // return true;
+//                // }
+//                Object obj = getObjectValue(cache, i);
+//                if (obj == null) {
+//                	removeLocalData(cache, i);
+//                    return true;
+//                }
+//            }
+//        } else {
+//            for (int i = 0; i < size; i++) {
+//                // Element ele = cache.get(i);
+//                // if (ele != null && o.equals(ele.getObjectValue())) {
+//                // // cache.remove(i);
+//                // removeData(cache, i);
+//                // return true;
+//                // }
+//                Object obj = getObjectValue(cache, i);
+//                if (o.equals(obj)) {
+//                	removeLocalData(cache, i);
+//                    return true;
+//                }
+//            }
+//        }
+//        return false;
+//    }
  
 }
