@@ -67,11 +67,11 @@ public class ConfigUtil {
 	}
     private static String[] tableKeys = null;
     /**
-     * dbtable对应的一些table
+     * 存放所有同db数据表的table对象
      */
     private static final Map<String, HashSet<String>> REALMAP = new HashMap<String, HashSet<String>>();
     /**
-     * table的外连usedstatus字段
+     * 存放table的外键关联的usedstatus字段对象
      */
     private static final Map<String, ArrayList<LinkField>> LINKMAP = new HashMap<String, ArrayList<LinkField>>();
     private static final HashSet<String> SYSMAPLIST = new HashSet<String>();

@@ -166,6 +166,7 @@ public class TestDBManager {
 				ITableDBManager dbm2 = (ITableDBManager)DBManagerFactory.createDBManager("ORACLE");
 				context.setDBM(dbm2); // auto close dbm
 				dbm2.loopBy(context, table, queryRow, callback);
+				CloseUtil.close(dbm2);
 			}
 		}finally{
 			CloseUtil.close(context);

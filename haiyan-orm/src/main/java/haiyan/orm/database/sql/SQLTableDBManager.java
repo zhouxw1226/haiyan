@@ -159,7 +159,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	}
 	@Override
 	public void commit() throws Throwable {
-		final IDBRecordCacheManager cacheMgr = DBRecordCacheFactory.getCacheManager(IDBRecordCacheManager.DBSESSION);
+		final IDBRecordCacheManager cacheMgr = DBRecordCacheFactory.getCacheManager(IDBRecordCacheManager.CONTEXT_SESSION);
 		try {
 			if (cacheMgr!=null)
 				cacheMgr.commit();
@@ -167,15 +167,17 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			if (cacheMgr!=null)
 				cacheMgr.clear();
 		}
-		if (this.isAlive() && !this.connection.getAutoCommit()) {
-			this.beforeCommit(); // for hsqldb
-			this.connection.commit();
-			//this.dbconn.setAutoCommit(true);
-			DebugUtil.debug(">----< dbm.commit.conn:" + this.connection.hashCode() 
-					+ "\tdbm.autoCommit:" + this.autoCommit);
+		if (this.isAlive()) {
+			if (!this.connection.getAutoCommit()) { // 事务不是自动提交
+				this.beforeCommit(); // for hsqldb
+				this.connection.commit(); // 主动提交
+				//this.dbconn.setAutoCommit(true);
+			}
+			DebugUtil.debug(">----< dbm.commit.connHash:" + this.connection.hashCode()
+					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		} else {
-			DebugUtil.debug(">----< dbm.commit.visual:" + this.hashCode()
-					+ "\tdbm.autoCommit:" + this.autoCommit);
+			DebugUtil.debug(">----< dbm.commit.visualHash:" + this.hashCode()
+					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
 		// 清理缓存
 		EventQueue.invokeLater(new Runnable() {
@@ -198,7 +200,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	}
 	@Override
 	public void rollback() throws Throwable {
-		final IDBRecordCacheManager cacheMgr = DBRecordCacheFactory.getCacheManager(IDBRecordCacheManager.DBSESSION);
+		final IDBRecordCacheManager cacheMgr = DBRecordCacheFactory.getCacheManager(IDBRecordCacheManager.CONTEXT_SESSION);
 		try {
 			if (cacheMgr!=null)
 				cacheMgr.rollback();
@@ -206,15 +208,17 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			if (cacheMgr!=null)
 				cacheMgr.clear();
 		}
-		if (this.isAlive() && !this.connection.getAutoCommit()) {
-			this.beforeRollback(); // for hsqldb
-			this.connection.rollback();
-			//this.dbconn.setAutoCommit(true);
-			DebugUtil.debug(">----< dbm.rollback.conn:" + this.connection.hashCode()
-					+ "\tdbm.autoCommit:" + this.autoCommit);
+		if (this.isAlive()) {
+			if (!this.connection.getAutoCommit()) { // 事务不是自动提交
+				this.beforeRollback(); // for hsqldb
+				this.connection.rollback(); // 主动回滚
+				//this.dbconn.setAutoCommit(true);
+			}
+			DebugUtil.debug(">----< dbm.rollback.connHash:" + this.connection.hashCode()
+					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		} else {
-			DebugUtil.debug(">----< dbm.rollback.visual:" + this.hashCode()
-					+ "\tdbm.autoCommit:" + this.autoCommit);
+			DebugUtil.debug(">----< dbm.rollback.visualHash:" + this.hashCode()
+					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
 //		// 清理缓存 回滚不清理缓存
 //		EventQueue.invokeLater(new Runnable() {
@@ -241,24 +245,34 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			ignore.printStackTrace();
 		}
 		this.clear(); // 已经处理了异常
-		int connHash = -1;
-		try {
-			if (this.isAlive()) {
-				connHash = this.connection.hashCode();
-				this.connection.close();
-			}
-			this.connection = null;
-		} catch (Throwable ignore) {
-			ignore.printStackTrace();
-		} finally {
-			if (connHash >= 0) {
-				SQLDatabase.connCount--;
-				DebugUtil.debug(">----< dbm.close.connHash:"+connHash+"\tdbm.connCount:"+SQLDatabase.connCount+"\n");
+		{ // close connection
+			int connHash = -1;
+			try {
+				if (this.isAlive()) {
+					connHash = this.connection.hashCode();
+					this.connection.close();
+				}
+				this.connection = null;
+			} catch (Throwable ignore) {
+				ignore.printStackTrace();
+			} finally {
+				if (connHash >= 0) {
+					SQLDatabase.connCount--;
+					DebugUtil.debug(">----< dbm.close.connHash:"+connHash
+							+"\tdbm.connCount:"+SQLDatabase.connCount+"\n");
+				}
 			}
 		}
 	}
 	@Override
 	public void clear() {
+		//LOCAL.remove();
+		try {
+			if (cacheMgr!=null)
+				cacheMgr.clear();
+		} catch (Throwable ex) {
+			DebugUtil.error(ex);
+		}
 		try {
 			if (this.dbClear != null)
 				this.dbClear.clean(); // clear cache blob object or etc
@@ -479,7 +493,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //	}
 //	// ----------------------------------------------------------//
 //	/**
-//	 * @deprecated 不推荐使用 可能这层数据过于庞大
+//	 * 不推荐使用 可能这层数据过于庞大
 //	 * 
 //	 * @param table
 //	 * @param pID
@@ -487,6 +501,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //	 * @return Collection
 //	 * @throws Throwable
 //	 */
+//	@Deprecated
 //	public ArrayList<IRecord> findChildrenByPID(Table table, String pID,
 //			ITableContext context, int... args) throws Throwable {
 //		PreparedStatement ps = null;
@@ -517,7 +532,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //		}
 //	}
 //	/**
-//	 * @deprecated 不推荐使用 查所有的子树数据过于庞大
+//	 * 不推荐使用 查所有的子树数据过于庞大
 //	 * 
 //	 * @param table
 //	 * @param pID
@@ -526,6 +541,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //	 * @return Collection
 //	 * @throws Throwable
 //	 */
+//	@Deprecated
 //	public ArrayList<IRecord> findAllByPID(Table table, String pID,
 //			ITableContext context, boolean recFlag, int... args) throws Throwable {
 //		ArrayList<IRecord> result = new ArrayList<IRecord>();
@@ -615,13 +631,14 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //		}
 //	}
 //	/**
-//	 * @deprecated 不推荐使用 查所有的树数据过于庞大
+//	 * 不推荐使用 查所有的树数据过于庞大
 //	 * 
 //	 * @param table
 //	 * @param context
 //	 * @return Collection
 //	 * @throws Throwable
 //	 */
+//	@Deprecated
 //	public ArrayList<IRecord> findAllFromTopLevel(Table table,
 //			ITableContext context, int... args) throws Throwable {
 //		// 全部查询的树结构只对小数据有效
@@ -696,15 +713,15 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //		}
 //		return result;
 //	}
-//
 //	/**
-//	 * @deprecated 不推荐使用 查所有的树数据过于庞大
+//	 * 不推荐使用 查所有的树数据过于庞大
 //	 * 
 //	 * @param table
 //	 * @param context
 //	 * @return Collection
 //	 * @throws Throwable
 //	 */
+//	@Deprecated
 //	public ArrayList<IRecord> findAllXNodesFromPID(final Table table,
 //			final ITableContext context, int... args) throws Throwable {
 //		long time = System.currentTimeMillis();
@@ -865,7 +882,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //		DebugUtil.debug(">findAllXNodesFromPID cost:" + (System.currentTimeMillis() - time) + "ms");
 //		return result;
 //	}
-//
 //	/**
 //	 * @param table
 //	 * @param context
@@ -874,7 +890,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //	 */
 //	private HashMap<String, String> pGetXLoadPIDSMap(Table table,
 //			ITableContext context, int... args) throws Throwable {
-//		//
 //		Field parentField = ConfigUtil.searchChildTableRefField(table, table);
 //		HashMap<String, String> pidsMap = new HashMap<String, String>();
 //		// ArrayList pids = new ArrayList();
@@ -883,7 +898,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //		PreparedStatement ps = null;
 //		ResultSet rs = null;
 //		try {
-//			//
 //			ps = getSQLDBTemplate().findXLoadPIDsPreStat(table, parentField, context);
 //			rs = ps.executeQuery();
 //			while (rs.next()) {
@@ -905,7 +919,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //		// return pids;
 //		return pidsMap;
 //	}
-//	
 //	/**
 //	 * @param SQL
 //	 * @param colNum
@@ -927,7 +940,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //			throw ex;
 //		}
 //	}
-//	
 //	/**
 //	 * @param SQL
 //	 * @param colNum
@@ -1068,7 +1080,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		// 要注意直接执行SQL语句的操作对缓冲数据的影响
 		String IDName = table.getId().getName();
 		String IDVal = (String)record.get(IDName);
-		IDBRecord oldRecord = this.select(context, table, IDVal, IDBRecordCacheManager.THREADSESSION);
+		IDBRecord oldRecord = this.select(context, table, IDVal, IDBRecordCacheManager.PERSIST_SESSION);
 		if (oldRecord!=null && oldRecord!=record) { // 同一个dbsession中可能是一个
 			int vOld = oldRecord.getVersion();
 			int vNow = record.getVersion();
@@ -1111,7 +1123,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //						DBTableManager.SET_MAPPING_TABLE_WHEN_CREATE);
 				// 2006-12-06
 				form.set(table.getId().getName(), newID);
-				this.updateCache(context, table, form, IDBRecordCacheManager.DBSESSION);
+				this.updateCache(context, table, form, IDBRecordCacheManager.CONTEXT_SESSION);
 				this.changeUsedStatus(context, table, form);
 			}
 			ps.executeBatch(); 
@@ -1166,7 +1178,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //			SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_CREATE);
 			// 2006-12-06
 			record.set(table.getId().getName(), newID);
-			this.updateCache(context, table, record, IDBRecordCacheManager.DBSESSION);
+			this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
 			this.changeUsedStatus(context, table, record);
 		} catch (SQLException ex) {
 			if (isDBCorrect(ex)) {
@@ -1224,7 +1236,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 				ps.addBatch();
 				SQLDBMappingManager.setMappingTableValue(context, table, form, newID, TableDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 //				SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
-				this.updateCache(context, table, form, IDBRecordCacheManager.DBSESSION);
+				this.updateCache(context, table, form, IDBRecordCacheManager.CONTEXT_SESSION);
 				this.changeUsedStatus(context, table, form);
 			}
 			ps.executeBatch(); 
@@ -1267,7 +1279,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 					TableDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 //			SQLDBOne2OneManager.setOne2OneTableValue(context, table, record, newID,
 //					DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
-			this.updateCache(context, table, record, IDBRecordCacheManager.DBSESSION);
+			this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
 			this.changeUsedStatus(context, table, record);
 		} catch (SQLException ex) {
 			if (isDBCorrect(ex)) {
@@ -1306,7 +1318,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			// return ps.executeUpdate();
 			boolean flag = ps.execute();
 			// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + getSQLDBTemplate().getSQL());
-			removeCache(context, table, ids, IDBRecordCacheManager.DBSESSION);
+			removeCache(context, table, ids, IDBRecordCacheManager.CONTEXT_SESSION);
 			return flag;
 		} catch (SQLException ex) {
 			if (isDBCorrect(ex)) {
@@ -1338,7 +1350,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	@Override
 	public IDBRecord select(ITableDBContext context, Table table, String id)
 			throws Throwable {
-		return select(context, table, id, IDBRecordCacheManager.DBSESSION);
+		return select(context, table, id, IDBRecordCacheManager.CONTEXT_SESSION);
 	}
 	/**
 	 * @param context
@@ -1355,6 +1367,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		if (record!=null) {
 //			// flush源数据集
 //			flushOreign(context, table, record, type);
+			DebugUtil.debug(">selectByPKFromCache(Table=" + table.getName() + ",ID=" + id + ",Type:" + type + ")");
 			return record;
 		}
 
@@ -1726,7 +1739,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 */
 	protected IDBRecord getRecordByRow(final ITableDBContext context,
             final Table table, final ResultSet rs) throws Throwable {
-	    return getRecordByRow(context, table, rs, IDBRecordCacheManager.DBSESSION);
+	    return getRecordByRow(context, table, rs, IDBRecordCacheManager.CONTEXT_SESSION);
 	}
 	/**
 	 * 对象-关系结构模式
@@ -1762,7 +1775,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 				@Override // 依赖映射
 				public void dealWithReferenceTable(Table table,
 						int tableIndex, Field field, Object[] globalVars) {
-					
 				}
 				@Override // 外键映射
 				public int dealWithDisplayField(Table table, int tableIndex,
@@ -1829,8 +1841,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 					IDBRecord record = (IDBRecord) globalVars[1];
 					ITableDBContext subContext = context;
 					try {
-						if (!StringUtil.isBlankOrNull(field.getDsn())) {
-							// 分布式应用不用context的dbm
+						if (!StringUtil.isBlankOrNull(field.getDsn())) { // 分布式应用不用context的dbm
 							subContext = DBContextFactory.createDBContext((TableDBContext)context);
 							subContext.setAttribute(DataConstant.PARAM_DSN, field.getDsn());
 						}
@@ -1840,21 +1851,17 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //							form = DBOne2OneManager.queryOne2OneTable(table, field, form, subContext);
 //						}
 						value = (String)record.get(field.getName());
-						// ////////////////////////////////////////////////////////////
+						if (StringUtil.isBlankOrNull(value))
+							return;
 						String resTableName = field.getReferenceTable();
-//						String resFieldName = field.getReferenceField();
+						if (StringUtil.isBlankOrNull(resTableName))
+							return;
 						String[] refShowRefFlds = ConfigUtil.getDisplayRefFields(field);
 						if (refShowRefFlds.length == 0)
 							return;
 						String resDisplayName = refShowRefFlds[0];
-						if (StringUtil.isBlankOrNull(resTableName))
-							return;
 						if (StringUtil.isBlankOrNull(resDisplayName))
 							return;
-						if (StringUtil.isBlankOrNull(value))
-							return;
-						// if ("".equals(value))
-						// return;
 						if (value.endsWith(DataConstant.SQL_VALUE_DIM))
 							value = value.substring(0, value.length() - 1);
 						if (value.startsWith(DataConstant.SQL_VALUE_DIM))
@@ -1864,7 +1871,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 						String[] associatedFields = ConfigUtil.getAssociatedFields(field);
 						Table resTable = ConfigUtil.getTable(resTableName);
 						if (field.getMultipleSelect()) {
-							// DebugUtil.debug(">Mapping.form:" + form);
 							DebugUtil.debug(">Mapping.findByFilter: name=" + field.getName() + ",value=" + value + ",loadType="+loadType);
 							if (value != null) {
 								String[] array = StringUtil.split(value, ",");
@@ -1873,10 +1879,10 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 								IDBRecord resForm = null;
 								Field assoField = null;
 								for (String id:array) {
-									if ("cache".equalsIgnoreCase(loadType))
-										resForm = getDBM(subContext).select(subContext, resTable, id, IDBRecordCacheManager.THREADSESSION);
-									else
-										resForm = getDBM(subContext).select(subContext, resTable, id);
+//									if ("app".equalsIgnoreCase(loadType))
+//										resForm = getDBM(subContext).select(subContext, resTable, id, IDBRecordCacheManager.APP_SESSION);
+//									else
+										resForm = getDBM(subContext).select(subContext, resTable, id); // CONTEXT_SESSION
 									if (resForm==null)
 										continue;
 									// 20081111 zhouxw
@@ -1889,19 +1895,17 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 									}
 								}
 							}
-//							Filter filter = new Filter(" and t_1." + resFieldName + " in (" + value + ")");
+//							IDBFilter filter = new SQLDBFilter(" and t_1." + resFieldName + " in (" + value + ")");
 //							ArrayList<IRecord> refData = getDBM(context)
 //									.findByFilter(resTable, filter, Page.MAXCOUNTPERQUERY, 1, subContext).getData();
 //							IRecord resForm = null;
 //							Field assoField = null;
 //							String[] associatedFields = ConfigUtil.getAssociatedFields(field);
 //							for (int i = 0; i < refData.size(); i++) {
-//								resForm = refData.get(i);
-//								// 20081111 zhouxw
+//								resForm = refData.get(i); // 20081111 zhouxw
 //								if (resShowValue.length() > 0)
 //									resShowValue += DataConstant.SQL_VALUE_DIM;
 //								resShowValue += resForm.get(resDisplayName);
-//								//
 //								for (int j = 0; j < associatedFields.length; j++) {
 //									assoField = ConfigUtil.getFieldByName(table, associatedFields[j]);
 //									form.set(associatedFields[j], resForm.get(ConfigUtil.getDisplayRefFields(assoField)[0]));
@@ -1909,30 +1913,26 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //							}
 //							refData.clear();
 						} else {
-							// String realResTableName = ConfigUtil.getRealTableName(resTableName);
-							// if (!StringUtil.isBlankOrNull(realResTableName))
-							// {
 							DebugUtil.debug(">Mapping.findByPK: name=" + field.getName() + ",value=" + value + ",loadType="+loadType);
 							IDBRecord resForm = null;
-							if ("cache".equalsIgnoreCase(loadType))
-								resForm = getDBM(subContext).select(subContext, resTable, value, IDBRecordCacheManager.THREADSESSION);
-							else
-								resForm = getDBM(subContext).select(subContext, resTable, value);
+//							if ("app".equalsIgnoreCase(loadType))
+//								resForm = getDBM(subContext).select(subContext, resTable, value, IDBRecordCacheManager.APP_SESSION);
+//							else
+								resForm = getDBM(subContext).select(subContext, resTable, value); // CONTEXT_SESSION
 							if (resForm == null)
 								return;
 							resShowValue = (String)resForm.get(resDisplayName);
-							//
 							Field assoField = null;
 							for (int i = 0; i < associatedFields.length; i++) {
 								assoField = ConfigUtil.getFieldByName(table, associatedFields[i]);
 								record.set(associatedFields[i], resForm.get(ConfigUtil.getDisplayRefFields(assoField)[0]));
 							}
-							// }
 						}
 						record.set(NamingUtil.getDisplayFieldAlias(field.getName(), resDisplayName), resShowValue);
 					} finally {
-						if (!StringUtil.isBlankOrNull(field.getDsn()))
+						if (!StringUtil.isBlankOrNull(field.getDsn())) {
 							subContext.close();
+						}
 					}
 				}
 				@Override // 关联表映射
@@ -1940,9 +1940,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 						Object[] globalVars) throws Throwable {
 					ResultSet rs = (ResultSet) globalVars[0];
 					IDBRecord form = (IDBRecord) globalVars[1];
-
 					ITableDBContext subContext = context;
-					// new IContext(innerContext);
 					try {
 						if (!StringUtil.isBlankOrNull(field.getDsn())) {
 							// 分布式应用不用context的dbm
@@ -1956,7 +1954,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 							subContext.close();
 					}
 				}
-
 			};
 			// 配置模板处理（对象-关系元数据映射处理）
 			template.deal(table, new Object[] { rs, record });
@@ -1981,9 +1978,11 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		record.flushOreign();
 	}
 	// ------------------------------------------------------ Cache ------------------------------------------------------ //
+	protected ITableRecordCacheManager cacheMgr = null; // 缓存管理器
 	@Override
 	public IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable {
-		ITableRecordCacheManager cacheMgr = DBRecordCacheFactory.getCacheManager(type);
+		if (cacheMgr==null)
+			cacheMgr = DBRecordCacheFactory.getCacheManager(type);
 		if (cacheMgr!=null) {
 			return cacheMgr.getCache(context, table, id, type);
 		}
@@ -1991,15 +1990,17 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	}
 	@Override
 	public void removeCache(ITableDBContext context, Table table, String[] ids, short type) throws Throwable {
-		ITableRecordCacheManager cacheMgr = DBRecordCacheFactory.getCacheManager(type);
+		if (cacheMgr==null)
+			cacheMgr = DBRecordCacheFactory.getCacheManager(type);
 		if (cacheMgr!=null) {
 			cacheMgr.removeCache(context, table, ids, type);
 		}
 	}
-	// NOTICE 只在getFormByRow后在会用到
+	// NOTICE 在getFormByRow|insertNoSyn|update执行后在会调用到
 	@Override
 	public void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable {
-		ITableRecordCacheManager cacheMgr = DBRecordCacheFactory.getCacheManager(type);
+		if (cacheMgr==null)
+			cacheMgr = DBRecordCacheFactory.getCacheManager(type);
 		if (cacheMgr!=null) {
 			cacheMgr.updateCache(context, table, record, type);
 		}
@@ -2040,7 +2041,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	protected boolean isDBCorrect(SQLException ex) {
 		if (ex == null)
 			return false;
-		DebugUtil.error(">--< dbm.dbcorrect.errorcode=" + ex.getErrorCode()+",DSN="+getDSN(), ex);
+		DebugUtil.error(">--< dbm.dbcorrect.errorCode=" + ex.getErrorCode()+",DSN="+getDSN(), ex);
 		if (ex.getErrorCode() == 942 || ex.getErrorCode() == 904)
 			return true;
 		return false;

@@ -248,10 +248,10 @@ public class SQLDBTypeConvert {
                 InputStream ins = null;
                 try {
                     ins = rs.getBinaryStream(index);
-                    result = new String(ByteUtil.getBytes(ins));
+                    if (ins!=null)
+                    	result = new String(ByteUtil.getBytes(ins));
                 } finally {
-                    if (ins != null)
-                        ins.close();
+                	CloseUtil.close(ins);
                 }
                 value = (result == null) ? "" : result;
             } else {
