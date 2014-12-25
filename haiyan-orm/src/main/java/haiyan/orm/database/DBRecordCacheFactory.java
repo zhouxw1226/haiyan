@@ -109,7 +109,6 @@ public class DBRecordCacheFactory {
 				// CacheUtil.setData(tableName, id, record);
 				// // 删掉吧,至少用businessobj能获取autonaming
 				// CacheUtil.removeData(tableName, id);
-				// TODO new Runnable()
 				IDBRecord linkedRecord;
 				String[] linkedTables = ConfigUtil.getSameDBTableNames(table.getName());
 				for (String linkedTableName : linkedTables) {
@@ -117,38 +116,40 @@ public class DBRecordCacheFactory {
 						continue;
 					if (!StringUtil.isBlankOrNull(DSN))
 						linkedTableName += "." + DSN;
-					// // 删掉吧,至少用businessobj能获取autonaming
-					// CachUtil.removeData(tableName, id);
 					linkedRecord = (IDBRecord) CacheUtil.getData(linkedTableName, id);
-					// if (linkedRecord == null) {
-					// linkedRecord = context.getDBM().createRecord();
-					// record.copyTo(linkedRecord);
-					// }
 					if (linkedRecord != null) {
-						String key;
-						Iterator<String> iter = linkedRecord.keySet().iterator(); // 不同配置字段不同
-						if (iter != null)
-							while (iter.hasNext()) {
-								key = (String) iter.next();
-								if (record.contains(key))
-									linkedRecord.set(key, record.get(key));
-							}
-						if (type==CONTEXT_SESSION) {
-							//linkedRecord.setDirty(); // 只要update或者insert过重取 
-							// dirty后doEditOne才能取到最新的for executePlugin 
-							// NOTICE 但同一个事务中是会把可能会回滚修改的记录reget放到trasaction里...
-							//transaction.put(tableName+CACHE_DEMI+id, linkedRecord);
-						    CacheUtil.removeLocalData(linkedTableName, id); // remove最合适因为version变了
-						    transaction.remove(linkedTableName+CACHE_DEMI+id); // 说明要更新 其他关联缓存
-						} else { // load from db
-							linkedRecord.clearDirty();
-							linkedRecord.commit();
-				            CacheUtil.setData(linkedTableName, id, linkedRecord); // create
-							// linkedRecord.syncVersion();
-							// 需要轮询不同配置拿到最新的版本号
-							// 这样处理也可以必须在同一个配置中使用一个版本号
+						{ // 更新关联表数据
+//							Iterator<String> iter = linkedRecord.keySet().iterator(); // NOTICE 不同配置字段不同
+//							if (iter != null) {
+//								String key;
+//								while (iter.hasNext()) {
+//									key = (String) iter.next();
+//									if (record.contains(key))
+//										linkedRecord.set(key, record.get(key));
+//								}
+//							}
+//							if (type==CONTEXT_SESSION) {
+//								//linkedRecord.setDirty(); // 只要update或者insert过重取 
+//								// dirty后doEditOne才能取到最新的for executePlugin 
+//								// NOTICE 但同一个事务中是会把可能会回滚修改的记录reget放到trasaction里...
+//								//transaction.put(tableName+CACHE_DEMI+id, linkedRecord);
+//							    CacheUtil.deleteData(linkedTableName, id); // remove最合适因为version变了
+//							    transaction.remove(linkedTableName+CACHE_DEMI+id); // 说明要更新 其他关联缓存
+//							} else { // load from db
+//								linkedRecord.clearDirty();
+//								linkedRecord.commit();
+//					            CacheUtil.setData(linkedTableName, id, linkedRecord); // create
+//								// linkedRecord.syncVersion();
+//								// 需要轮询不同配置拿到最新的版本号
+//								// 这样处理也可以必须在同一个配置中使用一个版本号
+//							}
+//							// CacheUtil.setData(tableName, id, linkedRecord);
 						}
-						// CacheUtil.setData(tableName, id, linkedRecord);
+						{ // NOTICE remove最合适因为version变了 并且linkedRecord的字段结构和当前表可能不同
+						    CacheUtil.deleteData(linkedTableName, id); // remove最合适因为version变了
+						    if (type==CONTEXT_SESSION)
+						    	transaction.remove(linkedTableName+CACHE_DEMI+id); // 说明要更新 其他关联缓存
+						}
 					}
 				}
 			}
@@ -183,7 +184,7 @@ public class DBRecordCacheFactory {
 				IDBRecord r;
 				while(iter.hasNext()) {
 					k = iter.next();
-					arr = k.split(CACHE_DEMI);
+					arr = k.split(CACHE_DEMI); // [0]:cacheStore [1]:cacheKey
 					r = this.transaction.get(k);
 					if (r==null) { // deleted
 						CacheUtil.deleteData(arr[0], arr[1]);

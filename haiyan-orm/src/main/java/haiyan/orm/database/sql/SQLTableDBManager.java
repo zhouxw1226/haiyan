@@ -1367,6 +1367,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		if (record!=null) {
 //			// flush源数据集
 //			flushOreign(context, table, record, type);
+			DebugUtil.debug(">selectByPKFromCache(Table=" + table.getName() + ",ID=" + id + ",Type:" + type + ")");
 			return record;
 		}
 
