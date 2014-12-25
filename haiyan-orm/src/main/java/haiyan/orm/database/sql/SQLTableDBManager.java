@@ -1929,8 +1929,9 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 						}
 						record.set(NamingUtil.getDisplayFieldAlias(field.getName(), resDisplayName), resShowValue);
 					} finally {
-						if (!StringUtil.isBlankOrNull(field.getDsn()))
+						if (!StringUtil.isBlankOrNull(field.getDsn())) {
 							subContext.close();
+						}
 					}
 				}
 				@Override // 关联表映射
@@ -1938,9 +1939,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 						Object[] globalVars) throws Throwable {
 					ResultSet rs = (ResultSet) globalVars[0];
 					IDBRecord form = (IDBRecord) globalVars[1];
-
 					ITableDBContext subContext = context;
-					// new IContext(innerContext);
 					try {
 						if (!StringUtil.isBlankOrNull(field.getDsn())) {
 							// 分布式应用不用context的dbm
@@ -1954,7 +1953,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 							subContext.close();
 					}
 				}
-
 			};
 			// 配置模板处理（对象-关系元数据映射处理）
 			template.deal(table, new Object[] { rs, record });
@@ -1997,7 +1995,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			cacheMgr.removeCache(context, table, ids, type);
 		}
 	}
-	// NOTICE 只在getFormByRow后在会用到
+	// NOTICE 在getFormByRow|insertNoSyn|update执行后在会调用到
 	@Override
 	public void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable {
 		if (cacheMgr==null)

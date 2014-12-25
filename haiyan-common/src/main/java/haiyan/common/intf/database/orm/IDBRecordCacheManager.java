@@ -12,14 +12,14 @@ package haiyan.common.intf.database.orm;
  */
 public interface IDBRecordCacheManager {
 	
-	public static final short CONTEXT_SESSION = 0;
+	public static final short CONTEXT_SESSION = 0; // 默认缓存
 	public static final short THREAD_SESSION = 1; // 一级缓存可以用ThreadLocal实现请参考UnitOfWork的实现
-	public static final short APP_SESSION = 2;
-	public static final short PERSIST_SESSION = 3;
-	public static final short USERDEFINE_SESSION = 4;
-	void clear(); 
-	void commit() throws Throwable;
-	void rollback() throws Throwable;
-	void clearCache(String[] regTables);
+	public static final short APP_SESSION = 2; // 二级缓存
+	public static final short PERSIST_SESSION = 3; // 持久化缓存
+	public static final short USERDEFINE_SESSION = 4; // 自定义缓存
+	void clear(); // 清理所用到的所有资源
+	void commit() throws Throwable; // 提交缓存
+	void rollback() throws Throwable; // 回滚缓存
+	void clearCache(String[] regTables); // 清理指定表的缓存数据
 
 }
