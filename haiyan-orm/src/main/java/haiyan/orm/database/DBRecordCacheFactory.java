@@ -14,12 +14,33 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * 
+ * @author ZhouXW
+ *
+ */
 public class DBRecordCacheFactory {
 
 	private static final String CACHE_DEMI = "@";
-	private DBRecordCacheFactory() {}
+	public static final short parse(String name) {
+		if ("context".equalsIgnoreCase(name)) {
+			return IDBRecordCacheManager.CONTEXT_SESSION;
+		}
+		else if ("thread".equalsIgnoreCase(name)) {
+			return IDBRecordCacheManager.THREAD_SESSION;
+		}
+		else if ("app".equalsIgnoreCase(name)) {
+			return IDBRecordCacheManager.APP_SESSION;
+		}
+		else if ("persist".equalsIgnoreCase(name)) {
+			return IDBRecordCacheManager.PERSIST_SESSION;
+		}
+		else if ("userdefine".equalsIgnoreCase(name)) {
+			return IDBRecordCacheManager.USERDEFINE_SESSION;
+		}
+		throw new RuntimeException("this cachetype:"+name+" not support");
+	}
 	private static ITableRecordCacheManager createRecordCacheManager() {
-		//ITableRecordCacheManager cacheMgrDBSession = 
 		return new ITableRecordCacheManager() { // 模拟了在内存中的ACID
 			// 跟着DBSession走，DBSession既是IDBManager
 			protected transient Map<String,IDBRecord> transaction = new HashMap<String,IDBRecord>(); // ConcurrentHashMap 
@@ -72,7 +93,7 @@ public class DBRecordCacheFactory {
 				if (!StringUtil.isBlankOrNull(DSN))
 					tableName += "." + DSN;
 				String id = (String)record.get(table.getId().getName());
-				if (type==IDBRecordCacheManager.DBSESSION) {
+				if (type==IDBRecordCacheManager.CONTEXT_SESSION) {
 					// record.setDirty(); // 只要update或者insert过重取  
 					// dirty后doEditOne才能取到最新的for executePlugin
 					// NOTICE 但同一个事务中会把可能会回滚修改的记录reget放到trasaction里...
@@ -91,15 +112,14 @@ public class DBRecordCacheFactory {
 				// TODO new Runnable()
 				IDBRecord linkedRecord;
 				String[] linkedTables = ConfigUtil.getSameDBTableNames(table.getName());
-				for (String linkedTable : linkedTables) {
-					if (linkedTable.equalsIgnoreCase(table.getName()))
+				for (String linkedTableName : linkedTables) {
+					if (linkedTableName.equalsIgnoreCase(table.getName()))
 						continue;
-					tableName = linkedTable;
 					if (!StringUtil.isBlankOrNull(DSN))
-						tableName += "." + DSN;
+						linkedTableName += "." + DSN;
 					// // 删掉吧,至少用businessobj能获取autonaming
 					// CachUtil.removeData(tableName, id);
-					linkedRecord = (IDBRecord) CacheUtil.getData(tableName, id);
+					linkedRecord = (IDBRecord) CacheUtil.getData(linkedTableName, id);
 					// if (linkedRecord == null) {
 					// linkedRecord = context.getDBM().createRecord();
 					// record.copyTo(linkedRecord);
@@ -113,16 +133,17 @@ public class DBRecordCacheFactory {
 								if (record.contains(key))
 									linkedRecord.set(key, record.get(key));
 							}
-						if (type==IDBRecordCacheManager.DBSESSION) {
+						if (type==CONTEXT_SESSION) {
 							//linkedRecord.setDirty(); // 只要update或者insert过重取 
 							// dirty后doEditOne才能取到最新的for executePlugin 
 							// NOTICE 但同一个事务中是会把可能会回滚修改的记录reget放到trasaction里...
 							//transaction.put(tableName+CACHE_DEMI+id, linkedRecord);
-						    CacheUtil.removeLocalData(tableName, id); // remove最合适因为version变了
+						    CacheUtil.removeLocalData(linkedTableName, id); // remove最合适因为version变了
+						    transaction.remove(linkedTableName+CACHE_DEMI+id); // 说明要更新 其他关联缓存
 						} else { // load from db
 							linkedRecord.clearDirty();
 							linkedRecord.commit();
-				            CacheUtil.setData(tableName, id, linkedRecord); // create
+				            CacheUtil.setData(linkedTableName, id, linkedRecord); // create
 							// linkedRecord.syncVersion();
 							// 需要轮询不同配置拿到最新的版本号
 							// 这样处理也可以必须在同一个配置中使用一个版本号
@@ -142,11 +163,11 @@ public class DBRecordCacheFactory {
 					tableName += "." + DSN;
 				// String id = rs.getString(1); // 只做索引
 				String k = tableName+CACHE_DEMI+id;
-				if (type == IDBRecordCacheManager.DBSESSION)
+				if (type == IDBRecordCacheManager.CONTEXT_SESSION)
 					if (this.transaction.containsKey(k))
 						return this.transaction.get(k);
 				IDBRecord record = (IDBRecord) CacheUtil.getData(tableName, id);
-				if (type == IDBRecordCacheManager.DBSESSION)
+				if (type == IDBRecordCacheManager.CONTEXT_SESSION)
 					this.transaction.put(k, record);
 				return record;
 			}
@@ -208,21 +229,36 @@ public class DBRecordCacheFactory {
 			}
 		};
 	}
+	private static ITableRecordCacheManager APP_LOCAL = null;
+	private static ThreadLocal<ITableRecordCacheManager> THREAD_LOCAL = new ThreadLocal<ITableRecordCacheManager>();
+	// NOTICE 这些缓存可以都是集群可用的
 	public static ITableRecordCacheManager getCacheManager(short type) { 
 		switch(type) {
-		case IDBRecordCacheManager.DEFAULTSESSION:
-			return null;
-		case IDBRecordCacheManager.THREADSESSION:
-		case IDBRecordCacheManager.DBSESSION:
+		case IDBRecordCacheManager.CONTEXT_SESSION: // 绑定到当前上下文的缓存管理器实例（一个dbm一个缓存管理器）
 			return createRecordCacheManager();
-		case IDBRecordCacheManager.USESESSION:
+		case IDBRecordCacheManager.APP_SESSION: { // 全局一个缓存管理器实例
+			if (APP_LOCAL==null) {
+				synchronized(IDBRecordCacheManager.class) {
+					if (APP_LOCAL==null)
+						APP_LOCAL = createRecordCacheManager();
+				}
+			}
+			return APP_LOCAL;
+		}
+		case IDBRecordCacheManager.THREAD_SESSION: { // 绑定到当前线程的缓存管理器实例（使用不当会造成内存泄漏）
+			if (THREAD_LOCAL.get()==null) {
+				ITableRecordCacheManager mgr = createRecordCacheManager();
+				THREAD_LOCAL.set(mgr);
+			}
+			return THREAD_LOCAL.get();
+		}
+		case IDBRecordCacheManager.PERSIST_SESSION: // 从持久层管理器获取数据
 			return null;
-		case IDBRecordCacheManager.APPSESSION:
-			return null;
-		case IDBRecordCacheManager.WEBSESSION:
+		case IDBRecordCacheManager.USERDEFINE_SESSION: // TODO from invoke cachemanager-instance
 			return null;
 		}
 		return null;
 	}
+	private DBRecordCacheFactory() {}
 
 }

@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import oracle.sql.BLOB;
 
 /**
- * 数据库对象清理器
+ * 数据库对象自动清理器
  * 
  * @author zhouxw
  * 
@@ -77,12 +77,6 @@ class SQLDBClear implements ISQLDBClear {
 	public void addRest(ResultSet rest) {
 		restList.add(rest);
 	}
-	// /**
-	// * @param cacheID
-	// */
-	// void addCacheID(String cacheID) {
-	// cacheList.add(cacheID);
-	// }
 	@Override
 	public void clean() throws Throwable {
 		// // NOTICE MyCache有自动销毁机制
@@ -139,6 +133,7 @@ class SQLDBClear implements ISQLDBClear {
 			} 
 		}
 		readerList.clear();
+		// =============================================================================================================== //
 		Connection c = null;
 		for (int i = 0; i < restList.size(); i++) {
 			try {
@@ -175,7 +170,6 @@ class SQLDBClear implements ISQLDBClear {
 		}
 		statList.clear();
 		for (int i = 0; i < connList.size(); i++) {
-//			int connHash = -1;
 			try {
 				Connection conn = connList.get(i);
 				if (conn != null)
@@ -184,21 +178,15 @@ class SQLDBClear implements ISQLDBClear {
 							conn.rollback();
 							conn.setAutoCommit(true);
 						}
-//						connHash = conn.hashCode();
 						conn.close();
 					}
 				conn = null;
 			} catch (Throwable ignore) {
 				ignore.printStackTrace();
 			} 
-//			finally {
-//				if (connHash >= 0) {
-//					SQLDatabase.connCount--;
-//					DebugUtil.debug(">----< clear.end.connHash:"+connHash+"\tdbm.connCount:"+SQLDatabase.connCount+"\n");
-//				}
-//			}
 		}
 		connList.clear();
+		// =============================================================================================================== //
 		// System.gc();
 	}
 

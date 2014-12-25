@@ -822,7 +822,7 @@ class SQLRender implements ITableSQLRender {
 		String pTableAlias = pTable.getFirstTableAlias();
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
-		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC); // count不需要order
+		Query countQry = new Query("select count("+table.getId().getName()+") from "+pTable.getFormSQL(), sFilterC); // count不需要order
 		dealExtFilter(context, table, countQry, filter);
 		// deal
 		mainSQL = countQry.getSQL(); // 4 log
@@ -876,7 +876,7 @@ class SQLRender implements ITableSQLRender {
 		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
-		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC); // count不需要order
+		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
 		dealExtFilter(context, table, countQry, filter);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, filter, true);
@@ -904,7 +904,7 @@ class SQLRender implements ITableSQLRender {
 		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
-		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC); // count不需要order
+		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
 		dealExtFilter(context, table, countQry, null);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, null, true);
@@ -930,16 +930,16 @@ class SQLRender implements ITableSQLRender {
 		// items
 //		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
 		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
-		// count
-//		String sCoundSQL; // NOTICE 可能是联立SQL无法取count(id)
+//		    // count
+////		String sCoundSQL; // NOTICE 可能是联立SQL无法取count(id)
 ////		Id id = table.getId();
 ////		if (id!=null) {
-////			sCoundSQL = "select count(*) from " + pTable.getFormSQL();
+////			sCoundSQL = "select count("+table.getId().getName()+") from " + pTable.getFormSQL();
 ////		} else {
-//			sCoundSQL = "select count(*) from " + pTable.getFormSQL();
+////			sCoundSQL = "select count("+table.getId().getName()+") from " + pTable.getFormSQL();
 ////		}
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
-		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC); // count不需要order
+		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
 		dealExtFilter(context, table, countQry, filter);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, filter, true);
@@ -969,7 +969,7 @@ class SQLRender implements ITableSQLRender {
 		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
-		Query countQry = new Query("select count(*) from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
+		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
 		dealExtFilter(context, table, countQry, null);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, null, true);

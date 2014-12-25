@@ -5,6 +5,10 @@ import haiyan.common.intf.database.orm.IDBRecordCacheManager;
 import haiyan.config.castorgen.Table;
 import haiyan.config.intf.session.ITableDBContext;
 
+/**
+ * @author ZhouXW
+ *
+ */
 public interface ITableRecordCacheManager extends IDBRecordCacheManager {
 	
 	IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable;
