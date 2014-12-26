@@ -49,30 +49,30 @@ public class AppDataCache implements IDataCache {
 	public Object updateData(String cacheID, Object key, Object ele) {
 		return setLocalData(cacheID, key, ele);
 	}
-	// ------------------------------------------------------------------------ //
-	@Override
-	public boolean addListData(String cacheID, Object ele) {
-		return false;
-	}
-	@Override
-	public boolean removeListData(String cacheID, Object key) {
-		return false;
-	}
 	@Override
 	public void clearData(String cacheID) {
 	}
-	@Override
-	public int getDataSize(String cacheID) {
-		return 0;
-	}
-	@Override
-	public int getIndexOf(String key, Object o) {
-		return 0;
-	}
-	@Override
-	public int getLastIndexOf(String key, Object o) {
-		return 0;
-	}
+//	// ------------------------------------------------------------------------ //
+//	@Override
+//	public boolean addListData(String cacheID, Object ele) {
+//		return false;
+//	}
+//	@Override
+//	public boolean removeListData(String cacheID, Object key) {
+//		return false;
+//	}
+//	@Override
+//	public int getDataSize(String cacheID) {
+//		return 0;
+//	}
+//	@Override
+//	public int getIndexOf(String key, Object o) {
+//		return 0;
+//	}
+//	@Override
+//	public int getLastIndexOf(String key, Object o) {
+//		return 0;
+//	}
 	// ------------------------------------------------------------------------ //
     @Override
     public File setTableFile(String sKey, File file) {

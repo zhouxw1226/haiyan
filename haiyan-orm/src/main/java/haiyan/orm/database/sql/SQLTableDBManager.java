@@ -1449,8 +1449,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		}
 	}
 	@Override
-	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, long startNum, int count) throws Throwable {
-		return selectByLimit(context, table, filter, startNum, count, null);
+	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, long startRow, int count) throws Throwable {
+		return selectByLimit(context, table, filter, startRow, count, null);
 	}
 	/**
 	 * @param table
@@ -1467,12 +1467,10 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			ISQLRecordFactory factory = getPageRecordFactory(context, table); //, DBManager.DBBATCHSESSION);
 			IDBResultSet page = getSQLRender().selectByLimit(context, table, filter, factory, startRow, count);
 			factory = null;
-			// for (Iterator<?> iter = page.getData().iterator();
-			// iter.hasNext();) {
+			// for (Iterator<?> iter = page.getData().iterator(); iter.hasNext();) {
 			// IRecord form = (IRecord) iter.next();
-			// if (form == null) {
+			// if (form == null)
 			// continue;
-			// }
 			// MappingTableManager.queryMappingTable(table, form, form.get(table.getId().getName()), this, context);
 			// // One2OneTableManager.queryOne2OneTable(table, element, element.get(table.getId().getName()), this, context);
 			// }
@@ -1487,8 +1485,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		}
 	}
 	@Override
-	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord record, long startNum, int count) throws Throwable {
-		return selectByLimit(context, table, record, startNum, count, null);
+	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord record, long startRow, int count) throws Throwable {
+		return selectByLimit(context, table, record, startRow, count, null);
 	}
 	/**
 	 * @param table
@@ -1505,12 +1503,10 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			ISQLRecordFactory factory = getPageRecordFactory(context, table); //, DBManager.DBBATCHSESSION);
 			IDBResultSet page = getSQLRender().selectByLimit(context, table, queryRecord, factory, startRow, count);
 			factory = null;
-			// for (Iterator<?> iter = page.getData().iterator();
-			// iter.hasNext();) {
+			// for (Iterator<?> iter = page.getData().iterator(); iter.hasNext();) {
 			// IRecord form = (IRecord) iter.next();
-			// if (form == null) {
+			// if (form == null)
 			// continue;
-			// }
 			// MappingTableManager.queryMappingTable(table, form, form.get(table.getId().getName()), this, context);
 			// // One2OneTableManager.queryOne2OneTable(table, element, element.get(table.getId().getName()), this, context);
 			// }

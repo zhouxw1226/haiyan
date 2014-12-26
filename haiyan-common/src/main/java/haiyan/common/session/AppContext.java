@@ -35,8 +35,10 @@ public class AppContext implements IAppContext {
 	private IContext parent;
 	public AppContext(IContext parent) { 
 		this.parent=parent;
-		this.user=parent.getUser();
-		this.DSN=parent.getDSN();
+		if (parent!=null) {
+			this.user=parent.getUser();
+			this.DSN=parent.getDSN();
+		}
 	}
 	private Map<String,Object> atts = new HashMap<String, Object>();
 	@Override

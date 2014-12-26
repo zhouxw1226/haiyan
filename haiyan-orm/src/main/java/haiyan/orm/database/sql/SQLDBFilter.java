@@ -88,11 +88,15 @@ public class SQLDBFilter implements IDBFilter {
 			}
 		// result = String.format(result, values);
 		DebugUtil.debug(">filter: " + result);
-		mainSQL =  result;
+		mainSQL = result;
 		return mainSQL;
 	}
 	@Override
 	public boolean filter(IDBRecord record) {
 		return true;
+	}
+	@Override 
+	public String toString() {
+		return this.sqlFilter;
 	}
 }
