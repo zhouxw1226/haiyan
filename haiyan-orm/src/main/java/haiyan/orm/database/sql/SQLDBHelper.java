@@ -266,9 +266,11 @@ public class SQLDBHelper {
 		try {
 			DebugUtil.debug(">executeUpdate:" + sql);
 			st = conn.prepareStatement(sql);
-			int length = paras.length;
-			for (int i=0;i<length;i++) {
-				st.setObject(i+1, paras[i]);
+			if (paras!=null) {
+				int length = paras.length;
+				for (int i=0;i<length;i++) {
+					st.setObject(i+1, paras[i]);
+				}
 			}
 			result = st.executeUpdate();
 			return result;
