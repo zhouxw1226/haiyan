@@ -536,10 +536,9 @@ public abstract class AbstractDBRecord implements IDBRecord {
 						map.put(name, option.getDisplayName());
 					}
 				}
-			} else {
-				String name = field.getName();
-				map.put(name, record.get(name));
 			}
+			String name = field.getName();
+			map.put(name, record.get(name));
 		}
 		return map;
 	}
