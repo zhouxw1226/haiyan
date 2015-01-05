@@ -1,10 +1,8 @@
-package haiyan.cache;
-//package haiyan.common.cache;
+//package haiyan.cache;
 //
 //import com.danga.MemCached.MemCachedClient;
 //import com.danga.MemCached.SockIOPool;
 //
-//import haiyan.gateway.intf.IUser;
 //
 ///**
 // * @author zhouxw
