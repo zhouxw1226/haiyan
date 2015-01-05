@@ -9,7 +9,7 @@ import java.util.Map;
  * @author ZhouXW
  *
  */
-public interface IUser extends IUserSession, Serializable {
+public interface IUser extends IUserSession, Serializable { // Externalizable
 	String getId();
 	void setId(String id);
 	String getName();

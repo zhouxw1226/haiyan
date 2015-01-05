@@ -34,6 +34,22 @@ public class User implements IUser, Serializable { // Externalizable
 	private String mobile;
 	private String portrait;
 	private String[] rights;
+//	@Override
+//	public void writeExternal(ObjectOutput out) throws IOException {
+//		out.writeUTF(ID);
+//		out.writeUTF(name);
+//		out.writeUTF(code);
+//		out.writeUTF(password);
+//		out.writeUTF(deptID);
+//		out.writeUTF(DSN);
+//		out.write(VarUtil.toBytes(roles));
+//		out.writeBoolean(alive);
+//	}
+//	@Override
+//	public void readExternal(ObjectInput in) throws IOException,
+//			ClassNotFoundException {
+//		// TODO Auto-generated method stub
+//	}
 	//@Table("SYSOPERATOR")
 	public User() {
 	}

@@ -1,9 +1,13 @@
 package haiyan.common;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
@@ -19,7 +23,42 @@ public class ByteUtil {
 ////		return new InputStreamReader(bais);
 //		return new StringReader(value);
 //	}
-	public static String getString(Reader reader) throws Throwable {
+	public static byte[] toBytes(Serializable obj) {
+		if (obj == null)
+			return null;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream dos = null;
+		byte[] bytes = null;
+		try {
+			dos = new ObjectOutputStream(baos);
+			dos.writeObject(obj);
+			bytes = baos.toByteArray();
+		} catch(Throwable e){
+			throw new RuntimeException(e);
+		} finally {
+			CloseUtil.close(dos);
+			CloseUtil.close(baos);
+		}
+		return bytes;
+	}
+	public static Serializable toObject(byte[] bytes) {
+		if (bytes == null)
+			return null;
+		ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
+		ObjectInputStream dis = null;
+		Serializable s = null;
+		try {
+			dis = new ObjectInputStream(bis);
+			s = (Serializable) dis.readObject();
+		} catch(Throwable e){
+			throw new RuntimeException(e);
+		} finally {
+			CloseUtil.close(dis);
+			CloseUtil.close(bis);
+		}
+		return s;
+	}
+	public static String getString(Reader reader) {
 		if (reader == null)
 			return null;
 //		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -34,8 +73,9 @@ public class ByteUtil {
 	        writer.flush();
 	        return writer.toString();
 //	        return baos.toByteArray();
-		}
-		finally {
+		} catch(Throwable e){
+			throw new RuntimeException(e);
+		} finally {
 			CloseUtil.close(writer);
 		}
 	}
@@ -53,7 +93,7 @@ public class ByteUtil {
 	 * @return byte[]
 	 * @throws Throwable
 	 */
-	public static byte[] getBytes(InputStream is) throws Throwable {
+	public static byte[] getBytes(InputStream is) {
 		if (is==null)
 			return null;
 		// ByteBuffer bb = null;
@@ -66,8 +106,9 @@ public class ByteUtil {
 			}
 			baos.flush();
 			return baos.toByteArray();
-		}
-		finally {
+		} catch(Throwable e){
+			throw new RuntimeException(e);
+		} finally {
 			CloseUtil.close(baos);
 		}
 	}
