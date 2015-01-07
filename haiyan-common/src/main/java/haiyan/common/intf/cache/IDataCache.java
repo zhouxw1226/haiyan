@@ -14,6 +14,7 @@ public interface IDataCache {
 	Object removeLocalData(String schema, Object key); // 删除本地缓存
 	Object setLocalData(String schema, Object key, Object ele); // 设置本地缓存
 	Object getLocalData(String schema, Object key); // 获取本地缓存
+	// ------------------------------------ //
 	Object setData(String schema, Object key, Object ele); // 设置缓存（loadfromdb|syncData->如果有集群同时更新集群对象,不更新状态）
 	Object getData(String schema, Object key); // 获取缓存（如果本地缓存不存在获取集群状态）
 	Object updateData(String schema, Object key, Object ele); // 更新缓存（commit->同时更新集群状态）
@@ -42,10 +43,10 @@ public interface IDataCache {
 	boolean removeBillFile(String sKey);
 	// ------------------------------------ //
 	IUser[] getAllUsers();
+	IUser setUser(String sessionId, IUser user); // SessionID索引
 	IUser getUser(String sessionId); // SessionID索引
-	IUser setUser(String sessionId, IUser user);
-	boolean removeUser(String sessionId);
-	boolean containsUser(String sessionId);
+	boolean removeUser(String sessionId); // SessionID索引
+	boolean containsUser(String sessionId); // SessionID索引
 	IUser getUserByCode(String userCode); // Code索引
 	IUser getUserByID(String userID); // UserID索引
 
