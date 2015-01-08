@@ -53,6 +53,13 @@ public class TableDBContext extends AppContext implements ITableDBContext {
 		dbm.openTransaction();
 	}
 	@Override
+	public void closeTransaction() throws Throwable {
+		ITableDBManager dbm = this.getDBM();
+		if (dbm==null)
+			return;
+		dbm.closeTransaction();
+	}
+	@Override
 	public void setAutoCommit(boolean b) throws Throwable {
 		ITableDBManager dbm = this.getDBM();
 		if (dbm==null)
