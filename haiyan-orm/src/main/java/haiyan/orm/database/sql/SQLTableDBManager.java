@@ -1806,7 +1806,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 					IDBRecord record = (IDBRecord) globalVars[1];
 					Table refTable = ConfigUtil.getTable(mainField.getReferenceTable());
 					Field displayField = ConfigUtil.getFieldByName(refTable, ConfigUtil.getDisplayRefFields(mainField)[0]);
-					String value = SQLDBTypeConvert.getValue(context, rs, getClear(), index, table, displayField);
+					Object value = SQLDBTypeConvert.getValue(context, rs, getClear(), index, table, displayField);
 					record.set(associatedField.getName(), value);
 				}
 				@Override // 嵌入值
@@ -1814,7 +1814,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 						Field field, Object[] globalVars) throws Throwable {
 					ResultSet rs = (ResultSet) globalVars[0];
 					IDBRecord record = (IDBRecord) globalVars[1];
-					String value = SQLDBTypeConvert.getValue(context, rs, getClear(), index, table, field);
+					Object value = SQLDBTypeConvert.getValue(context, rs, getClear(), index, table, field);
 					record.set(field.getName(), value);
 				}
 				@Override // 普通映射
@@ -1822,12 +1822,12 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 						Field field, Object[] globalVars) throws Throwable {
 					ResultSet rs = (ResultSet) globalVars[0];
 					IDBRecord record = (IDBRecord) globalVars[1];
-					String value = SQLDBTypeConvert.getValue(context, rs, getClear(), index, table, field);
+					Object value = SQLDBTypeConvert.getValue(context, rs, getClear(), index, table, field);
 					record.set(field.getName(), value);
 					if (field.getJavaType().equals(AbstractCommonFieldJavaTypeType.PASSWORD)) {
 						record.set(NamingUtil.getDisplayFieldAlias(field.getName(), DataConstant.PASSWORD_DISNAME), DataConstant.PASSWORD_DISVALUE);
 					} else if (field.getOption() != null && field.getOptionCount() > 0) {
-						record.set(NamingUtil.getDisplayFieldAlias(field.getName(), DataConstant.OPTION_DISNAME), dataTrans.getOptionNameByValue(context, table, field, value));
+						record.set(NamingUtil.getDisplayFieldAlias(field.getName(), DataConstant.OPTION_DISNAME), dataTrans.getOptionNameByValue(context, table, field, VarUtil.toString(value)));
 					}
 				}
 				@Override // 延迟加载

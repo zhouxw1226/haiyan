@@ -94,6 +94,16 @@ public class AbstractCommonFieldJavaTypeType implements java.io.Serializable {
      * The instance of the dbClob type
      */
     public static final AbstractCommonFieldJavaTypeType DBCLOB = new AbstractCommonFieldJavaTypeType(DBCLOB_TYPE, "dbClob");
+    
+    /**
+     * The dbClob type
+     */
+    public static final int INTEGER_TYPE = 7;
+
+    /**
+     * The instance of the dbClob type
+     */
+    public static final AbstractCommonFieldJavaTypeType INTEGER = new AbstractCommonFieldJavaTypeType(DBCLOB_TYPE, "integer");
 
     /**
      * Field _memberTable.
@@ -164,6 +174,7 @@ public class AbstractCommonFieldJavaTypeType implements java.io.Serializable {
         members.put("blob", BLOB);
         members.put("dbBlob", DBBLOB);
         members.put("dbClob", DBCLOB);
+        members.put("integer", INTEGER);
         return members;
     }
 

@@ -112,8 +112,8 @@ public class CacheUtil {
 		return getDataCache().getTableFile(tbl);
 	}
 	// -------------------- user --------------------//
-	public static IUser setUser(String userID, IUser user) {
-		return getDataCache().setUser(userID, user);
+	public static IUser setUser(String sessionId, IUser user) {
+		return getDataCache().setUser(sessionId, user);
 	}
 	public static IUser getUser(String sessionId) {
 		return getDataCache().getUser(sessionId);

@@ -34,7 +34,62 @@ public class User implements IUser, Serializable { // Externalizable
 	private String mobile;
 	private String portrait;
 	private String[] rights;
-//	@Override
+	private Integer follower;
+	private Integer follow;
+	private Integer favorite;
+	private Integer product;
+	@GetMethod("follower")
+	@Override
+	public Integer getFollower() {
+//		if(this.follower == null)
+//			return 0;
+		return follower;
+	}
+	@SetMethod("follower")
+	@Override
+	public void setFollower(Integer follower) {
+		this.follower = follower;
+	}
+	@GetMethod("follow")
+	@Override
+	public Integer getFollow() {
+//		if(this.follow == null)
+//			return 0;
+		return follow;
+	}
+	@SetMethod("follow")
+	@Override
+	public void setFollow(Integer follow) {
+		this.follow = follow;
+	}
+	@GetMethod("favorite")
+	@Override
+	public Integer getFavorite() {
+//		if(this.favorite == null)
+//			return 0;
+		return favorite;
+	}
+	@SetMethod("favorite")
+	@Override
+	public void setFavorite(Integer favorite) {
+		this.favorite = favorite;
+	}
+	@GetMethod("product")
+	@Override
+	public Integer getProduct() {
+//		if(this.product == null)
+//			return 0;
+		return product;
+	}
+	@SetMethod("product")
+	@Override
+	public void setProduct(Integer product) {
+		this.product = product;
+	}
+	public void setRights(String[] rights) {
+		this.rights = rights;
+	}
+	//	@Override
 //	public void writeExternal(ObjectOutput out) throws IOException {
 //		out.writeUTF(ID);
 //		out.writeUTF(name);
@@ -216,7 +271,7 @@ public class User implements IUser, Serializable { // Externalizable
 	@Override
 	public void setRights(String rights) {
 		if(rights == null)
-			this.rights = new String[]{"LOGIN"};
+			this.rights = new String[]{"GUEST"};
 		else
 			this.rights = rights.split(";");
 	}

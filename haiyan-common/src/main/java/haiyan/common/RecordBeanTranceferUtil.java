@@ -3,7 +3,6 @@ package haiyan.common;
 import haiyan.common.annotation.GetMethod;
 import haiyan.common.annotation.SetMethod;
 import haiyan.common.intf.database.orm.IDBRecord;
-import haiyan.common.session.User;
 
 import java.lang.reflect.Method;
 
@@ -35,7 +34,7 @@ public class RecordBeanTranceferUtil {
 	
 	
 	public static Object record2Bean(IDBRecord record,Object obj) throws Throwable{
-		Method[] methods = User.class.getDeclaredMethods();
+		Method[] methods = obj.getClass().getDeclaredMethods();
 		for(Method method : methods){
 			if(!method.isAnnotationPresent(SetMethod.class))
 				continue;
