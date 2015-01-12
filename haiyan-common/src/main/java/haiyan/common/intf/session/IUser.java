@@ -40,5 +40,13 @@ public interface IUser extends IUserSession, Serializable { // Externalizable
 	void setRights(String rights);
 	String getPortrait();
 	void setPortrait(String portrait);
+	Integer getFollow();
+	Integer getFollower();
+	void setFollower(Integer follower);
+	void setFollow(Integer follow);
+	Integer getFavorite();
+	void setFavorite(Integer favorite);
+	Integer getProduct();
+	void setProduct(Integer product);
 }
  

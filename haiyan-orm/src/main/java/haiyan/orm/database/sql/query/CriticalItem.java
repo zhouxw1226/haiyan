@@ -1,5 +1,6 @@
 package haiyan.orm.database.sql.query;
 
+import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.config.castorgen.AbstractField;
@@ -119,6 +120,8 @@ public abstract class CriticalItem extends Item {
 			result = strValue;
 		} else if (type==AbstractCommonFieldJavaTypeType.DBCLOB) {
 			result = strValue;
+		} else if (type==AbstractCommonFieldJavaTypeType.INTEGER) {
+			result = VarUtil.toInt(strValue);
 		} 
 //		else if (type==AbstractCommonFieldJavaTypeType.DBBLOB) { // result = strValue;
 //			throw new Warning("unkown data type:" + type);

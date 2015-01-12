@@ -83,7 +83,9 @@ public class SQLDBTypeConvert {
             return Blob.class;
         } else if (type==AbstractCommonFieldJavaTypeType.DBCLOB) {
             return Clob.class;
-        } else {
+        }else if (type==AbstractCommonFieldJavaTypeType.INTEGER) {
+            return Integer.class;
+        }  else {
             throw new Warning("Unkown field type:" + type);
         }
     }
@@ -165,6 +167,8 @@ public class SQLDBTypeConvert {
                 	CloseUtil.close(ins); // 经测试可以直接关闭 
                 }
             }
+        } else if (AbstractCommonFieldJavaTypeType.INTEGER==type) {
+            ps.setInt(index, VarUtil.toInt(value));
         } else {
             throw new Warning(null, 100028, "unsupport_javatype", new String[] { type.toString() });
         }
@@ -181,7 +185,7 @@ public class SQLDBTypeConvert {
      * @return
      * @throws Throwable
      */
-    public static String getValue(ITableDBContext context, ResultSet rs, IDBClear clear, int index,
+    public static Object getValue(ITableDBContext context, ResultSet rs, IDBClear clear, int index,
             Table table, AbstractField field) throws Throwable {
         try {
             // System.out.println("##getValue().fieldName=" + field.getName());
@@ -254,10 +258,13 @@ public class SQLDBTypeConvert {
                 	CloseUtil.close(ins);
                 }
                 value = (result == null) ? "" : result;
+            } else if (type.equals(AbstractCommonFieldJavaTypeType.INTEGER)) {
+            	 value = rs.getInt(index);
+                 value = (value == null) ? 0 : value;
             } else {
                 throw new Warning(context.getUser(), 100028, "unsupport_javatype", new String[] { type.toString() });
             }
-            return (String) value;
+            return  value;
         } catch (Throwable ex) {
             DebugUtil.error(ex);
             return ex.getMessage();
@@ -279,7 +286,7 @@ public class SQLDBTypeConvert {
         if (!StringUtil.isBlankOrNull(date)) {
             time = date.toString();
         } else if (!StringUtil.isBlankOrNull(field.getDefaultValue())) {
-            time = field.getDefaultValue();
+            time = field.getDefaultValue().toString();
         }
         if (time == null) {
             return null;

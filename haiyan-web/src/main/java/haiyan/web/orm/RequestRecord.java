@@ -30,7 +30,11 @@ public class RequestRecord extends DBRecord {
 				v = getValue(req, uiName);
 			} 
 			if (StringUtil.isEmpty(v) && (useDefault || !field.isNullAllowed())) {
-				v = field.getDefaultValue(); 
+				if(field.getJavaType() == AbstractCommonFieldJavaTypeType.INTEGER){//TODO 其他类型
+					v = Integer.valueOf(field.getDefaultValue());
+				}else{
+					v = field.getDefaultValue();
+				}
 			}
 			if (!StringUtil.isEmpty(v)) {
 				v = transValueType(field, v);

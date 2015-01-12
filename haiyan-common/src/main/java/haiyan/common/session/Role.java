@@ -9,6 +9,7 @@ public class Role implements IRole {
 	private String id;
 	private String name;
 	private String code;
+	private String right;
 	public String getId() {
 		return id;
 	}
@@ -26,6 +27,12 @@ public class Role implements IRole {
 	}
 	public void setCode(String code) {
 		this.code = code;
+	}
+	public String getRight() {
+		return right;
+	}
+	public void setRight(String right) {
+		this.right = right;
 	}
 
 }
