@@ -34,6 +34,10 @@ public class DBBillManagerFactory implements IFactory {
 			this.context.openTransaction();
 		}
 		@Override
+		public void closeTransaction() throws Throwable {
+			this.context.closeTransaction();
+		}
+		@Override
 		public void setAutoCommit(boolean b) throws Throwable {
 			this.context.setAutoCommit(b);
 		}

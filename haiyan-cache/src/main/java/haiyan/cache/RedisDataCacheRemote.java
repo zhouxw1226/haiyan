@@ -26,7 +26,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 
 //	private Jedis defaultJedis;//非切片额客户端连接
     private JedisPool defaultJedisPool;//非切片连接池
-//    private ShardedJedis shardedJedis;//切片额客户端连接
+//  private ShardedJedis shardedJedis;//切片额客户端连接
     private ShardedJedisPool shardedJedisPool;//切片连接池
     private BinaryJedisCommands jedis;
     private String[] servers = null;
@@ -102,7 +102,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			}
 			if (status == -1) { // is logout
 				// mcc.delete(k+"._status"); NOTICE 不能加，有些服务器还没通知完
-				//super.removeUser(sessionId);
+				// super.removeUser(sessionId);
 				return null;
 			}
 		}
@@ -214,5 +214,25 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 //	    return o;
     }
 //	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";
+    // --------------------- local data cache --------------------- //
+	@Override
+	public Object setLocalData(String cacheID, Object key, Object ele) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public Object getLocalData(String cacheID, Object key) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public Object removeLocalData(String cacheID, Object key) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void clearData(String cacheID) {
+		// TODO Auto-generated method stub
+	}
 	
 }

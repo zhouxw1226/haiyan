@@ -44,7 +44,6 @@ import haiyan.orm.database.TableDBContext;
 import haiyan.orm.database.TableDBManager;
 import haiyan.orm.database.TableDBTemplate;
 
-import java.awt.EventQueue;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -144,6 +143,15 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	public void openTransaction() throws Throwable {
 		this.setAutoCommit(false); // 如果此时没有conn也可以作为后面创建conn的依据
 	}
+	/**
+	 * 强制关闭事务
+	 * 
+	 * @throws Throwable
+	 */
+	@Override
+	public void closeTransaction() throws Throwable {
+		this.setAutoCommit(true); // 如果此时没有conn也可以作为后面创建conn的依据
+	}
 	@Override
 	public Boolean isAlive() {
 		try {
@@ -155,7 +163,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	private boolean commited = false;
 	@Override
 	public void commit(ITableDBContext context) throws Throwable {
-		commit();
+		this.commit();
 	}
 	@Override
 	public void commit() throws Throwable {
@@ -171,7 +179,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			if (!this.connection.getAutoCommit()) { // 事务不是自动提交
 				this.beforeCommit(); // for hsqldb
 				this.connection.commit(); // 主动提交
-				//this.dbconn.setAutoCommit(true);
+				this.connection.setAutoCommit(true); // 变回自动提交
+				this.autoCommit=true;
 			}
 			DebugUtil.debug(">----< dbm.commit.connHash:" + this.connection.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
@@ -179,24 +188,24 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			DebugUtil.debug(">----< dbm.commit.visualHash:" + this.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
-		// 清理缓存
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				synchronized(EVENTS) {
-					for (String s:EVENTS) {
-						String[] regTables = SQLRegUtil.getEventTableFromSQL(s);
-						cacheMgr.clearCache(regTables);
-					}
-					EVENTS.clear();
-				}
-			}
-		});
-		this.commited = true;
-		//this.autoCommit = true;
+//		// 清理缓存
+//		EventQueue.invokeLater(new Runnable() {
+//			public void run() {
+//				synchronized(EVENTS) {
+//					for (String s:EVENTS) {
+//						String[] regTables = SQLRegUtil.getEventTableFromSQL(s);
+//						cacheMgr.clearCache(regTables);
+//					}
+//					EVENTS.clear();
+//				}
+//			}
+//		});
+//		this.commited = true;
+//		//this.autoCommit = true;
 	}
 	@Override
 	public void rollback(ITableDBContext context) throws Throwable {
-		rollback();
+		this.rollback();
 	}
 	@Override
 	public void rollback() throws Throwable {
@@ -212,7 +221,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			if (!this.connection.getAutoCommit()) { // 事务不是自动提交
 				this.beforeRollback(); // for hsqldb
 				this.connection.rollback(); // 主动回滚
-				//this.dbconn.setAutoCommit(true);
+				this.connection.setAutoCommit(true); // 变回自动提交
+				this.autoCommit=true;
 			}
 			DebugUtil.debug(">----< dbm.rollback.connHash:" + this.connection.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
@@ -232,7 +242,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 //				}
 //			}
 //		});
-		//this.autoCommit = true;
+//		//this.autoCommit = true;
 	}
 	@Override
 	public void close() {

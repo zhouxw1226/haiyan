@@ -25,6 +25,7 @@ public class TestRedisCache {
 		IDataCache dc = new RedisDataCacheRemote();
 		dc.setServers(new String[]{"127.0.0.1:6379"});
 		dc.initialize();
+		
 		Integer i = new Integer(9999);
 		dc.setData("TESTCACHE", "10000", i);
 		Object o = dc.getData("TESTCACHE", "10000");
