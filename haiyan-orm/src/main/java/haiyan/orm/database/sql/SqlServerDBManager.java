@@ -171,9 +171,12 @@ public class SqlServerDBManager extends SQLTableDBManager {
 		return stringType ? "CONVERT(VARCHAR(23),GETDATE(),21)" : "GETDATE()";
 	}
 	@Override
-	protected boolean isDBCorrect(SQLException ex) {
-		if (ex == null)
+	public boolean isDBCorrect(Throwable e) {
+		if (e == null)
 			return false;
+		if (!(e instanceof SQLException))
+			return false;
+		SQLException ex = (SQLException)e;
 		if (ex.getErrorCode() == 942 || ex.getErrorCode() == 904
 			|| ex.getErrorCode() == 207 || ex.getErrorCode() == 208)
 			return true;
@@ -181,9 +184,5 @@ public class SqlServerDBManager extends SQLTableDBManager {
 		// String mes = e.getMessage();
 		// if (mes == null)
 		return false;
-		// return mes.indexOf("00942") != -1 || mes.indexOf("00904") != -1
-		// || mes.indexOf("207") != -1 || mes.indexOf("208") != -1
-		// || mes.indexOf("无效") != -1 || mes.indexOf("無效") != -1
-		// || mes.indexOf("Invalid") != -1;
 	}
 }

@@ -2044,9 +2044,13 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @param ex
 	 * @return boolean
 	 */
-	protected boolean isDBCorrect(SQLException ex) {
-		if (ex == null)
+	@Override
+	public boolean isDBCorrect(Throwable e) {
+		if (e == null)
 			return false;
+		if (!(e instanceof SQLException))
+			return false;
+		SQLException ex = (SQLException)e;
 		DebugUtil.error(">--< dbm.dbcorrect.errorCode=" + ex.getErrorCode()+",DSN="+getDSN(), ex);
 		if (ex.getErrorCode() == 942 || ex.getErrorCode() == 904)
 			return true;
