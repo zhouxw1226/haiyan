@@ -120,9 +120,12 @@ public class MySqlDBManager extends SQLTableDBManager {
         return false;
     }
     @Override
-    protected boolean isDBCorrect(SQLException ex) {
-        if (ex == null)
-            return false;
+    public boolean isDBCorrect(Throwable e) {
+		if (e == null)
+			return false;
+		if (!(e instanceof SQLException))
+			return false;
+		SQLException ex = (SQLException)e;
         DebugUtil.error(">--< dbm.dbcorrect.errorcode=" + ex.getErrorCode()+",DSN="+getDSN(), ex);
         if (ex.getErrorCode() == 1146 || ex.getErrorCode() == 1054)
             return true;

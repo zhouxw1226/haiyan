@@ -1,6 +1,9 @@
 package haiyan.database;
 
 import haiyan.common.DebugUtil;
+import haiyan.common.PropUtil;
+import haiyan.common.StringUtil;
+import haiyan.common.VarUtil;
 
 import java.sql.Connection;
 import java.util.Iterator;
@@ -56,9 +59,30 @@ public class DBCPDatabase extends SQLDatabase {
 		ds.setRemoveAbandoned(true);
 		// ds.setRemoveAbandonedTimeout(ConnectionParam.TIMEOUT_TRANS);
 		ds.setLogAbandoned(true);
-		// ds.setMaxActive(ConnectionParam.MAX_CONN);
-		// ds.setMaxWait(ConnectionParam.WAIT_TIME);
-		// ds.setMaxIdle(DataSourceImp.MAX_CONN);
+//		Connection.TRANSACTION_NONE; // 可脏读和重复读 0
+//		Connection.TRANSACTION_READ_COMMITTED; // 读提交（可脏读，有人在读可写） 1
+//		Connection.TRANSACTION_READ_UNCOMMITTED; // 读不提交（可幻读，有人在读不可写，锁单行） 2
+//		Connection.TRANSACTION_REPEATABLE_READ; // 不可重复读（锁多行） 3
+//		Connection.TRANSACTION_SERIALIZABLE; // 串行化（锁表） 4
+		String s = PropUtil.getProperty("dbcp.defaultTransactionIsolation");
+		if (!StringUtil.isEmpty(s)) {
+			int defaultTransactionIsolation = VarUtil.toInt(s);
+			if (defaultTransactionIsolation>=0) {
+				ds.setDefaultTransactionIsolation(defaultTransactionIsolation);
+			}
+		}
+		int maxActive = VarUtil.toInt(PropUtil.getProperty("dbcp.maxActive"));
+		if (maxActive>=ds.getMaxActive()) {
+			ds.setMaxActive(maxActive);
+		}
+		long maxWait = VarUtil.toLong(PropUtil.getProperty("dbcp.maxWait"));
+		if (maxWait>=ds.getMaxWait()) {
+			ds.setMaxWait(maxWait);
+		}
+		int maxIdle = VarUtil.toInt(PropUtil.getProperty("dbcp.maxIdle"));
+		if (maxIdle>=ds.getMaxIdle()) {
+			ds.setMaxIdle(maxIdle);
+		}
 		Iterator<Object> iter = DBCP_PROPS.keySet().iterator();
 		while(iter.hasNext()) {
 			String k = iter.next().toString();

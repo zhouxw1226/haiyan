@@ -175,12 +175,14 @@ class SQLRender implements ITableSQLRender {
 	/**
 	 * @param table
 	 * @param field
-	 * @param queryForm
+	 * @param queryRecord
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
 	protected CriticalItem getDefaultCriticalItem(Table table, Field field,
-			IDBRecord queryForm, PrimaryTable pTable) throws Throwable {
+			IDBRecord queryRecord, PrimaryTable pTable) throws Throwable {
+		if (queryRecord == null)
+			return null;
 		// CriticalItem item = null;
 		AbstractCommonFieldJavaTypeType fieldType = field.getJavaType();
 		String fullFieldName = SQLDBHelper.getCriticalFieldName(table, field, pTable);
@@ -198,79 +200,87 @@ class SQLRender implements ITableSQLRender {
 //				|| compType.equals(ComponentTypeType.TEXTAREA)
 //				|| compType.equals(ComponentTypeType.READONLYTEXT)
 //				|| compType.equals(ComponentTypeType.PASSWORD))
-//				return getLikeCriticalItem(queryForm, table, field, fullFieldName);
+//				return getLikeCriticalItem(queryRecord, table, field, fullFieldName);
 //			else 
 			if (field.getReferenceTable() != null)
-				return getRefLikeCriticalItem(queryForm, table, field, fullFieldName);
+				return getRefLikeCriticalItem(queryRecord, table, field, fullFieldName);
 			else
-				return getLikeCriticalItem(queryForm, table, field, fullFieldName);
+				return getLikeCriticalItem(queryRecord, table, field, fullFieldName);
 		} 
 		else if (field.getQueryCondition()!=null && field.getQueryCondition().getType()==QueryConditionTypeType.REGION) {
-			return getBetweenCriticalItem(queryForm, table, field, fullFieldName);
+			return getBetweenCriticalItem(queryRecord, table, field, fullFieldName);
 		}
-		return getEqualCriticalItem(queryForm, table, field, fullFieldName);
+		return getEqualCriticalItem(queryRecord, table, field, fullFieldName);
 	}
 
 	/**
-	 * @param queryForm
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
-	protected CriticalItem getIsNullCriticalItem(IDBRecord queryForm,
+	protected CriticalItem getIsNullCriticalItem(IDBRecord queryRecord,
 			Table table, Field field, String fullFieldName) throws Throwable {
+		if (queryRecord == null)
+			return null;
 		CriticalItem item = new IsNullCriticalItem(fullFieldName, 
-			CriticalItem.getItemValue(queryForm, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
+			CriticalItem.getItemValue(queryRecord, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
 		return item;
 	}
 
 	/**
-	 * @param queryForm
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
-	protected CriticalItem getIsNotNullCriticalItem(IDBRecord queryForm,
+	protected CriticalItem getIsNotNullCriticalItem(IDBRecord queryRecord,
 			Table table, Field field, String fullFieldName) throws Throwable {
+		if (queryRecord == null)
+			return null;
 		CriticalItem item = new IsNotNullCriticalItem(fullFieldName,
-				CriticalItem.getItemValue(queryForm, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
+				CriticalItem.getItemValue(queryRecord, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
 		return item;
 	}
 
 	/**
-	 * @param queryForm
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
-	protected CriticalItem getLikeCriticalItem(IDBRecord queryForm, Table table,
+	protected CriticalItem getLikeCriticalItem(IDBRecord queryRecord, Table table,
 			Field field, String fullFieldName) throws Throwable {
-		if (StringUtil.isBlankOrNull(queryForm.get(field.getName())))
+		if (queryRecord == null)
+			return null;
+		if (StringUtil.isBlankOrNull(queryRecord.get(field.getName())))
 			return null;
 		CriticalItem item = new LikeCriticalItem(fullFieldName, 
-			CriticalItem.getItemValue(queryForm, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
+			CriticalItem.getItemValue(queryRecord, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
 		return item;
 	}
 
 	/**
-	 * @param queryForm
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
-	protected CriticalItem getRefLikeCriticalItem(IDBRecord queryForm,
+	protected CriticalItem getRefLikeCriticalItem(IDBRecord queryRecord,
 			Table table, Field field, String fullFieldName) throws Throwable {
-		if (!StringUtil.isBlankOrNull(queryForm.get(field.getName()))) {
+		if (queryRecord == null)
+			return null;
+		if (!StringUtil.isBlankOrNull(queryRecord.get(field.getName()))) {
 			return new LikeCriticalItem(fullFieldName, 
-				CriticalItem.getItemValue(queryForm, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
+				CriticalItem.getItemValue(queryRecord, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
 		}
 		String disfld = null;
 		if (field.getReferenceTable() != null) {
@@ -279,116 +289,105 @@ class SQLRender implements ITableSQLRender {
 			// disfld= NamingUtil.getDisplayFieldAlias(field.getName(), field.getCommon().getDisplay , ReferenceField());
 			return null; // TODO 需要确定display是否必填
 		// CriticalItem item = null;
-		if (!StringUtil.isBlankOrNull(queryForm.get(disfld))) {
-			return new RefLikeCriticalItem(fullFieldName, queryForm.get(disfld), String.class, table, field);
+		if (!StringUtil.isBlankOrNull(queryRecord.get(disfld))) {
+			return new RefLikeCriticalItem(fullFieldName, queryRecord.get(disfld), String.class, table, field);
 			// TODO SQLDBTypeConvert.getFieldJavaType(field)应该获取displayField的字段类型
 		}
 		return null;
 	}
 
 	/**
-	 * @param queryForm
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
-	protected CriticalItem getNotLikeCriticalItem(IDBRecord queryForm,
+	protected CriticalItem getNotLikeCriticalItem(IDBRecord queryRecord,
 			Table table, Field field, String fullFieldName) throws Throwable {
-		if (StringUtil.isBlankOrNull(queryForm.get(field.getName())))
+		if (queryRecord == null)
+			return null;
+		if (StringUtil.isBlankOrNull(queryRecord.get(field.getName())))
 			return null;
 		CriticalItem item = new NotLikeCriticalItem(fullFieldName, 
-			CriticalItem.getItemValue(queryForm, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
+			CriticalItem.getItemValue(queryRecord, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
 		return item;
 	}
 
 	/**
-	 * @param queryForm
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
-	protected CriticalItem getUpperThanCriticalItem(IDBRecord queryForm,
+	protected CriticalItem getUpperThanCriticalItem(IDBRecord queryRecord,
 			Table table, Field field, String fullFieldName) throws Throwable {
-		if (StringUtil.isBlankOrNull(queryForm.get(field.getName())))
+		if (queryRecord == null)
+			return null;
+		if (StringUtil.isBlankOrNull(queryRecord.get(field.getName())))
 			return null;
 		CriticalItem item = new UpperThanCriticalItem(fullFieldName,
-			CriticalItem.getItemValue(queryForm, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
+			CriticalItem.getItemValue(queryRecord, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
 		return item;
 	}
 
 	/**
-	 * @param queryForm
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
-	protected CriticalItem getLowerThanCriticalItem(IDBRecord queryForm,
+	protected CriticalItem getLowerThanCriticalItem(IDBRecord queryRecord,
 			Table table, Field field, String fullFieldName) throws Throwable {
-		if (StringUtil.isBlankOrNull(queryForm.get(field.getName())))
+		if (queryRecord == null)
+			return null;
+		if (StringUtil.isBlankOrNull(queryRecord.get(field.getName())))
 			return null;
 		CriticalItem item = new LowerThanCriticalItem(fullFieldName,
-			CriticalItem.getItemValue(queryForm, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
+			CriticalItem.getItemValue(queryRecord, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
 		return item;
 	}
 
 	/**
-	 * @param queryForm
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
-	protected CriticalItem getEqualCriticalItem(IDBRecord queryForm,
+	protected CriticalItem getEqualCriticalItem(IDBRecord queryRecord,
 			Table table, Field field, String fullFieldName) throws Throwable {
-		if (StringUtil.isBlankOrNull(queryForm.get(field.getName())))
+		if (queryRecord == null)
+			return null;
+		if (StringUtil.isBlankOrNull(queryRecord.get(field.getName())))
 			return null;
 		CriticalItem item = new EqualCriticalItem(fullFieldName, 
-			CriticalItem.getItemValue(queryForm, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
+			CriticalItem.getItemValue(queryRecord, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
 		return item;
 	}
 
 	/**
-	 * @param queryForm
+	 * @param queryRecord
 	 * @param table
 	 * @param field
 	 * @param fullFieldName
 	 * @return CriticalItem
 	 * @throws Throwable
 	 */
-	protected CriticalItem getNotEqualCriticalItem(IDBRecord queryForm,
+	protected CriticalItem getNotEqualCriticalItem(IDBRecord queryRecord,
 			Table table, Field field, String fullFieldName) throws Throwable {
-		if (StringUtil.isBlankOrNull(queryForm.get(field.getName())))
+		if (queryRecord == null)
+			return null;
+		if (StringUtil.isBlankOrNull(queryRecord.get(field.getName())))
 			return null;
 		CriticalItem item = new NotEqualCriticalItem(fullFieldName,
-			CriticalItem.getItemValue(queryForm, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
-		return item;
-	}
-
-	/**
-	 * @param queryForm
-	 * @param table
-	 * @param field
-	 * @param fullFieldName
-	 * @return CriticalItem
-	 * @throws Throwable
-	 */
-	protected CriticalItem getBetweenCriticalItem(IDBRecord queryForm,
-			Table table, Field field, String fullFieldName) throws Throwable {
-		Object lowerValue = CriticalItem.getItemValue(queryForm, NamingUtil.getRegionFieldName(field.getName(), NamingUtil.REGION_START),
-				table, field);
-		Object upperValue = CriticalItem.getItemValue(queryForm, NamingUtil.getRegionFieldName(field.getName(), NamingUtil.REGION_END),
-				table, field);
-		// if (lowerValue == null && upperValue == null)
-		// return null;
-		CriticalItem item = new BetweenCriticalItem(fullFieldName, lowerValue,
-				upperValue, SQLDBTypeConvert.getJavaType(field));
+			CriticalItem.getItemValue(queryRecord, field.getName(), table, field), SQLDBTypeConvert.getJavaType(field));
 		return item;
 	}
 	/**
@@ -404,6 +403,8 @@ class SQLRender implements ITableSQLRender {
 			Field field, String fullFieldName)
 			throws Throwable {
 		if (queryRecord==null)
+			return null;
+		if (context==null)
 			return null;
 		if (StringUtil.isBlankOrNull(queryRecord.get(field.getName())))
 			return null;
@@ -433,7 +434,28 @@ class SQLRender implements ITableSQLRender {
 		}
 		return item;
 	}
-
+	/**
+	 * @param queryRecord
+	 * @param table
+	 * @param field
+	 * @param fullFieldName
+	 * @return CriticalItem
+	 * @throws Throwable
+	 */
+	protected CriticalItem getBetweenCriticalItem(IDBRecord queryRecord,
+			Table table, Field field, String fullFieldName) throws Throwable {
+		if (queryRecord == null)
+			return null;
+		Object lowerValue = CriticalItem.getItemValue(queryRecord, NamingUtil.getRegionFieldName(field.getName(), NamingUtil.REGION_START),
+				table, field);
+		Object upperValue = CriticalItem.getItemValue(queryRecord, NamingUtil.getRegionFieldName(field.getName(), NamingUtil.REGION_END),
+				table, field);
+		// if (lowerValue == null && upperValue == null)
+		// return null;
+		CriticalItem item = new BetweenCriticalItem(fullFieldName, lowerValue,
+				upperValue, SQLDBTypeConvert.getJavaType(field));
+		return item;
+	}
 	/**
 	 * @param table
 	 * @param queryRecord
@@ -444,6 +466,8 @@ class SQLRender implements ITableSQLRender {
 	 */
 	protected ArrayList<CriticalItem> getCriticalItems(ITableDBContext context, Table table, 
 			PrimaryTable pTable, IDBRecord queryRecord, CriticalItem[] cItems) throws Throwable {
+		if (queryRecord==null)
+			return null;
 		if (context==null)
 			return null;
 		ArrayList<CriticalItem> critcalItems = new ArrayList<CriticalItem>();

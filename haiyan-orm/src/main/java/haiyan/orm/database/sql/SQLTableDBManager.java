@@ -131,6 +131,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		this.autoCommit = b; // 如果此时没有conn也可以作为后面创建conn的依据
 		if (this.isAlive() && !this.connection.getAutoCommit()) { // 此时conn可能没创建
 			this.connection.setAutoCommit(b);
+//			this.connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED)
 		}
 		DebugUtil.debug(">----< dbm.setAutoCommit:" + this.autoCommit);
 	}
@@ -2044,9 +2045,13 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @param ex
 	 * @return boolean
 	 */
-	protected boolean isDBCorrect(SQLException ex) {
-		if (ex == null)
+	@Override
+	public boolean isDBCorrect(Throwable e) {
+		if (e == null)
 			return false;
+		if (!(e instanceof SQLException))
+			return false;
+		SQLException ex = (SQLException)e;
 		DebugUtil.error(">--< dbm.dbcorrect.errorCode=" + ex.getErrorCode()+",DSN="+getDSN(), ex);
 		if (ex.getErrorCode() == 942 || ex.getErrorCode() == 904)
 			return true;

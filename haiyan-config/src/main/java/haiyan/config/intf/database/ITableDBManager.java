@@ -44,5 +44,6 @@ public interface ITableDBManager extends IDBManager {
 	Object[][] getResultArray(String SQL, int colNum, Object[] paras) throws Throwable;
 	int executeUpdate(String SQL, Object[] paras) throws Throwable;
 	IDatabase getDatabase();
+	boolean isDBCorrect(Throwable ex);
 
 }

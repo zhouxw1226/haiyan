@@ -165,9 +165,12 @@ class HSqldbDBManager extends SQLTableDBManager {
 		return stringType ? "CONVERT(VARCHAR(23),NOW(),21)" : "NOW()";
 	}
 	@Override
-	protected boolean isDBCorrect(SQLException ex) {
-		if (ex == null)
+	public boolean isDBCorrect(Throwable e) {
+		if (e == null)
 			return false;
+		if (!(e instanceof SQLException))
+			return false;
+		SQLException ex = (SQLException)e;
 		DebugUtil.error(">--< dbm.dbcorrect.errorcode=" + ex.getErrorCode()+",DSN="+getDSN(), ex);
 		if (ex.getErrorCode() == 942 || ex.getErrorCode() == 904
 				|| ex.getErrorCode() == 207 || ex.getErrorCode() == 208
