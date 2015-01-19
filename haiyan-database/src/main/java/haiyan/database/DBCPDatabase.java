@@ -71,15 +71,15 @@ public class DBCPDatabase extends SQLDatabase {
 				ds.setDefaultTransactionIsolation(defaultTransactionIsolation);
 			}
 		}
-		int maxActive = VarUtil.toInt(PropUtil.getProperty("dbcp.maxActive"));
+		int maxActive = VarUtil.toInt(PropUtil.getProperty("dbcp.maxActive")); // 最大连接数
 		if (maxActive>=ds.getMaxActive()) {
 			ds.setMaxActive(maxActive);
 		}
-		long maxWait = VarUtil.toLong(PropUtil.getProperty("dbcp.maxWait"));
+		long maxWait = VarUtil.toLong(PropUtil.getProperty("dbcp.maxWait")); // 最大等待连接
 		if (maxWait>=ds.getMaxWait()) {
 			ds.setMaxWait(maxWait);
 		}
-		int maxIdle = VarUtil.toInt(PropUtil.getProperty("dbcp.maxIdle"));
+		int maxIdle = VarUtil.toInt(PropUtil.getProperty("dbcp.maxIdle")); // 最大空闲连接
 		if (maxIdle>=ds.getMaxIdle()) {
 			ds.setMaxIdle(maxIdle);
 		}

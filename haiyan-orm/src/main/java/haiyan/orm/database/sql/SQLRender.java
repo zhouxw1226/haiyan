@@ -820,23 +820,19 @@ class SQLRender implements ITableSQLRender {
 	 * @param filter
 	 */
 	private void dealExtFilter(ITableDBContext context, Table table, Query query, IDBFilter filter) {
-//		if (filter!=null)
-//			query.addFilter(filter);
-//		if (context!=null) {
-//			Object o = context.getAttribute("__extendFilter." + table.getName());
-//			if (o!=null) {
-//				SQLDBFilter extFilter = null;
-//				if (o instanceof SQLDBFilter) 
-//					extFilter = (SQLDBFilter)o;
-//				else
-//					extFilter = new SQLDBFilter(o.toString());
-//				//SQLDBFilterFactory.createBFilter();
-//				//new Filter(o.toString(), null); // @deprecated
-//				//if (extFilter!=null) {
-//				query.addFilter(extFilter);
-//				//}
-//			}
-//		}
+		if (filter!=null)
+			query.addFilter(filter);
+		if (context!=null) {
+			Object o = context.getAttribute("__extendFilter." + table.getName());
+			if (o!=null) {
+				SQLDBFilter extFilter = null;
+				if (o instanceof SQLDBFilter) 
+					extFilter = (SQLDBFilter)o;
+				else
+					extFilter = new SQLDBFilter(o.toString());
+				query.addFilter(extFilter);
+			}
+		}
 	}
 	@Override
 	public long countBy(ITableDBContext context, Table table, IDBFilter filter)
