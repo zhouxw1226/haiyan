@@ -79,6 +79,10 @@ public class TestDBManager {
 				record = dbm.select(context, table, id);
 				//dbm.updateCache(context, table, record);
 				System.err.println(record);
+				
+				IDBResultSet rst = dbm.select(context, table, new String[]{id,id});
+				//dbm.updateCache(context, table, record);
+				System.err.println(rst);
 			}
 			// ------------------------ update ------------------------ //
 			{

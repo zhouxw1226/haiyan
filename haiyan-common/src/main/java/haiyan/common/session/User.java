@@ -10,7 +10,6 @@ import haiyan.common.intf.session.IUser;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,76 +18,16 @@ import java.util.Map;
  */
 public class User implements IUser, Serializable { // Externalizable
 	private static final long serialVersionUID = 1L;
-	private Map<String, Object> properties = new HashMap<String, Object>();
+	private Map<String, Object> properties = new HashMap<String, Object>(); // 扩展属性
 	private String ID;
 	private String name;
 	private String code;
 	private String password;
 	private String deptID;
 	private String DSN;
-	private IRole[] roles;
-	private Boolean alive;
 	private String languageName;
-	private String sex;
-	private String email;
-	private String mobile;
-	private String portrait;
-	private String[] rights;
-	private Integer follower;
-	private Integer follow;
-	private Integer favorite;
-	private Integer product;
-	@GetMethod("follower")
-	@Override
-	public Integer getFollower() {
-//		if(this.follower == null)
-//			return 0;
-		return follower;
-	}
-	@SetMethod("follower")
-	@Override
-	public void setFollower(Integer follower) {
-		this.follower = follower;
-	}
-	@GetMethod("follow")
-	@Override
-	public Integer getFollow() {
-//		if(this.follow == null)
-//			return 0;
-		return follow;
-	}
-	@SetMethod("follow")
-	@Override
-	public void setFollow(Integer follow) {
-		this.follow = follow;
-	}
-	@GetMethod("favorite")
-	@Override
-	public Integer getFavorite() {
-//		if(this.favorite == null)
-//			return 0;
-		return favorite;
-	}
-	@SetMethod("favorite")
-	@Override
-	public void setFavorite(Integer favorite) {
-		this.favorite = favorite;
-	}
-	@GetMethod("product")
-	@Override
-	public Integer getProduct() {
-//		if(this.product == null)
-//			return 0;
-		return product;
-	}
-	@SetMethod("product")
-	@Override
-	public void setProduct(Integer product) {
-		this.product = product;
-	}
-	public void setRights(String[] rights) {
-		this.rights = rights;
-	}
+	private Boolean alive;
+	private IRole[] roles;
 	//	@Override
 //	public void writeExternal(ObjectOutput out) throws IOException {
 //		out.writeUTF(ID);
@@ -181,6 +120,14 @@ public class User implements IUser, Serializable { // Externalizable
 	public void setName(String name) {
 		this.name = name;
 	}
+	@Override
+	public void setProperty(String key, Object value) {
+		this.properties.put(key, value);
+	}
+	@Override
+	public Object getProperty(String key) {
+		return this.properties.get(key);
+	}
 	@SetMethod("languageName")
 	@Override
 	public void setLanguageName(String languageName) {
@@ -190,24 +137,6 @@ public class User implements IUser, Serializable { // Externalizable
 	@Override
 	public String getLanguageName() {
 		return this.languageName;
-	}
-	@Override
-	public void setProperty(String key, Object value) {
-		this.properties.put(key, value);
-	}
-	@Override
-	public Object getProperty(String key) {
-		return this.properties.get(key);
-	}
-	@SetMethod("properties")
-	@Override
-	public void setProperties(Map<String, Object> properties) {
-		this.properties = properties;
-	}
-	@GetMethod("properties")
-	@Override
-	public Map<?, ?> getProperties() {
-		return this.properties;
 	}
 	@GetMethod("alive")
 	@Override
@@ -219,61 +148,18 @@ public class User implements IUser, Serializable { // Externalizable
 	public void setAlive(Boolean alive) {
 		this.alive = alive;
 	}
+	@SetMethod("properties")
+	@Override
+	public void setProperties(Map<String, Object> properties) {
+		this.properties = properties;
+	}
+	@GetMethod("properties")
+	@Override
+	public Map<?, ?> getProperties() {
+		return this.properties;
+	}
 	@Override
 	public void close() throws IOException {
-	}
-	@SetMethod("sex")
-	@Override
-	public void setSex(String sex) {
-		this.sex = sex;
-	}
-	@GetMethod("sex")
-	@Override
-	public String getSex() {
-		return this.sex;
-	}
-	@SetMethod("email")
-	@Override
-	public void setEmail(String email) {
-		this.email = email;
-	}
-	@GetMethod("email")
-	@Override
-	public String getEmail() {
-		return this.email;
-	}
-	@SetMethod("mobile")
-	@Override
-	public void setMobile(String mobile) {
-		this.mobile = mobile;
-	}
-	@GetMethod("mobile")
-	@Override
-	public String getMobile() {
-		return this.mobile;
-	}
-	@GetMethod("portrait")
-	@Override
-	public String getPortrait() {
-		return portrait;
-	}
-	@SetMethod("portrait")
-	@Override
-	public void setPortrait(String portrait) {
-		this.portrait = portrait;
-	}
-	@GetMethod("rights")
-	@Override
-	public String getRights() {
-		return Arrays.toString(rights);
-	}
-	@SetMethod("rights")
-	@Override
-	public void setRights(String rights) {
-		if(rights == null)
-			this.rights = new String[]{"GUEST"};
-		else
-			this.rights = rights.split(";");
 	}
 
 }

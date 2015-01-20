@@ -32,6 +32,7 @@ public interface ITableDBManager extends IDBManager {
 	void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable;
 
 	IDBRecord select(ITableDBContext context, Table table, String id) throws Throwable;
+	IDBResultSet select(ITableDBContext context, Table table, String[] ids) throws Throwable;
 	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord record, long startRow, int count) throws Throwable;
 	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, long startRow, int count) throws Throwable;
 	IDBResultSet select(ITableDBContext context, Table table, IDBRecord record, int maxPageCount, int page) throws Throwable;
