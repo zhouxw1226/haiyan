@@ -62,6 +62,8 @@ class DerbyDBManager extends SQLTableDBManager {
 			else if (field.hasMaxFractionDigit())
 				return "decimal(" + len + "," + field.getMaxFractionDigit() + ")";
 			return "decimal";
+		} else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
+			return "decimal";
 		} else if (fldType == AbstractCommonFieldJavaTypeType.DATE) {
 			return "date";
 		} else if (fldType == AbstractCommonFieldJavaTypeType.DBBLOB) {
@@ -93,6 +95,8 @@ class DerbyDBManager extends SQLTableDBManager {
 				}
 			} else {
 				if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
+					generateSQL += " default -1";
+				} else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
 					generateSQL += " default -1";
 				}
 			}

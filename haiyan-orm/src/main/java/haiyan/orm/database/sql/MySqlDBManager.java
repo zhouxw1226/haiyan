@@ -213,6 +213,8 @@ public class MySqlDBManager extends SQLTableDBManager {
             } else {
                 if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
                     generateSQL += " default '-1'";
+                } else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
+                    generateSQL += " default '-1'";
                 } else {
                     // generateSQL += " default ``";
                     // generateSQL += " default null ";
@@ -243,6 +245,8 @@ public class MySqlDBManager extends SQLTableDBManager {
             else if (field.hasMaxFractionDigit())
                 return "decimal(" + len + "," + field.getMaxFractionDigit() + ")";
             return "decimal";
+        } else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) { 
+        	return "integer";
         } else if (fldType == AbstractCommonFieldJavaTypeType.DATE) {
             return "datetime";
         } else if (fldType == AbstractCommonFieldJavaTypeType.DBBLOB) {

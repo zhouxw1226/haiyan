@@ -2779,6 +2779,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
             } else {
                 if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
                     generateSQL += " default -1";
+                } else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
+                    generateSQL += " default -1";
                 }
             }
             if (!field.getNullAllowed()) {
@@ -2809,6 +2811,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
                 return "NUMBER(" + len + "," + field.getMinFractionDigit() + ")";
             else if (field.hasMaxFractionDigit())
                 return "NUMBER(" + len + "," + field.getMaxFractionDigit() + ")";
+            return "NUMBER";
+        } else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
             return "NUMBER";
         } else if (fldType == AbstractCommonFieldJavaTypeType.DATE) {
             return "DATE";
