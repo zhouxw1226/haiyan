@@ -281,14 +281,14 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		try {
 			if (cacheMgr!=null)
 				cacheMgr.clear();
-		} catch (Throwable ex) {
-			DebugUtil.error(ex);
+		} catch (Throwable ignore) {
+			ignore.printStackTrace();
 		}
 		try {
 			if (this.dbClear != null)
 				this.dbClear.clean(); // clear cache blob object or etc
-		} catch (Throwable ex) {
-			DebugUtil.error(ex);
+		} catch (Throwable ignore) {
+			ignore.printStackTrace();
 		}
 	}
 	@Override
