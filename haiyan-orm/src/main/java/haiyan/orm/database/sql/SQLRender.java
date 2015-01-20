@@ -710,7 +710,7 @@ class SQLRender implements ITableSQLRender {
 	public void insertPreparedStatement(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields, String newID) throws Throwable {
 		ps.setString(1, newID);
 		StringBuffer ss = new StringBuffer();
-		ss.append("##insert(" + table.getId().getName() + "):" + newID+"\t");
+		ss.append("##insert(" + table.getId().getName() + "):"+newID+"\t");
 		int i;
 		for (i = 0; i < fields.length; i++) {
 			Object value = record.get(fields[i].getName());
@@ -725,7 +725,7 @@ class SQLRender implements ITableSQLRender {
 				}
 			}
 			SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 2, fields[i], value);
-			ss.append("##insert(" + fields[i].getName() + "):" + value+"\t");
+			ss.append("##insert(" + fields[i].getName() + "):"+value+"\t");
 		}
 		DebugUtil.debug(ss.toString());
 	}
@@ -739,6 +739,15 @@ class SQLRender implements ITableSQLRender {
 			this.insertPreparedStatement(context, table, record, ps, fields, newID);
 		}
 		DebugUtil.debug("------insert().end------");
+		return ps;
+	}
+	@Override
+	public PreparedStatement getInsertPreparedStatement(ITableDBContext context, Table table) throws Throwable {
+		// 2007-01-09 zhouxw
+		Field[] fields = getInsertValidField(context, table);
+		mainSQL = getInsertSQL(table, fields);
+		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
+		DebugUtil.debug("------insert_().end------");
 		return ps;
 	}
 	@Override
@@ -758,23 +767,31 @@ class SQLRender implements ITableSQLRender {
 				}
 			}
 			SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 1, fields[i], value);
-			ss.append("##update(" + fields[i].getName() + "):" + value+"\t");
+			ss.append("##update(" + fields[i].getName() + "):"+value+"\t");
 		}
 		ps.setString(i + 1, (String)record.get(table.getId().getName()));
-		ss.append("##update(" + table.getId().getName() + "):" + record.get(table.getId().getName())+"\t");
+		ss.append("##update(" + table.getId().getName() + "):"+record.get(table.getId().getName())+"\t");
 		DebugUtil.debug(ss.toString());
 	}
 	@Override
 	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record) throws Throwable {
 		// 2007-01-09 zhouxw
 		Field[] fields = getUpdateValidField(context, table, record);
-		this.mainSQL = getUpdateSQL(table, fields);
-		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
+		mainSQL = getUpdateSQL(table, fields);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
 		if (record!=null) {
 			this.updatePreparedStatementValue(context, table, record, ps, fields);
 		}
 		DebugUtil.debug("------update().end------");
+		return ps;
+	}
+	@Override
+	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table) throws Throwable {
+		// 2007-01-09 zhouxw
+		Field[] fields = getUpdateValidField(context, table);
+		mainSQL = getUpdateSQL(table, fields);
+		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
+		DebugUtil.debug("------update_().end------");
 		return ps;
 	}
 	@Override
@@ -787,29 +804,13 @@ class SQLRender implements ITableSQLRender {
 		}
 		mainSQL += ")";
 		DebugUtil.debug(">deleteSQL:" + mainSQL);
+		StringBuffer ss = new StringBuffer();
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
 		for (int i=0;i<ids.length;i++) {
-			SQLDBTypeConvert.setValue(ps, context.getDBM().getClear(), i + 1, table.getId(), ids[i]);
+			SQLDBTypeConvert.setValue(ps, context.getDBM().getClear(), i+1, table.getId(), ids[i]);
+			ss.append("##delete(" + table.getId().getName() + "):"+ids[i]+"\t");
 		}
 		DebugUtil.debug("------delete().end------");
-		return ps;
-	}
-	@Override
-	public PreparedStatement getInsertPreparedStatement(ITableDBContext context, Table table) throws Throwable {
-		// 2007-01-09 zhouxw
-		Field[] fields = getInsertValidField(context, table);
-		mainSQL = getInsertSQL(table, fields);
-		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
-		DebugUtil.debug("------insert().end------");
-		return ps;
-	}
-	@Override
-	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table) throws Throwable {
-		// 2007-01-09 zhouxw
-		Field[] fields = getUpdateValidField(context, table);
-		this.mainSQL = getUpdateSQL(table, fields);
-		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
-		DebugUtil.debug("------update().end------");
 		return ps;
 	}
 	// ========================================================================================================================= //

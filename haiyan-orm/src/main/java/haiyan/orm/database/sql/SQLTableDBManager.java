@@ -343,6 +343,16 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	}
 	/**
 	 * @param context
+	 * @param table
+	 * @param id
+	 * @return
+	 * @throws Throwable
+	 */
+	public static IDBResultSet selectByID(ITableDBContext context, Table table, String[] ids) throws Throwable {
+		return getDBM(context).select(context, table, ids);
+	}
+	/**
+	 * @param context
 	 * @param tableName
 	 * @param record
 	 * @param maxPageRecordCount
@@ -1409,6 +1419,31 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			CloseUtil.close(rs);
 			CloseUtil.close(ps);
 		}
+	}
+	@Override
+	public IDBResultSet select(ITableDBContext context, Table table, String[] ids)
+			throws Throwable {
+		return select(context, table, ids, IDBRecordCacheManager.CONTEXT_SESSION);
+	}
+	/**
+	 * @param context
+	 * @param table
+	 * @param id
+	 * @param type
+	 * @param args
+	 * @return
+	 * @throws Throwable
+	 */
+	protected IDBResultSet select(ITableDBContext context, Table table, String[] ids,
+			short type, int... args) throws Throwable {
+		String placeholder = "";
+		for (int i=0;i<ids.length;i++) {
+			if (placeholder.length()>0)
+				placeholder+=",";
+			placeholder+="?";
+		}
+		IDBFilter filter = new SQLDBFilter("and t_1."+table.getId().getName()+" in ("+placeholder+")", ids);
+		return this.select(context, table, filter, ids.length, 1);
 	}
 	@Override
 	public long countBy(final ITableDBContext context, final Table table, IDBFilter filter) throws Throwable {

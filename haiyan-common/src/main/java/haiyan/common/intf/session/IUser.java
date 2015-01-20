@@ -24,29 +24,13 @@ public interface IUser extends IUserSession, Serializable { // Externalizable
 	void setRoles(IRole[] roles);
 	String getDSN();
 	void setDSN(String DSN);
+
 	String getLanguageName();
 	void setLanguageName(String languageName);
-	Object getProperty(String key);
+	
 	void setProperty(String key, Object value);
+	Object getProperty(String key);
 	void setProperties(Map<String, Object> properties);
 	Map<?, ?> getProperties();
-	void setSex(String sex);
-	String getSex();
-	void setEmail(String email);
-	String getEmail();
-	void setMobile(String mobile);
-	String getMobile();
-	String getRights();
-	void setRights(String rights);
-	String getPortrait();
-	void setPortrait(String portrait);
-	Integer getFollow();
-	Integer getFollower();
-	void setFollower(Integer follower);
-	void setFollow(Integer follow);
-	Integer getFavorite();
-	void setFavorite(Integer favorite);
-	Integer getProduct();
-	void setProduct(Integer product);
 }
  
