@@ -26,7 +26,7 @@ public class UnitOfWorkDBManager extends SQLTableDBManager {
 		return new SQLRender();
 	}
 	@Override
-	protected IDBRecord select(ITableDBContext context, Table table, String id,
+	public IDBRecord select(ITableDBContext context, Table table, String id,
 			short type, int... args) throws Throwable {
 		return super.select(context, table, id, type, args);
 	}
