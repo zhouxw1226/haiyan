@@ -275,5 +275,41 @@ public class MySqlDBManager extends SQLTableDBManager {
             return "DATE_FORMAT('" + gsCurTime + "', '%Y-%m-%d')";
         // return "CONVERT(DATETIME,'" + gsCurTime + "',21)";
     }
+//	@Override
+//	public IDBRecord select(ITableDBContext context, Table table, String id)
+//			throws Throwable {
+//		return select(context, table, id,IDBRecordCacheManager.CONTEXT_SESSION);
+//	}
+//	@Override
+//	protected IDBRecord select(ITableDBContext context, Table table, String id,
+//			short type, int... args) throws Throwable {
+//		IDBRecord record = null;
+//		PreparedStatement ps = null;
+//		ResultSet rs = null;
+//		try {
+//			ps = getSQLRender().getSelectPreparedStatement(context, table, id);
+//			rs = ps.executeQuery();
+//			if (rs.next()) {
+//				record = getRecordByRow(context, table, rs, type);
+//				if (record == null)
+//					return null;
+//			} else {
+//				return null;
+//			}
+//			// SQLMappingTableManager.queryMappingTable(context, table, form, id, this);
+//			// SQLOne2OneTableManager.queryOne2OneTable(context, table, result, id, this);
+//			return record;
+//		} catch (SQLException ex) {
+//			if (isDBCorrect(ex)) {
+//				this.tableErrHandle(getSQLRender().getSQL());
+//				if (isDeep(args))
+//					return select(context, table, id, type, getDeep(args));
+//			}
+//			throw ex;
+//		} finally {
+//			CloseUtil.close(rs);
+//			CloseUtil.close(ps);
+//		}
+//	}
 
 }

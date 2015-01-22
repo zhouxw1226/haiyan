@@ -15,7 +15,7 @@ import java.lang.reflect.Method;
 public class RecordBeanTranceferUtil {
 	
 	public static IDBRecord bean2Record(Object obj,IDBRecord record) throws Throwable{
-		Method[] methods = obj.getClass().getDeclaredMethods();
+		Method[] methods = obj.getClass().getMethods();
 		for(Method method : methods){
 			if(!method.isAnnotationPresent(GetMethod.class))
 				continue;
@@ -35,7 +35,7 @@ public class RecordBeanTranceferUtil {
 	
 	
 	public static Object record2Bean(IDBRecord record,Object obj) throws Throwable{
-		Method[] methods = obj.getClass().getDeclaredMethods();
+		Method[] methods = obj.getClass().getMethods();
 		for(Method method : methods){
 			if(!method.isAnnotationPresent(SetMethod.class))
 				continue;

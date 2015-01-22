@@ -1382,7 +1382,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @return
 	 * @throws Throwable
 	 */
-	protected IDBRecord select(ITableDBContext context, Table table, String id,
+	@Override
+	public IDBRecord select(ITableDBContext context, Table table, String id,
 			short type, int... args) throws Throwable {
 		IDBRecord record = getCache(context, table, id, type);
 		if (record!=null) {
@@ -1434,7 +1435,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @return
 	 * @throws Throwable
 	 */
-	protected IDBResultSet select(ITableDBContext context, Table table, String[] ids,
+	@Override
+	public IDBResultSet select(ITableDBContext context, Table table, String[] ids,
 			short type, int... args) throws Throwable {
 		String placeholder = "";
 		for (int i=0;i<ids.length;i++) {
