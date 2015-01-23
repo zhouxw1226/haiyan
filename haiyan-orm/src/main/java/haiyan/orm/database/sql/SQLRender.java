@@ -140,16 +140,13 @@ class SQLRender implements ITableSQLRender {
 			@Override
 			public void dealWithLazyLoadField(Table table, Field field,
 					Object[] globalVars) throws Throwable {
-				// TODO Auto-generated method stub
 				//System.err.println("dealWithLazyLoadField");
 			}
 			@Override
 			public void dealWithMappingField(Table table, Field field,
 					Object[] globalVars) throws Throwable {
-				// TODO Auto-generated method stub
 				//System.err.println("dealWithMappingField");
 			}
-
 		};
 		StringBuffer cols = new StringBuffer();
 		PrimaryTable pTable = new PrimaryTable(ConfigUtil.getRealTableName(table), "");
@@ -161,7 +158,7 @@ class SQLRender implements ITableSQLRender {
 			String methodName = qs.getMethodName();
 			String parameter = qs.getParameter();
 			String content = qs.getContent();
-			if ("exp".equalsIgnoreCase(methodName)) {
+			if (isExpMethod(methodName)) {
 				IExpUtil expUtil = context.getExpUtil();
 				if (expUtil==null) {
 					throw new Warning("context.exp is null");
@@ -1299,7 +1296,6 @@ class SQLRender implements ITableSQLRender {
 //		}
 		return fixedQueryFilter;
 	}
-
 	/**
 	 * @param table
 	 * @param tableAlias
@@ -1334,7 +1330,7 @@ class SQLRender implements ITableSQLRender {
 				String methodName = pf.getMethodName();
 				String parameter = pf.getParameter();
 				String content = pf.getContent();
-				if ("exp".equalsIgnoreCase(methodName)) {
+				if (isExpMethod(methodName)) {
 					IExpUtil expUtil = context.getExpUtil();
 					if (expUtil==null) {
 						throw new Warning("context.exp is null");
@@ -1386,5 +1382,8 @@ class SQLRender implements ITableSQLRender {
 				result = result.substring(0, s);
 		}
 		return result.length() == 0 ? "" : result;
+	}
+	private static boolean isExpMethod(String methodName) {
+		return "exp".equalsIgnoreCase(methodName);
 	}
 }
