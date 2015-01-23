@@ -56,7 +56,7 @@ public class DBRecordCacheFactoryNoEhCache {
 //				}
 			}
 			@Override
-			public void removeCache(ITableDBContext context, Table table, String[] ids, short type) throws Throwable {
+			public void removeCache(ITableDBContext context, Table table, String[] ids) throws Throwable {
 				if (!ConfigUtil.isORMUseCache() || table.getName().toUpperCase().startsWith("V_"))
 					return;
 				// 要注意直接执行SQL语句的操作对缓冲数据的影响
@@ -82,8 +82,7 @@ public class DBRecordCacheFactoryNoEhCache {
 				}
 			}
 			@Override
-			public void updateCache(ITableDBContext context, Table table, IDBRecord record,
-					short type) throws Throwable {
+			public void updateCache(ITableDBContext context, Table table, IDBRecord record) throws Throwable {
 				if (!ConfigUtil.isORMUseCache() || table.getName().toUpperCase().startsWith("V_"))
 					return;
 				// 双缓冲：更新缓存后能提高DB->VO的转换效率
@@ -156,7 +155,7 @@ public class DBRecordCacheFactoryNoEhCache {
 				}
 			}
 			@Override
-			public IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable {
+			public IDBRecord getCache(ITableDBContext context, Table table, String id) throws Throwable {
 				if (!ConfigUtil.isORMUseCache() || table.getName().toUpperCase().startsWith("V_"))
 					return null;
 				// 双缓冲：要注意直接执行SQL语句的操作对缓冲数据的影响
@@ -186,14 +185,14 @@ public class DBRecordCacheFactoryNoEhCache {
 				IDBRecord record;
 				while(iter.hasNext()) {
 					key = iter.next();
-					//arr = key.split(CACHE_DEMI); // [0]:cacheStore [1]:cacheKey
+//					arr = key.split(CACHE_DEMI); // [0]:cacheStore [1]:cacheKey
 					record = this.transaction.get(key);
-//					if (r==null) 
-					{ // deleted
-//						CacheUtil.deleteData(arr[0], arr[1]);
-					} 
+////				if (r==null) 
+//					{ // deleted
+////						CacheUtil.deleteData(arr[0], arr[1]);
+//					} 
 //					else 
-					{
+//					{
 						//record.updateVersion(); // 不能加这里因为save完直接load生成客户端view了
 						record.commit();
 						//CacheUtil.setRemoteDirty(a[0], a[1]);
@@ -202,7 +201,7 @@ public class DBRecordCacheFactoryNoEhCache {
 						//update和insert设置setdirty后只用removeData
 						record.remove(DataConstant.HYFORMKEY);
 //						CacheUtil.updateData(arr[0], arr[1], r);
-					}
+//					}
 //					this.transaction.remove(key);
 //					if ("SYSOPERATOR".equalsIgnoreCase(arr[0]) || "SYSORGA".equalsIgnoreCase(arr[0]))
 //						RightUtil.clearOrgasOfUser(arr[1]);
@@ -218,12 +217,12 @@ public class DBRecordCacheFactoryNoEhCache {
 					key = iter.next();
 //					arr = key.split(CACHE_DEMI);
 					record = this.transaction.get(key);
-//					if (r==null) 
-					{ // deleted
-					} 
+////				if (r==null) 
+//					{ // deleted
+////						CacheUtil.deleteData(arr[0], arr[1]);
+//					} 
 //					else 
-					{
-						//record.rollback();
+//					{
 						//CacheUtil.setRemoteDirty(a[0], a[1]);
 						record.setDirty(); // setDirty()+setCache()和removeCache()都會reget
 						//CacheUtil.removeData(a[0], a[1]); // reget
@@ -234,7 +233,7 @@ public class DBRecordCacheFactoryNoEhCache {
 							record.remove(DataConstant.HYFORMKEY);
 						    //CacheUtil.setLocalData(a[0], a[1], r);
 						}
-					}
+//					}
 				}
 			}
 		};

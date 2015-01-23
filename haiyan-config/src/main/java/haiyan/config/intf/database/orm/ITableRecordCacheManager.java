@@ -11,8 +11,8 @@ import haiyan.config.intf.session.ITableDBContext;
  */
 public interface ITableRecordCacheManager extends IDBRecordCacheManager {
 	
-	IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable;
-	void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable;
-	void removeCache(ITableDBContext context, Table table, String[] ids, short type) throws Throwable;
+	IDBRecord getCache(ITableDBContext context, Table table, String id) throws Throwable;
+	void updateCache(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
+	void removeCache(ITableDBContext context, Table table, String[] ids) throws Throwable;
 
 }

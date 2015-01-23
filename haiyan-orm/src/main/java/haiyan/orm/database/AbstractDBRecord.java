@@ -36,6 +36,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
     public abstract Map<String, Object> getDataMap();
     private Map<String, Object> oreignDataMap = new HashMap<String, Object>(10, 1);
     private Set<String> updatedKeys = new HashSet<String>(10, 1);
+    private Set<String> deletedKeys = new HashSet<String>(10, 1);
     private String tableName;
     public String getTableName() {
         return this.tableName;
@@ -64,6 +65,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
     public void flushOreign() { // 将加载的DB数据flush到一级缓存
 		Map dataMap = this.getDataMap();
 		if (dataMap.size()>0) {
+	    	this.deletedKeys.clear();
 			this.updatedKeys.clear();
 			this.oreignDataMap.clear();
 			this.oreignDataMap.putAll((Map)dataMap);
@@ -85,11 +87,16 @@ public abstract class AbstractDBRecord implements IDBRecord {
 //					DebugUtil.debug(">save file:" + b);
 //				}
 //			}
-			blobs.clear();
+	    	this.deletedKeys.clear();
+			this.updatedKeys.clear();
+			this.blobs.clear();
 			Map dataMap = this.getDataMap();
 			if (dataMap!=null && dataMap.size()>0) {
-				this.oreignDataMap.clear();
-				this.oreignDataMap.putAll((Map)dataMap);
+				Map oreignMap = this.oreignDataMap;
+				if (oreignMap!=null) {
+					//oreignMap.clear();
+					oreignMap.putAll(dataMap);
+				}
 			}
 		} catch(Throwable e) {
 			throw new RuntimeException(e);
@@ -106,13 +113,15 @@ public abstract class AbstractDBRecord implements IDBRecord {
 //					DebugUtil.debug(">delete file:" + b+".bak");
 //				}
 //			}
+	    	this.deletedKeys.clear();
 			this.updatedKeys.clear();
-			blobs.clear();
-			if (this.oreignDataMap!=null && this.oreignDataMap.size()>0) {
+			this.blobs.clear();
+			Map oreignMap = this.oreignDataMap;
+			if (oreignMap!=null && oreignMap.size()>0) {
 				Map dataMap = this.getDataMap();
 				if (dataMap!=null) {
-					dataMap.clear();
-					dataMap.putAll((Map)this.oreignDataMap);
+					//dataMap.clear();
+					dataMap.putAll(oreignMap);
 				}
 				//this.setDataMap(this.origiDataMap);
 				return true;
@@ -401,8 +410,18 @@ public abstract class AbstractDBRecord implements IDBRecord {
         return this.removeParameter(name);
     }
     @Override
+    public Object delete(String name) {
+    	//Object v = this.get(name);
+    	this.updatedKeys.add(name); // 要加到updateSQL占位符中
+    	this.deletedKeys.add(name);
+    	Object v = this.remove(name);
+    	this.oreignDataMap.put(name, v);
+    	return v;
+    }
+    @Override
     public void set(String name, Object value) {
     	this.updatedKeys.add(name);
+    	this.deletedKeys.remove(name);
         this.setParameter(name, value);
     }
     @Override
@@ -412,6 +431,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
     @Override
     public void setValues(String name, Object[] values) {
     	this.updatedKeys.add(name);
+    	this.deletedKeys.remove(name);
         this.setParameterValues(name, values);
     }
     @Override
@@ -452,16 +472,19 @@ public abstract class AbstractDBRecord implements IDBRecord {
         Object value = getParameter(name);
         if (StringUtil.isBlankOrNull(value))
         	value = 0;
-        //value = StringUtil.isBlankOrNull(value) ? "0" : value.replaceAll(",", "");
         return VarUtil.toBigDecimal(value);
     }
     @Override
-	public Set<String> inertKeySet() {
-        return keySet();
+	public Set<String> insertedKeySet() {
+        return this.dataKeySet();
     }
     @Override
-	public Set<String> updateKeySet() {
+	public Set<String> updatedKeySet() {
     	return this.updatedKeys;
+    }
+    @Override
+	public Set<String> deletedKeySet() {
+    	return this.deletedKeys;
     }
     @Override
 	public Set<String> oreignKeySet() {
@@ -469,7 +492,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
         return map.keySet();
     }
     @Override
-	public Set<String> keySet() {
+	public Set<String> dataKeySet() {
         Map<String, Object> map = this.getDataMap();
         return map.keySet();
     }

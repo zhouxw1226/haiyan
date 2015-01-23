@@ -44,7 +44,7 @@ public class DBRecordCacheFactory {
 			// 跟着DBSession走，DBSession既是IDBManager
 			protected transient Map<String,IDBRecord> transaction = new HashMap<String,IDBRecord>(); // ConcurrentHashMap 
 			@Override
-			public void removeCache(ITableDBContext context, Table table, String[] ids, short type) throws Throwable {
+			public void removeCache(ITableDBContext context, Table table, String[] ids) throws Throwable {
 				if (!ConfigUtil.isORMUseCache() || table.getName().toUpperCase().startsWith("V_"))
 					return;
 				// 要注意直接执行SQL语句的操作对缓冲数据的影响
@@ -70,7 +70,7 @@ public class DBRecordCacheFactory {
 				}
 			}
 			@Override
-			public void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable {
+			public void updateCache(ITableDBContext context, Table table, IDBRecord record) throws Throwable {
 				if (!ConfigUtil.isORMUseCache() || table.getName().toUpperCase().startsWith("V_"))
 					return;
 				// 双缓冲：更新缓存后能提高DB->VO的转换效率
@@ -84,18 +84,17 @@ public class DBRecordCacheFactory {
 					// record.setDirty(); // 只要update或者insert过重取  
 					// dirty后doEditOne才能取到最新的for executePlugin
 					// NOTICE 但同一个事务中会把可能会回滚修改的记录reget放到trasaction里...
-					transaction.put(tableName+CACHE_DEMI+id, record);
+					this.transaction.put(tableName+CACHE_DEMI+id, record);
 				//} else 
-				
-				{ // load from db
-					record.clearDirty();
-					record.commit();
-//					if (type == IDBRecordCacheManager.PERSIST_SESSION)
-//						CacheUtil.setData(tableName, id, record); // create
-					// record.syncVersion();
-					// 需要轮询不同配置拿到最新的版本号
-					// 这样处理也可以必须在同一个配置中使用一个版本号
-				}
+//				{ // load from db
+//					record.clearDirty();
+//					record.commit();
+////					if (type == IDBRecordCacheManager.PERSIST_SESSION)
+////						CacheUtil.setData(tableName, id, record); // create
+//					// record.syncVersion();
+//					// 需要轮询不同配置拿到最新的版本号
+//					// 这样处理也可以必须在同一个配置中使用一个版本号
+//				}
 				// CacheUtil.setData(tableName, id, record);
 				// // 删掉吧,至少用businessobj能获取autonaming
 				// CacheUtil.removeData(tableName, id);
@@ -108,7 +107,7 @@ public class DBRecordCacheFactory {
 					IDBRecord linkedRecord = null;
 //					if (type == IDBRecordCacheManager.PERSIST_SESSION)
 //						linkedRecord = (IDBRecord) CacheUtil.getData(linkedTableName, id);
-					linkedRecord = transaction.get(linkedTableName+CACHE_DEMI+id);
+					linkedRecord = this.transaction.get(linkedTableName+CACHE_DEMI+id);
 					if (linkedRecord != null) {
 						{ // 更新关联表数据
 //							Iterator<String> iter = linkedRecord.keySet().iterator(); // NOTICE 不同配置字段不同
@@ -141,13 +140,13 @@ public class DBRecordCacheFactory {
 //							if (type == IDBRecordCacheManager.PERSIST_SESSION)
 //								CacheUtil.deleteData(linkedTableName, id); // remove最合适因为version变了
 						    //if (type==CONTEXT_SESSION)
-						    transaction.remove(linkedTableName+CACHE_DEMI+id); // 说明要更新 其他关联缓存
+							this.transaction.remove(linkedTableName+CACHE_DEMI+id); // 说明要更新 其他关联缓存
 						}
 					}
 				}
 			}
 			@Override
-			public IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable {
+			public IDBRecord getCache(ITableDBContext context, Table table, String id) throws Throwable {
 				if (!ConfigUtil.isORMUseCache() || table.getName().toUpperCase().startsWith("V_"))
 					return null;
 				// 双缓冲：要注意直接执行SQL语句的操作对缓冲数据的影响
@@ -189,19 +188,19 @@ public class DBRecordCacheFactory {
 				Iterator<String> iter = this.transaction.keySet().iterator();
 				String key;
 //				String[] arr;
-				IDBRecord r;
+				IDBRecord record;
 				while(iter.hasNext()) {
 					key = iter.next();
 //					arr = k.split(CACHE_DEMI); // [0]:cacheStore [1]:cacheKey
-					r = this.transaction.get(key);
-					if (r==null) { // deleted
+					record = this.transaction.get(key);
+					if (record==null) { // deleted
 //						if (type == IDBRecordCacheManager.PERSIST_SESSION)
 //							CacheUtil.deleteData(arr[0], arr[1]);
 					} else {
-						r.commit();
-						r.setDirty(); // setDirty()+setCache()和removeCache()都會reget
+						record.commit();
+						record.setDirty(); // setDirty()+setCache()和removeCache()都會reget
 						//update和insert设置setdirty后只用removeData
-						r.remove(DataConstant.HYFORMKEY);
+						record.remove(DataConstant.HYFORMKEY);
 //						if (type == IDBRecordCacheManager.PERSIST_SESSION)
 //							CacheUtil.updateData(arr[0], arr[1], r);
 					}
@@ -215,20 +214,23 @@ public class DBRecordCacheFactory {
 				Iterator<String> iter = this.transaction.keySet().iterator();
 				String key;
 //				String[] arr;
-				IDBRecord r;
+				IDBRecord record;
 				while(iter.hasNext()) {
 					key = iter.next();
 //					arr = k.split(CACHE_DEMI);
-					r = this.transaction.get(key);
-					if (r==null) { // deleted
+					record = this.transaction.get(key);
+					if (record==null) { // deleted
+//						if (type == IDBRecordCacheManager.PERSIST_SESSION)
+//						CacheUtil.deleteData(arr[0], arr[1]);
 					} else {
-						r.setDirty(); // setDirty()+setCache()和removeCache()都會reget
+						//CacheUtil.setRemoteDirty(a[0], a[1]);
+						record.setDirty(); // setDirty()+setCache()和removeCache()都會reget
 						//update和insert设置setdirty后只用removeData
-						if (!r.rollback()) {
+						if (!record.rollback()) {
 //							if (type == IDBRecordCacheManager.PERSIST_SESSION)
 //								CacheUtil.removeLocalData(arr[0], arr[1]);
 						} else {
-			                r.remove(DataConstant.HYFORMKEY);
+			                record.remove(DataConstant.HYFORMKEY);
 //			                if (type == IDBRecordCacheManager.PERSIST_SESSION)
 //			                	CacheUtil.setLocalData(arr[0], arr[1], r);
 						}

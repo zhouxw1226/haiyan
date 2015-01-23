@@ -536,7 +536,7 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public Field[] getInsertValidField(ITableDBContext context, Table table, IDBRecord record) {
 		// 2008-10-09 zhouxw
-		Set<String> insertKeys = record==null?null:record.inertKeySet();
+		Set<String> insertKeys = record==null?null:record.insertedKeySet();
 		Field[] fields = table.getField();
 		ArrayList<Field> result = new ArrayList<Field>();
 		for (Field field:fields) {
@@ -574,7 +574,7 @@ class SQLRender implements ITableSQLRender {
 	}
 	@Override
 	public Field[] getUpdateValidField(ITableDBContext context, Table table, IDBRecord record) {
-		Set<String> updateKeys = record==null?null:record.updateKeySet(); // 2008-10-09 zhouxw
+		Set<String> updateKeys = record==null?null:record.updatedKeySet(); // 2008-10-09 zhouxw
 		Field[] fields = table.getField();
 		ArrayList<Field> result = new ArrayList<Field>();
 		for (Field field:fields) {
@@ -753,21 +753,27 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public void updatePreparedStatementValue(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields) throws Throwable {
 		int i;
+		Set<String> deletedKeySet = record.deletedKeySet();
 		StringBuffer ss = new StringBuffer();
 		for (i = 0; i < fields.length; i++) {
 			Object value = record.get(fields[i].getName());
-			String defValue = fields[i].getDefaultValue();
-			if (StringUtil.isBlankOrNull(value) && !StringUtil.isBlankOrNull(defValue)) {
-				if (ExpUtil.isFormula(defValue)) {
-					if (exp == null)
-						exp = new ExpUtil(context, table, record);
-					value = "" + exp.evalExp(defValue.substring(1));
-				} else {
-					value = defValue;
+			if (deletedKeySet.contains(fields[i].getName())) {
+				SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 1, fields[i], null);
+				ss.append("##update(" + fields[i].getName() + "):"+null+"\t");
+			} else {
+				String defValue = fields[i].getDefaultValue();
+				if (StringUtil.isBlankOrNull(value) && !StringUtil.isBlankOrNull(defValue)) {
+					if (ExpUtil.isFormula(defValue)) {
+						if (exp == null)
+							exp = new ExpUtil(context, table, record);
+						value = "" + exp.evalExp(defValue.substring(1));
+					} else {
+						value = defValue;
+					}
 				}
+				SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 1, fields[i], value);
+				ss.append("##update(" + fields[i].getName() + "):"+value+"\t");
 			}
-			SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 1, fields[i], value);
-			ss.append("##update(" + fields[i].getName() + "):"+value+"\t");
 		}
 		ps.setString(i + 1, (String)record.get(table.getId().getName()));
 		ss.append("##update(" + table.getId().getName() + "):"+record.get(table.getId().getName())+"\t");

@@ -10,17 +10,13 @@ import haiyan.common.session.User;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import net.sf.json.JSONObject;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,7 +27,6 @@ public class TestRecordTrancefer {
 		util.testUser2Record();
 		util.testRecord2User();
 	}
-	
 	@Test
 	public  void testUser2Record() throws Throwable{
 		User user = new User();
@@ -42,7 +37,6 @@ public class TestRecordTrancefer {
 		record = RecordBeanTranceferUtil.bean2Record(user, record);//user2Record( user);
 		Assert.assertTrue(record.get("code").equals("userCode") && record.get("deptID").equals("userDeptID") && record.get("alive").equals(true));
 	}
-	
 	@Test
 	public  void testRecord2User() throws Throwable{
 		IDBRecord record = new DBRecord();
@@ -52,32 +46,33 @@ public class TestRecordTrancefer {
 		record.set("alive", true);
 		User user = new User();
 		IUser result = (IUser) RecordBeanTranceferUtil.record2Bean(record, user);//record2User(record);
-		
 		Assert.assertTrue(result.getId().equals("userID") && result.getName().equals("userName") && result.getDSN().equals("userDSN") && result.isAlive());
 	}
-	
+	@SuppressWarnings({"rawtypes","unchecked"})
 	private class DBRecord implements IDBRecord{
 	    private Map<String, Object> oreignDataMap = new HashMap<String, Object>(10, 1);
 	    private Set<String> updatedKeys = new HashSet<String>(10, 1);
-	    private String tableName;
-	    public String getTableName() {
-	        return this.tableName;
-	    }
-	    public void setTableName(String tableName) {
-	        this.tableName = tableName;
-	    }
-	    private List<String> blobs = new ArrayList<String>();
-		public void addBlobFile(String b) {
-			if (b!=null)
-				blobs.add(b);
-		}
-		public List<String> getBlobFile() {
-			return blobs;
-		}
+	    private Set<String> deletedKeys = new HashSet<String>(10, 1);
+//	    private String tableName;
+//	    public String getTableName() {
+//	        return this.tableName;
+//	    }
+//	    public void setTableName(String tableName) {
+//	        this.tableName = tableName;
+//	    }
+//	    private List<String> blobs = new ArrayList<String>();
+//		public void addBlobFile(String b) {
+//			if (b!=null)
+//				blobs.add(b);
+//		}
+//		public List<String> getBlobFile() {
+//			return blobs;
+//		} 
 		@Override
 	    public void flushOreign() { // 将加载的DB数据flush到一级缓存
 			Map dataMap = this.getDataMap();
 			if (dataMap.size()>0) {
+				this.deletedKeys.clear();
 				this.updatedKeys.clear();
 				this.oreignDataMap.clear();
 				this.oreignDataMap.putAll((Map)dataMap);
@@ -99,7 +94,7 @@ public class TestRecordTrancefer {
 //						DebugUtil.debug(">save file:" + b);
 //					}
 //				}
-				blobs.clear();
+//				blobs.clear();
 				Map dataMap = this.getDataMap();
 				if (dataMap!=null && dataMap.size()>0) {
 					this.oreignDataMap.clear();
@@ -120,8 +115,9 @@ public class TestRecordTrancefer {
 //						DebugUtil.debug(">delete file:" + b+".bak");
 //					}
 //				}
+				this.deletedKeys.clear();
 				this.updatedKeys.clear();
-				blobs.clear();
+//				blobs.clear();
 				if (this.oreignDataMap!=null && this.oreignDataMap.size()>0) {
 					Map dataMap = this.getDataMap();
 					if (dataMap!=null) {
@@ -157,73 +153,73 @@ public class TestRecordTrancefer {
 	        }
 	        return buf.toString();
 	    }
-		/**
-		 * @return JSONObject
-		 */
-		public JSONObject toJSon() {
-			return toJSon(true, null);
-		}
-	    /**
-	     * @return JSONObject
-	     */
-	    public JSONObject toJSon(boolean showAll, ArrayList<String> ignore) {
-	        // JSONObject json = JSONObject.fromObject(getDataMap());
-	        // return JSONObject.fromObject(getDataMap());
-	        JSONObject obj = new JSONObject();
-	        Iterator<?> key = getDataMap().keySet().iterator();
-	        while (key.hasNext()) {
-	            String keyName = (String) key.next();
-	            if (isIgnoredTo(keyName))
-	                continue;
-				if (!showAll && ignore!=null && ignore.contains(keyName))
-					continue;
-	            Object[] values = getParameterValues(keyName);
-	            if (values != null && values.length != 0) {
-	                String value = StringUtil.join(values, ",", "");
-	                obj.put(keyName, value);
-	            } else
-	                obj.put(keyName, "");
-	        }
-	        return obj;
-	    }
-		public void fromJSon(JSONObject json2) {
-			if (json2==null)
-				return;
-			JSONObject json;
-			if (json2.containsKey("dataMap"))
-				json = json2.getJSONObject("dataMap");
-			else
-				json = json2;
-			String k; Object o;
-			Iterator iter = json.keys();
-			while(iter.hasNext()) {
-				k = iter.next().toString();
-				o = json.get(k);
-//				if (o instanceof net.sf.json.JSONObject) {
-//					this.fromJSon((net.sf.json.JSONObject)o);
-//					break;
-//				}
-//				System.out.println("------====="+o.getClass());
-				this.set(k, o==null?"":o.toString());
-			}
-		}
-	    /**
-	     * @param json
-	     */
-	    public void json2Form(JSONObject json) {
-	        Iterator<?> iter = json.keys();
-	        while (iter.hasNext()) {
-	            String key = (String) iter.next();
-	            if (!json.containsKey(key))
-	            	continue;
-	            Object val = json.get(key);
-	            if (val != null) {
-	                //if (val.startsWith("\"") && val.endsWith("\""))
-	                //    val = val.substring(0, val.length() - 2).substring(2);
-	                setParameter(key, val);
-	            }
-	        }
-	    }
+//		/**
+//		 * @return JSONObject
+//		 */
+//		public JSONObject toJSon() {
+//			return toJSon(true, null);
+//		}
+//	    /**
+//	     * @return JSONObject
+//	     */
+//	    public JSONObject toJSon(boolean showAll, ArrayList<String> ignore) {
+//	        // JSONObject json = JSONObject.fromObject(getDataMap());
+//	        // return JSONObject.fromObject(getDataMap());
+//	        JSONObject obj = new JSONObject();
+//	        Iterator<?> key = getDataMap().keySet().iterator();
+//	        while (key.hasNext()) {
+//	            String keyName = (String) key.next();
+//	            if (isIgnoredTo(keyName))
+//	                continue;
+//				if (!showAll && ignore!=null && ignore.contains(keyName))
+//					continue;
+//	            Object[] values = getParameterValues(keyName);
+//	            if (values != null && values.length != 0) {
+//	                String value = StringUtil.join(values, ",", "");
+//	                obj.put(keyName, value);
+//	            } else
+//	                obj.put(keyName, "");
+//	        }
+//	        return obj;
+//	    }
+//		public void fromJSon(JSONObject json2) {
+//			if (json2==null)
+//				return;
+//			JSONObject json;
+//			if (json2.containsKey("dataMap"))
+//				json = json2.getJSONObject("dataMap");
+//			else
+//				json = json2;
+//			String k; Object o;
+//			Iterator iter = json.keys();
+//			while(iter.hasNext()) {
+//				k = iter.next().toString();
+//				o = json.get(k);
+////				if (o instanceof net.sf.json.JSONObject) {
+////					this.fromJSon((net.sf.json.JSONObject)o);
+////					break;
+////				}
+////				System.out.println("------====="+o.getClass());
+//				this.set(k, o==null?"":o.toString());
+//			}
+//		}
+//	    /**
+//	     * @param json
+//	     */
+//	    public void json2Form(JSONObject json) {
+//	        Iterator<?> iter = json.keys();
+//	        while (iter.hasNext()) {
+//	            String key = (String) iter.next();
+//	            if (!json.containsKey(key))
+//	            	continue;
+//	            Object val = json.get(key);
+//	            if (val != null) {
+//	                //if (val.startsWith("\"") && val.endsWith("\""))
+//	                //    val = val.substring(0, val.length() - 2).substring(2);
+//	                setParameter(key, val);
+//	            }
+//	        }
+//	    }
 	    /**
 	     * @param keyName
 	     * @return boolean
@@ -240,8 +236,16 @@ public class TestRecordTrancefer {
 	        return this.removeParameter(name);
 	    }
 	    @Override
+	    public Object delete(String name) {
+	    	this.oreignDataMap.put(name, this.get(name));
+	    	this.updatedKeys.add(name); // 要加到updateSQL占位符中
+	    	this.deletedKeys.add(name);
+	    	return this.remove(name);
+	    }
+	    @Override
 	    public void set(String name, Object value) {
 	    	this.updatedKeys.add(name);
+	    	this.deletedKeys.remove(name);
 	        this.setParameter(name, value);
 	    }
 	    @Override
@@ -251,6 +255,7 @@ public class TestRecordTrancefer {
 	    @Override
 	    public void setValues(String name, Object[] values) {
 	    	this.updatedKeys.add(name);
+	    	this.deletedKeys.remove(name);
 	        this.setParameterValues(name, values);
 	    }
 	    @Override
@@ -294,12 +299,13 @@ public class TestRecordTrancefer {
 	        //value = StringUtil.isBlankOrNull(value) ? "0" : value.replaceAll(",", "");
 	        return VarUtil.toBigDecimal(value);
 	    }
+	    
 	    @Override
-		public Set<String> inertKeySet() {
-	        return keySet();
+		public Set<String> deletedKeySet() {
+	    	return this.deletedKeys;
 	    }
 	    @Override
-		public Set<String> updateKeySet() {
+		public Set<String> updatedKeySet() {
 	    	return this.updatedKeys;
 	    }
 	    @Override
@@ -308,7 +314,11 @@ public class TestRecordTrancefer {
 	        return map.keySet();
 	    }
 	    @Override
-		public Set<String> keySet() {
+		public Set<String> insertedKeySet() {
+	        return this.dataKeySet();
+	    }
+	    @Override
+		public Set<String> dataKeySet() {
 	        Map<String, Object> map = this.getDataMap();
 	        return map.keySet();
 	    }
@@ -349,10 +359,6 @@ public class TestRecordTrancefer {
 			int t = VarUtil.toInt(v) + 1;
 			this.set(DataConstant.HYVERSION, "" + t);
 		}
-		
-		
-		
-		
 		
 		private static final long serialVersionUID = 1L;
 	    protected Map<String, Object> dataMap = new HashMap<String, Object>(10, 1); // AbstractDBRecord实现类的dataMap实现多样化
