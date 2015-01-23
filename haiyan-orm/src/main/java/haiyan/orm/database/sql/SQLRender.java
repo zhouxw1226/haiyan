@@ -4,6 +4,7 @@
 package haiyan.orm.database.sql;
 
 import static haiyan.common.StringUtil.isBlankOrNull;
+import static haiyan.common.StringUtil.isEmpty;
 import haiyan.common.CloseUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.InvokeUtil;
@@ -156,17 +157,47 @@ class SQLRender implements ITableSQLRender {
 		pTable.setSelectColumnSQL("select " + cols.toString() + " from ");
 		QuerySQL qs = table.getQuerySQL();
 		if (qs!=null) {
-			if ("exp".equalsIgnoreCase(qs.getMethodName())) {
-				String p = qs.getParameter();
-				if (StringUtil.isEmpty(p))
-					p = qs.getContent();
-				IExpUtil exp = context.getExpUtil();
-				if (exp==null) {
-					throw new Warning("");
+			String className = qs.getClassName();
+			String methodName = qs.getMethodName();
+			String parameter = qs.getParameter();
+			String content = qs.getContent();
+			if ("exp".equalsIgnoreCase(methodName)) {
+				IExpUtil expUtil = context.getExpUtil();
+				if (expUtil==null) {
+					throw new Warning("context.exp is null");
 				}
-				pTable.setPrimaryTableSQL(""+context.getExpUtil().evalExp(p));
+				boolean needContent = true;
+//				if (isEmpty(parameter)) {
+//					throw new Warning("QuerySQL.parameter is null");
+//					if (!isEmpty(content)) {
+//						needContent = true;
+//					}
+//				} else {
+//					Object v = expUtil.evalExp(parameter);
+//					if (v instanceof Boolean) {
+//						if (v==Boolean.TRUE)
+//							needContent = true;
+//					}
+//				}
+				if (needContent) {
+					String sql;
+					if (ExpUtil.isFormula(content))
+						sql = VarUtil.toString(expUtil.evalExp(content));
+					else
+						sql = content;
+					pTable.setPrimaryTableSQL(sql);
+				}
 			} else {
-				pTable.setPrimaryTableSQL(qs.getContent());
+				if (!isEmpty(methodName) && !isEmpty(className)) {
+					// NOTICE 后面有pf.getContent()的处理
+					DebugUtil.debug(">doQuerySQL:" + className + " " + methodName);
+					String sql =  InvokeUtil.getString(className, methodName, 
+						new Class[] { IContext.class, Table.class, String.class, String.class },
+						new Object[] { context, table, pTable.getFirstTableAlias(), parameter });
+					pTable.setPrimaryTableSQL(sql);
+				} else if (!isEmpty(content)){
+					pTable.setPrimaryTableSQL(content);
+				}
 			}
 		}
 		return pTable;
@@ -1298,21 +1329,48 @@ class SQLRender implements ITableSQLRender {
 				if (pf == null) 
 					continue;
 				String filterStr = "";
-				if (!StringUtil.isBlankOrNull(pf.getMethodName())) {
-					String className = StringUtil.isBlankOrNull(pf.getClassName()) ? 
+				String className = isEmpty(pf.getClassName()) ? 
 						PropUtil.getProperty("DEFAULT_FILTER") : pf.getClassName();
-					DebugUtil.debug(">doExecuteFilter:" + className + " " + pf.getMethodName());
-					// NOTICE 后面有pf.getContent()的处理
-					// String sPara = !StringUtil.isBlankOrNull(pf.getParameter()) ? pf.getParameter() : pf.getContent();
-					filterStr += InvokeUtil.getString(className, pf.getMethodName(), 
-						new Class[] { IContext.class, Table.class, String.class, String.class },
-						new Object[] { context, table, tableAlias, pf.getParameter() });
+				String methodName = pf.getMethodName();
+				String parameter = pf.getParameter();
+				String content = pf.getContent();
+				if ("exp".equalsIgnoreCase(methodName)) {
+					IExpUtil expUtil = context.getExpUtil();
+					if (expUtil==null) {
+						throw new Warning("context.exp is null");
+					}
+					boolean needContent = false;
+					if (isEmpty(parameter)) {
+						throw new Warning("PluggedFilter.parameter is null");
+//						if (!isEmpty(content)) {
+//							needContent = true;
+//						}
+					} else {
+						Object v = expUtil.evalExp(parameter);
+						if (v instanceof Boolean && v==Boolean.TRUE) {
+							needContent = true;
+						}
+					}
+					if (needContent) {
+						String sFilter;
+						if (ExpUtil.isFormula(content))
+							sFilter = VarUtil.toString(expUtil.evalExp(content));
+						else
+							sFilter = content;
+						filterStr += sFilter;
+					}
+				} else {
+					if (!isEmpty(methodName) && !isEmpty(className)) {
+						// NOTICE 后面有pf.getContent()的处理
+						DebugUtil.debug(">doExecuteFilter:" + className + " " + methodName);
+						filterStr += InvokeUtil.getString(className, methodName, 
+							new Class[] { IContext.class, Table.class, String.class, String.class },
+							new Object[] { context, table, tableAlias, parameter });
+					} else if (!isEmpty(content)) { // 直接的sql语句
+						filterStr += content;
+					}
 				}
-				// 直接的sql语句
-				if (!StringUtil.isBlankOrNull(pf.getContent()))
-					filterStr += pf.getContent(); // formula.getString(pf.getContent());
-
-				if (filterStr != null) {
+				if (!isEmpty(filterStr)) {
 					int s = result.lastIndexOf("order by");
 					if (s >= 0) { // 补充过滤
 						result = result.substring(0, s) + filterStr + result.substring(s);

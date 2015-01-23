@@ -1393,13 +1393,11 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			DebugUtil.debug(">selectByPKFromCache(Table=" + table.getName() + ",ID=" + id + ",Type:" + type + ")");
 			return record;
 		}
-
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			ps = getSQLRender().getSelectPreparedStatement(context, table, id);
 			rs = ps.executeQuery();
-
 			if (rs.next()) {
 				record = getRecordByRow(context, table, rs, type);
 				if (record == null)
