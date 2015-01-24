@@ -54,6 +54,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManager {
 
@@ -168,7 +169,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	}
 	@Override
 	public void commit() throws Throwable {
-		final IDBRecordCacheManager cacheMgr = DBRecordCacheFactory.getCacheManager(IDBRecordCacheManager.CONTEXT_SESSION);
+		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
 		try {
 			if (cacheMgr!=null)
 				cacheMgr.commit();
@@ -210,7 +211,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	}
 	@Override
 	public void rollback() throws Throwable {
-		final IDBRecordCacheManager cacheMgr = DBRecordCacheFactory.getCacheManager(IDBRecordCacheManager.CONTEXT_SESSION);
+		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
 		try {
 			if (cacheMgr!=null)
 				cacheMgr.rollback();
@@ -1392,13 +1393,11 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			DebugUtil.debug(">selectByPKFromCache(Table=" + table.getName() + ",ID=" + id + ",Type:" + type + ")");
 			return record;
 		}
-
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try {
 			ps = getSQLRender().getSelectPreparedStatement(context, table, id);
 			rs = ps.executeQuery();
-
 			if (rs.next()) {
 				record = getRecordByRow(context, table, rs, type);
 				if (record == null)
@@ -2022,31 +2021,39 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		record.flushOreign();
 	}
 	// ------------------------------------------------------ Cache ------------------------------------------------------ //
-	protected ITableRecordCacheManager cacheMgr = null; // 缓存管理器
+	protected Map<Short,ITableRecordCacheManager> cacheMgr = new HashMap<Short, ITableRecordCacheManager>(); // 缓存管理器
+	protected ITableRecordCacheManager getCacheMgr(short type) {
+		if (!cacheMgr.containsKey(type)) {
+			synchronized(this) {
+				if (!cacheMgr.containsKey(type)) {
+					ITableRecordCacheManager m = DBRecordCacheFactory.getCacheManager(type);
+					cacheMgr.put(type, m);
+				}
+			}
+		}
+		return cacheMgr.get(type);
+	}
 	@Override
 	public IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable {
-		if (cacheMgr==null)
-			cacheMgr = DBRecordCacheFactory.getCacheManager(type);
+		ITableRecordCacheManager cacheMgr = getCacheMgr(type);
 		if (cacheMgr!=null) {
-			return cacheMgr.getCache(context, table, id, type);
+			return cacheMgr.getCache(context, table, id);
 		}
 		return null;
 	}
 	@Override
 	public void removeCache(ITableDBContext context, Table table, String[] ids, short type) throws Throwable {
-		if (cacheMgr==null)
-			cacheMgr = DBRecordCacheFactory.getCacheManager(type);
+		ITableRecordCacheManager cacheMgr = getCacheMgr(type);
 		if (cacheMgr!=null) {
-			cacheMgr.removeCache(context, table, ids, type);
+			cacheMgr.removeCache(context, table, ids);
 		}
 	}
 	// NOTICE 在getFormByRow|insertNoSyn|update执行后在会调用到
 	@Override
 	public void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable {
-		if (cacheMgr==null)
-			cacheMgr = DBRecordCacheFactory.getCacheManager(type);
+		ITableRecordCacheManager cacheMgr = getCacheMgr(type);
 		if (cacheMgr!=null) {
-			cacheMgr.updateCache(context, table, record, type);
+			cacheMgr.updateCache(context, table, record);
 		}
 	}
 	// ------------------------------------------------------ Flag ------------------------------------------------------ //
@@ -2781,6 +2788,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
             } else {
                 if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
                     generateSQL += " default -1";
+                } else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
+                    generateSQL += " default -1";
                 }
             }
             if (!field.getNullAllowed()) {
@@ -2811,6 +2820,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
                 return "NUMBER(" + len + "," + field.getMinFractionDigit() + ")";
             else if (field.hasMaxFractionDigit())
                 return "NUMBER(" + len + "," + field.getMaxFractionDigit() + ")";
+            return "NUMBER";
+        } else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
             return "NUMBER";
         } else if (fldType == AbstractCommonFieldJavaTypeType.DATE) {
             return "DATE";

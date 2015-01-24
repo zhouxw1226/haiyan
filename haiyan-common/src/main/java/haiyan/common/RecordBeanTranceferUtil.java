@@ -25,7 +25,8 @@ public class RecordBeanTranceferUtil {
 			try {
 				value = method.invoke(obj);
 			} catch (Throwable e) {
-				throw e;
+				DebugUtil.error("key:"+key+",value:"+value, e);
+//				throw e;
 			}
 			record.set(key, value);
 		}
@@ -44,7 +45,8 @@ public class RecordBeanTranceferUtil {
 			try {
 				method.invoke(obj,value);
 			} catch (Throwable e) {
-				throw e;
+				DebugUtil.error("key:"+key+",value:"+value, e);
+//				throw e;
 			}
 		}
 		return obj;

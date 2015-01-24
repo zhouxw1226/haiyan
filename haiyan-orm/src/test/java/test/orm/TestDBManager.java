@@ -30,6 +30,12 @@ public class TestDBManager {
 	@Test
 	public void test1() throws Throwable {
 		{
+//			IDataCache cache = new RedisDataCacheRemote();
+//			cache.setServers(PropUtil.getProperty("REDISCACHE.SERVERS").split(";"));
+//			cache.initialize();
+//			CacheUtil.setDataCache(cache); // 全局用缓存框架
+//			CacheUtil.setDataCache(new EHDataCache()); // 全局用缓存框架
+//			ConfigUtil.setDataCache(new EHDataCache()); // 配置用缓存框架
 			CacheUtil.setDataCache(new EHDataCache()); // 全局用缓存框架
 			ConfigUtil.setDataCache(new EHDataCache()); // 配置用缓存框架
 			ConfigUtil.setExpUtil(new ExpUtil()); // 全局用公式引擎
@@ -90,12 +96,45 @@ public class TestDBManager {
 				record.set("CODE", "test"+d1);
 				record.set("NAME", "test"+d1);
 				record.set("STATUS", "2");
+				record.delete("NAME");
 				//record.setDirty();
 				System.err.println(d1);
 				System.err.println(record);
 			}
 			{
 				dbm.update(context, table, record);
+				record = dbm.select(context, table, id);
+				System.err.println(record);
+				dbm.rollback();
+				record = dbm.select(context, table, id);
+				System.err.println(record);
+			}
+			{
+				if (record==null) {
+					record = context.getDBM().createRecord();
+					record.set("ID", id);
+					record.set("CODE", "test1");
+					record.set("NAME", "test1");
+					record.set("STATUS", "1");
+					dbm.insertNoSyn(context, table, record);
+					dbm.commit();
+				}
+				record = dbm.select(context, table, id);
+				System.err.println(record);
+				double d1 = Math.random();
+				record.set("CODE", "test"+d1);
+				record.set("NAME", "test"+d1);
+				record.set("STATUS", "2");
+				record.delete("NAME");
+				//record.setDirty();
+				System.err.println(d1);
+				System.err.println(record);
+			}
+			{
+				dbm.update(context, table, record);
+				record = dbm.select(context, table, id);
+				System.err.println(record);
+				dbm.commit();
 				record = dbm.select(context, table, id);
 				System.err.println(record);
 			}
@@ -107,12 +146,14 @@ public class TestDBManager {
 			}
 			// ------------------------ insert ------------------------ //
 			{
-				record = context.getDBM().createRecord();
-				record.set("ID", id);
-				record.set("CODE", "test1");
-				record.set("NAME", "test1");
-				record.set("STATUS", "1");
-				dbm.insertNoSyn(context, table, record);
+				if (record==null) {
+					record = context.getDBM().createRecord();
+					record.set("ID", id);
+					record.set("CODE", "test1");
+					record.set("NAME", "test1");
+					record.set("STATUS", "1");
+					dbm.insertNoSyn(context, table, record);
+				}
 			}
 			// ------------------------ select ------------------------ //
 			{

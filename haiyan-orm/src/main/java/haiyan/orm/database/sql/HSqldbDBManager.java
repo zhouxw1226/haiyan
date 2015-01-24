@@ -49,7 +49,6 @@ class HSqldbDBManager extends SQLTableDBManager {
 	}
 	@Override
 	public String getCreateTableSQL(Table oSerTable) {
-		//
 		ArrayList<String> sqls = new ArrayList<String>();
 		ArrayList<String> sKeySQL = new ArrayList<String>();
 		// int count = 0;
@@ -110,6 +109,8 @@ class HSqldbDBManager extends SQLTableDBManager {
             else if (field.hasMaxFractionDigit())
                 return "decimal(" + len + "," + field.getMaxFractionDigit() + ")";
 			return "decimal";
+		} else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
+			return "decimal";
 		} else if (fldType == AbstractCommonFieldJavaTypeType.DATE) {
 			return "date";
 		} else if (fldType == AbstractCommonFieldJavaTypeType.DBBLOB) {
@@ -140,6 +141,8 @@ class HSqldbDBManager extends SQLTableDBManager {
 				}
 			} else {
 				if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
+					generateSQL += " default -1";
+				} else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
 					generateSQL += " default -1";
 				}
 			}

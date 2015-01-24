@@ -98,36 +98,6 @@ public class SqlServerDBManager extends SQLTableDBManager {
 		return StringUtil.join(strArray, DataConstant.SQL_DIM, "");
 	}
 	@Override
-	public String genTypeSQL(AbstractField field) {
-		AbstractCommonFieldJavaTypeType fldType = field.getJavaType();
-		if (fldType == AbstractCommonFieldJavaTypeType.STRING) {
-			long len = field.getLength() <= 0 ? 50 : field.getLength();
-            if (len <= 100
-                && (field.getJavaType()  == AbstractCommonFieldJavaTypeType.BLOB 
-                || field.getJavaType() == AbstractCommonFieldJavaTypeType.DBBLOB))
-                len = 255;
-            return "nvarchar(" + len + ")";// varchar(255) nvarchar(255)
-		} else if (fldType == AbstractCommonFieldJavaTypeType.BLOB) {
-			long len = field.getLength() <= 0 ? 255 : field.getLength();
-			return "nvarchar(" + len + ")";// varchar(255) nvarchar(255)
-		} else if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
-			long len = field.getLength() <= 0 ? 18 : field.getLength();
-			if (field.hasMinFractionDigit())
-				return "numeric(" + len + "," + field.getMinFractionDigit() + ")";
-			else if (field.hasMaxFractionDigit())
-				return "numeric(" + len + "," + field.getMaxFractionDigit() + ")";
-			return "numeric";
-		} else if (fldType == AbstractCommonFieldJavaTypeType.DATE) {
-			return "datetime";
-		} else if (fldType == AbstractCommonFieldJavaTypeType.DBBLOB) {
-			return "image";
-		} else if (fldType == AbstractCommonFieldJavaTypeType.DBCLOB) {
-			return "text";
-		} else {
-			throw new Warning("Unknown AbstractCommonFieldJavaTypeType=" + fldType);
-		}
-	}
-	@Override
 	public String genFieldSQL(AbstractField field) {
 		AbstractCommonFieldJavaTypeType fldType = field.getJavaType();
 		// boolean bDefaultValue = false;
@@ -152,6 +122,8 @@ public class SqlServerDBManager extends SQLTableDBManager {
 			} else {
 				if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
 					generateSQL += " default -1";
+				} else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
+					generateSQL += " default -1";
 				}
 			}
 			if (!field.getNullAllowed()) {
@@ -161,6 +133,38 @@ public class SqlServerDBManager extends SQLTableDBManager {
 			}
 		}
 		return generateSQL;
+	}
+	@Override
+	public String genTypeSQL(AbstractField field) {
+		AbstractCommonFieldJavaTypeType fldType = field.getJavaType();
+		if (fldType == AbstractCommonFieldJavaTypeType.STRING) {
+			long len = field.getLength() <= 0 ? 50 : field.getLength();
+            if (len <= 100
+                && (field.getJavaType()  == AbstractCommonFieldJavaTypeType.BLOB 
+                || field.getJavaType() == AbstractCommonFieldJavaTypeType.DBBLOB))
+                len = 255;
+            return "nvarchar(" + len + ")";// varchar(255) nvarchar(255)
+		} else if (fldType == AbstractCommonFieldJavaTypeType.BLOB) {
+			long len = field.getLength() <= 0 ? 255 : field.getLength();
+			return "nvarchar(" + len + ")";// varchar(255) nvarchar(255)
+		} else if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
+			long len = field.getLength() <= 0 ? 18 : field.getLength();
+			if (field.hasMinFractionDigit())
+				return "numeric(" + len + "," + field.getMinFractionDigit() + ")";
+			else if (field.hasMaxFractionDigit())
+				return "numeric(" + len + "," + field.getMaxFractionDigit() + ")";
+			return "numeric";
+		} else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
+			return "numeric";
+		} else if (fldType == AbstractCommonFieldJavaTypeType.DATE) {
+			return "datetime";
+		} else if (fldType == AbstractCommonFieldJavaTypeType.DBBLOB) {
+			return "image";
+		} else if (fldType == AbstractCommonFieldJavaTypeType.DBCLOB) {
+			return "text";
+		} else {
+			throw new Warning("Unknown AbstractCommonFieldJavaTypeType=" + fldType);
+		}
 	}
 	@Override
 	public String SQLDateTimeFromStr(String gsCurTime) {

@@ -4,6 +4,7 @@
 package haiyan.orm.database.sql;
 
 import static haiyan.common.StringUtil.isBlankOrNull;
+import static haiyan.common.StringUtil.isEmpty;
 import haiyan.common.CloseUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.InvokeUtil;
@@ -139,16 +140,13 @@ class SQLRender implements ITableSQLRender {
 			@Override
 			public void dealWithLazyLoadField(Table table, Field field,
 					Object[] globalVars) throws Throwable {
-				// TODO Auto-generated method stub
 				//System.err.println("dealWithLazyLoadField");
 			}
 			@Override
 			public void dealWithMappingField(Table table, Field field,
 					Object[] globalVars) throws Throwable {
-				// TODO Auto-generated method stub
 				//System.err.println("dealWithMappingField");
 			}
-
 		};
 		StringBuffer cols = new StringBuffer();
 		PrimaryTable pTable = new PrimaryTable(ConfigUtil.getRealTableName(table), "");
@@ -156,17 +154,47 @@ class SQLRender implements ITableSQLRender {
 		pTable.setSelectColumnSQL("select " + cols.toString() + " from ");
 		QuerySQL qs = table.getQuerySQL();
 		if (qs!=null) {
-			if ("exp".equalsIgnoreCase(qs.getMethodName())) {
-				String p = qs.getParameter();
-				if (StringUtil.isEmpty(p))
-					p = qs.getContent();
-				IExpUtil exp = context.getExpUtil();
-				if (exp==null) {
-					throw new Warning("");
+			String className = qs.getClassName();
+			String methodName = qs.getMethodName();
+			String parameter = qs.getParameter();
+			String content = qs.getContent();
+			if (isExpMethod(methodName)) {
+				IExpUtil expUtil = context.getExpUtil();
+				if (expUtil==null) {
+					throw new Warning("context.exp is null");
 				}
-				pTable.setPrimaryTableSQL(""+context.getExpUtil().evalExp(p));
+				boolean needContent = true;
+//				if (isEmpty(parameter)) {
+//					throw new Warning("QuerySQL.parameter is null");
+//					if (!isEmpty(content)) {
+//						needContent = true;
+//					}
+//				} else {
+//					Object v = expUtil.evalExp(parameter);
+//					if (v instanceof Boolean) {
+//						if (v==Boolean.TRUE)
+//							needContent = true;
+//					}
+//				}
+				if (needContent) {
+					String sql;
+					if (ExpUtil.isFormula(content))
+						sql = VarUtil.toString(expUtil.evalExp(content));
+					else
+						sql = content;
+					pTable.setPrimaryTableSQL(sql);
+				}
 			} else {
-				pTable.setPrimaryTableSQL(qs.getContent());
+				if (!isEmpty(methodName) && !isEmpty(className)) {
+					// NOTICE 后面有pf.getContent()的处理
+					DebugUtil.debug(">doQuerySQL:" + className + " " + methodName);
+					String sql =  InvokeUtil.getString(className, methodName, 
+						new Class[] { IContext.class, Table.class, String.class, String.class },
+						new Object[] { context, table, pTable.getFirstTableAlias(), parameter });
+					pTable.setPrimaryTableSQL(sql);
+				} else if (!isEmpty(content)){
+					pTable.setPrimaryTableSQL(content);
+				}
 			}
 		}
 		return pTable;
@@ -536,7 +564,7 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public Field[] getInsertValidField(ITableDBContext context, Table table, IDBRecord record) {
 		// 2008-10-09 zhouxw
-		Set<String> insertKeys = record==null?null:record.inertKeySet();
+		Set<String> insertKeys = record==null?null:record.insertedKeySet();
 		Field[] fields = table.getField();
 		ArrayList<Field> result = new ArrayList<Field>();
 		for (Field field:fields) {
@@ -574,7 +602,7 @@ class SQLRender implements ITableSQLRender {
 	}
 	@Override
 	public Field[] getUpdateValidField(ITableDBContext context, Table table, IDBRecord record) {
-		Set<String> updateKeys = record==null?null:record.updateKeySet(); // 2008-10-09 zhouxw
+		Set<String> updateKeys = record==null?null:record.updatedKeySet(); // 2008-10-09 zhouxw
 		Field[] fields = table.getField();
 		ArrayList<Field> result = new ArrayList<Field>();
 		for (Field field:fields) {
@@ -753,21 +781,27 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public void updatePreparedStatementValue(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields) throws Throwable {
 		int i;
+		Set<String> deletedKeySet = record.deletedKeySet();
 		StringBuffer ss = new StringBuffer();
 		for (i = 0; i < fields.length; i++) {
 			Object value = record.get(fields[i].getName());
-			String defValue = fields[i].getDefaultValue();
-			if (StringUtil.isBlankOrNull(value) && !StringUtil.isBlankOrNull(defValue)) {
-				if (ExpUtil.isFormula(defValue)) {
-					if (exp == null)
-						exp = new ExpUtil(context, table, record);
-					value = "" + exp.evalExp(defValue.substring(1));
-				} else {
-					value = defValue;
+			if (deletedKeySet.contains(fields[i].getName())) {
+				SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 1, fields[i], null);
+				ss.append("##update(" + fields[i].getName() + "):"+null+"\t");
+			} else {
+				String defValue = fields[i].getDefaultValue();
+				if (StringUtil.isBlankOrNull(value) && !StringUtil.isBlankOrNull(defValue)) {
+					if (ExpUtil.isFormula(defValue)) {
+						if (exp == null)
+							exp = new ExpUtil(context, table, record);
+						value = "" + exp.evalExp(defValue.substring(1));
+					} else {
+						value = defValue;
+					}
 				}
+				SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 1, fields[i], value);
+				ss.append("##update(" + fields[i].getName() + "):"+value+"\t");
 			}
-			SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 1, fields[i], value);
-			ss.append("##update(" + fields[i].getName() + "):"+value+"\t");
 		}
 		ps.setString(i + 1, (String)record.get(table.getId().getName()));
 		ss.append("##update(" + table.getId().getName() + "):"+record.get(table.getId().getName())+"\t");
@@ -1262,7 +1296,6 @@ class SQLRender implements ITableSQLRender {
 //		}
 		return fixedQueryFilter;
 	}
-
 	/**
 	 * @param table
 	 * @param tableAlias
@@ -1292,21 +1325,48 @@ class SQLRender implements ITableSQLRender {
 				if (pf == null) 
 					continue;
 				String filterStr = "";
-				if (!StringUtil.isBlankOrNull(pf.getMethodName())) {
-					String className = StringUtil.isBlankOrNull(pf.getClassName()) ? 
+				String className = isEmpty(pf.getClassName()) ? 
 						PropUtil.getProperty("DEFAULT_FILTER") : pf.getClassName();
-					DebugUtil.debug(">doExecuteFilter:" + className + " " + pf.getMethodName());
-					// NOTICE 后面有pf.getContent()的处理
-					// String sPara = !StringUtil.isBlankOrNull(pf.getParameter()) ? pf.getParameter() : pf.getContent();
-					filterStr += InvokeUtil.getString(className, pf.getMethodName(), 
-						new Class[] { IContext.class, Table.class, String.class, String.class },
-						new Object[] { context, table, tableAlias, pf.getParameter() });
+				String methodName = pf.getMethodName();
+				String parameter = pf.getParameter();
+				String content = pf.getContent();
+				if (isExpMethod(methodName)) {
+					IExpUtil expUtil = context.getExpUtil();
+					if (expUtil==null) {
+						throw new Warning("context.exp is null");
+					}
+					boolean needContent = false;
+					if (isEmpty(parameter)) {
+						throw new Warning("PluggedFilter.parameter is null");
+//						if (!isEmpty(content)) {
+//							needContent = true;
+//						}
+					} else {
+						Object v = expUtil.evalExp(parameter);
+						if (v instanceof Boolean && v==Boolean.TRUE) {
+							needContent = true;
+						}
+					}
+					if (needContent) {
+						String sFilter;
+						if (ExpUtil.isFormula(content))
+							sFilter = VarUtil.toString(expUtil.evalExp(content));
+						else
+							sFilter = content;
+						filterStr += sFilter;
+					}
+				} else {
+					if (!isEmpty(methodName) && !isEmpty(className)) {
+						// NOTICE 后面有pf.getContent()的处理
+						DebugUtil.debug(">doExecuteFilter:" + className + " " + methodName);
+						filterStr += InvokeUtil.getString(className, methodName, 
+							new Class[] { IContext.class, Table.class, String.class, String.class },
+							new Object[] { context, table, tableAlias, parameter });
+					} else if (!isEmpty(content)) { // 直接的sql语句
+						filterStr += content;
+					}
 				}
-				// 直接的sql语句
-				if (!StringUtil.isBlankOrNull(pf.getContent()))
-					filterStr += pf.getContent(); // formula.getString(pf.getContent());
-
-				if (filterStr != null) {
+				if (!isEmpty(filterStr)) {
 					int s = result.lastIndexOf("order by");
 					if (s >= 0) { // 补充过滤
 						result = result.substring(0, s) + filterStr + result.substring(s);
@@ -1322,5 +1382,8 @@ class SQLRender implements ITableSQLRender {
 				result = result.substring(0, s);
 		}
 		return result.length() == 0 ? "" : result;
+	}
+	private static boolean isExpMethod(String methodName) {
+		return "exp".equalsIgnoreCase(methodName);
 	}
 }

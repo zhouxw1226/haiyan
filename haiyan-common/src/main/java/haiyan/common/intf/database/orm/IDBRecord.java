@@ -60,13 +60,15 @@ public interface IDBRecord extends Serializable {
 	int getVersion();
 
 	Set<String> oreignKeySet();
-	Set<String> inertKeySet();
-	Set<String> updateKeySet();
-	Set<String> keySet();
+	Set<String> insertedKeySet();
+	Set<String> updatedKeySet();
+	Set<String> deletedKeySet();
+	Set<String> dataKeySet();
 	Map<String, Object> getDataMap();
 //	Iterator<String> keyIterator();
 	boolean contains(String key);
 	Object remove(String key);
+	Object delete(String key);
 	void set(String key, Object val);
 	Object get(String key);
     void setValues(String name, Object[] values);

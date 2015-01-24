@@ -4,6 +4,7 @@
 package haiyan.orm.database.sql;
 
 import haiyan.common.StringUtil;
+import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.sql.ISQLDatabase;
 import haiyan.config.castorgen.AbstractField;
 import haiyan.config.castorgen.Id;
@@ -64,6 +65,8 @@ public class OracleDBManager extends SQLTableDBManager {
 			} else {
 				if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
 					generateSQL += " default -1";
+				} else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
+					generateSQL += " default -1";
 				}
 			}
 			if (!field.getNullAllowed()) {
@@ -78,5 +81,37 @@ public class OracleDBManager extends SQLTableDBManager {
 		}
 		return generateSQL;
 	}
+	@Override
+    public String genTypeSQL(AbstractField field) {
+        AbstractCommonFieldJavaTypeType fldType = field.getJavaType();
+        if (fldType == AbstractCommonFieldJavaTypeType.STRING) {
+            long len = field.getLength() <= 0 ? 50 : field.getLength();
+            if (len <= 100
+                && (field.getJavaType()  == AbstractCommonFieldJavaTypeType.BLOB 
+                || field.getJavaType() == AbstractCommonFieldJavaTypeType.DBBLOB))
+                len = 255;
+            return "VARCHAR2(" + len + ")";
+        } else if (fldType == AbstractCommonFieldJavaTypeType.BLOB) {
+            long len = field.getLength() <= 0 ? 255 : field.getLength();
+            return "VARCHAR2(" + len + ")";
+        } else if (fldType == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
+            long len = field.getLength() <= 0 ? 18 : field.getLength();
+            if (field.hasMinFractionDigit())
+                return "NUMBER(" + len + "," + field.getMinFractionDigit() + ")";
+            else if (field.hasMaxFractionDigit())
+                return "NUMBER(" + len + "," + field.getMaxFractionDigit() + ")";
+            return "NUMBER";
+        } else if (fldType == AbstractCommonFieldJavaTypeType.INTEGER) {
+            return "NUMBER";
+        } else if (fldType == AbstractCommonFieldJavaTypeType.DATE) {
+            return "DATE";
+        } else if (fldType == AbstractCommonFieldJavaTypeType.DBBLOB) {
+            return "BLOB";
+        } else if (fldType == AbstractCommonFieldJavaTypeType.DBCLOB) {
+			return "TEXT";
+		} else {
+            throw new Warning("Unknown AbstractCommonFieldJavaTypeType=" + fldType);
+        }
+    }
 
 }
