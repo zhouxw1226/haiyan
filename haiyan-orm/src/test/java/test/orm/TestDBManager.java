@@ -34,6 +34,8 @@ public class TestDBManager {
 //			cache.setServers(PropUtil.getProperty("REDISCACHE.SERVERS").split(";"));
 //			cache.initialize();
 //			CacheUtil.setDataCache(cache); // 全局用缓存框架
+//			CacheUtil.setDataCache(new EHDataCache()); // 全局用缓存框架
+//			ConfigUtil.setDataCache(new EHDataCache()); // 配置用缓存框架
 			CacheUtil.setDataCache(new EHDataCache()); // 全局用缓存框架
 			ConfigUtil.setDataCache(new EHDataCache()); // 配置用缓存框架
 			ConfigUtil.setExpUtil(new ExpUtil()); // 全局用公式引擎
