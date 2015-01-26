@@ -26,7 +26,7 @@ public class DBManagerFactory implements IFactory {
 		try {
 			ISQLDatabase database = createDatabase(DSN);
 			if (database==null)
-				throw new Warning(SysCode.SysCodeNum.NO_MATCHEDSQLDATABASE,SysCode.SysCodeMessage.NO_MATCHEDSQLDATABASE,null);
+				throw new Warning(SysCode.SysCodeNum.NO_MATCHEDSQLDATABASE,SysCode.SysCodeMessage.NO_MATCHEDSQLDATABASE);
 			String dbType = database.getDBType();
 			database.setDSN(DSN);
 			if ("mysql".equalsIgnoreCase(dbType)) 
@@ -48,7 +48,7 @@ public class DBManagerFactory implements IFactory {
 				};
 //			else if ("soap".equalsIgnoreCase(dbType)) 
 //				return new SOAPDBManager(database);
-			throw new Warning(SysCode.SysCodeNum.NO_MATCHEDDBMANAGER,SysCode.SysCodeMessage.NO_MATCHEDDBMANAGER,null);
+			throw new Warning(SysCode.SysCodeNum.NO_MATCHEDDBMANAGER,SysCode.SysCodeMessage.NO_MATCHEDDBMANAGER);
 		}catch(Throwable e){
 			throw Warning.wrapException(e);
 		}
@@ -70,7 +70,7 @@ public class DBManagerFactory implements IFactory {
 			dbType = dataSource.getDbType();
 		} 
 		if (database==null)
-	        throw new Warning(SysCode.SysCodeNum.NO_MATCHEDDSN,SysCode.SysCodeMessage.NO_MATCHEDDSN,null);
+	        throw new Warning(SysCode.SysCodeNum.NO_MATCHEDDSN,SysCode.SysCodeMessage.NO_MATCHEDDSN);
 		database.setDBType(dbType);
 		return database;
 	}
