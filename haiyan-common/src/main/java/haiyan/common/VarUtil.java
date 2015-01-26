@@ -417,10 +417,14 @@ public class VarUtil {
 		if ((o instanceof BigDecimal))
 			return (BigDecimal) o;
 		if ((o instanceof String)) {
+//			o = o.toString().trim();
+//			o = StringUtil.replaceAll(o, "", "");
 			if (((String) o).isEmpty()) {
 				return BigDecimal.ZERO;
 			}
-			return new BigDecimal((String) o);
+//			if (StringUtil.isNumeric(o))
+				return new BigDecimal((String) o);
+//			return BigDecimal.valueOf(-1);
 		}
 		if ((o instanceof java.util.Date)) {
 			return BigDecimal.valueOf(((java.util.Date) o).getTime());

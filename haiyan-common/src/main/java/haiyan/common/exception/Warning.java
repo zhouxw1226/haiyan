@@ -11,29 +11,81 @@ import haiyan.common.intf.session.IUser;
 public class Warning extends HyException {
 
     private static final long serialVersionUID = 1L;
-    /**
+    private int errorCode;
+//    private String source;
+//    private Throwable exception;
+    public int getErrorCode() {
+		return errorCode;
+	}
+	public void setErrorCode(int errorCode) {
+		this.errorCode = errorCode;
+	}
+//	public String getSource() {
+//		return source;
+//	}
+//	public void setSource(String source) {
+//		this.source = source;
+//	} 
+//	public Throwable getException() {
+//		return exception;
+//	}
+//	public void setException(Throwable exception) {
+//		this.exception = exception;
+//	}
+	/**
      * @param errCode
      */
     public Warning(SysCode errCode) {
         super(errCode);
+        this.errorCode = errCode.getCode();
+    }
+    /**
+     * @param errCode
+     */
+    public Warning(int errorCode, Throwable e) {
+        super(SysCode.create(null, errorCode, e.getMessage(), null));
+        this.errorCode = errorCode;
+//        this.exception = e;
+    }
+    /**
+     * @param errCode
+     */
+    public Warning(int errorCode, Throwable e, String[] paras) {
+        super(SysCode.create(null, errorCode, e.getMessage(), paras));
+        this.errorCode = errorCode;
+//        this.exception = e;
+    }
+    /**
+     * @param errCode
+     */
+    public Warning(int errorCode, String source) {
+        super(SysCode.create(null, errorCode, source, null));
+        this.errorCode = errorCode;
+//        this.source = source;
     }
     /**
      * @param errCode
      */
     public Warning(int errorCode, String source, String[] paras) {
         super(SysCode.create(null, errorCode, source, paras));
+        this.errorCode = errorCode;
+//        this.source = source;
     }
     /**
      * @param errCode
      */
     public Warning(IUser user, int errorCode, String source, String[] paras) {
         super(SysCode.create(user, errorCode, source, paras));
+        this.errorCode = errorCode;
+//        this.source = source;
     }
     /**
      * @param errCode
      */
     public Warning(IUser user, int errorCode, String source) {
         super(SysCode.create(user, errorCode, source, null));
+        this.errorCode = errorCode;
+//        this.source = source;
     }
     /**
      * @param desc
