@@ -11,7 +11,7 @@ import java.io.Writer;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-public class WebContext extends AppContext implements IWebContext{
+public class WebContext extends AppContext implements IWebContext {
 	private ServletRequest req;
 	private ServletResponse res;
 	public WebContext(ServletRequest req, ServletResponse res) {

@@ -1,6 +1,7 @@
 package haiyan.cache;
 
 import haiyan.common.ByteUtil;
+import haiyan.common.DebugUtil;
 import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.session.IUser;
@@ -16,6 +17,7 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import bsh.StringUtil;
 
 
@@ -91,18 +93,35 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	private String getUserKey(String schema) {
     	return "Haiyan.USERS."+schema;
     } 
+	private int reconn = 0;
 	@Override
 	public IUser setUser(String sessionId, IUser user) {
-		String k = getUserKey(sessionId);
-		getJedis().set(k.getBytes(), ByteUtil.toBytes(user));
-		getJedis().set((k+"._status").getBytes(), "0".getBytes()); // login
-		return user;
+		try {
+			if (user==null)
+				throw new Warning("user is null");
+			String k = getUserKey(sessionId);
+			getJedis().set(k.getBytes(), ByteUtil.toBytes(user));
+			getJedis().set((k+"._status").getBytes(), "0".getBytes()); // login
+			return user;
+		}catch (JedisConnectionException ex) {
+			DebugUtil.error(ex);
+			if (reconn>=3) {
+				reconn = 0;
+				return null;
+			}
+			reconn++;
+			this.initialize();
+			return setUser(sessionId, user);
+		}catch(Throwable e){
+			DebugUtil.error(e);
+			return null;
+		}
 	}
 	@Override
 	public IUser getUser(String sessionId) {
-		IUser user = null; // super.getUser();
-		String k = getUserKey(sessionId);
-		{
+		try {
+			IUser user = null; // super.getUser();
+			String k = getUserKey(sessionId);
 			Integer status = -1;
 			byte[] bytes = getJedis().get((k+"._status").getBytes());
 			if (bytes!=null) {
@@ -113,26 +132,52 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 				// super.removeUser(sessionId);
 				return null;
 			}
+			if (user==null) {
+				bytes = getJedis().get(k.getBytes());
+				if (bytes!=null)
+					user = (IUser)ByteUtil.toObject(bytes);
+	//			if (user!=null)
+	//				super.setUser(sessionId, user);
+			}
+			return user;
+		}catch (JedisConnectionException ex) {
+			DebugUtil.error(ex);
+			if (reconn>=3) {
+				reconn = 0;
+				return null;
+			}
+			reconn++;
+			this.initialize();
+			return getUser(sessionId);
+		}catch(Throwable e){
+			DebugUtil.error(e);
+			return null;
 		}
-		if (user==null) {
-			byte[] bytes = getJedis().get(k.getBytes());
-			if (bytes!=null)
-				user = (IUser)ByteUtil.toObject(bytes);
-//			if (user!=null)
-//				super.setUser(sessionId, user);
-		}
-		return user;
 	}
 	@Override
 	public boolean removeUser(String sessionId) {
-//		super.removeUser(sessionId);
-		String k = getUserKey(sessionId);
-		if (getJedis() instanceof ShardedJedis)
-			((ShardedJedis)getJedis()).del(k);
-		else if (getJedis() instanceof Jedis)
-			((Jedis)getJedis()).del(k.getBytes());
-		getJedis().set((k+"._status").getBytes(), "-1".getBytes()); // logout
-		return true;
+		try {
+	//		super.removeUser(sessionId);
+			String k = getUserKey(sessionId);
+			if (getJedis() instanceof ShardedJedis)
+				((ShardedJedis)getJedis()).del(k);
+			else if (getJedis() instanceof Jedis)
+				((Jedis)getJedis()).del(k.getBytes());
+			getJedis().set((k+"._status").getBytes(), "-1".getBytes()); // logout
+			return true;
+		}catch (JedisConnectionException ex) {
+			DebugUtil.error(ex);
+			if (reconn>=3) {
+				reconn = 0;
+				return false;
+			}
+			reconn++;
+			this.initialize();
+			return removeUser(sessionId);
+		}catch(Throwable e){
+			DebugUtil.error(e);
+			return false;
+		}
 	}
     // --------------------- data cache --------------------- //
 	private String getDataKey(String schema, Object key) {
