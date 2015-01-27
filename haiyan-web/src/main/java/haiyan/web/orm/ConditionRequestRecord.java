@@ -4,15 +4,14 @@ import haiyan.common.StringUtil;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Table;
-import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-public class RequestRecord extends AbstractRequestRecord {
+public class ConditionRequestRecord extends AbstractRequestRecord {
 
 	private static final long serialVersionUID = 1L;
-	public RequestRecord(ServletRequest req, ServletResponse res, Table table) throws Throwable {
+	public ConditionRequestRecord(ServletRequest req, ServletResponse res, Table table) throws Throwable {
 		super();
 		parseRequest(req, table, this);
 	}
@@ -23,15 +22,6 @@ public class RequestRecord extends AbstractRequestRecord {
 			if (!StringUtil.isEmpty(uiName)) {
 				v = getClientValue(req, uiName);
 			} 
-			if (StringUtil.isEmpty(v)) {
-				if (!field.isNullAllowed()) {
-					if(field.getJavaType() == AbstractCommonFieldJavaTypeType.INTEGER){//TODO 其他类型
-						v = Integer.valueOf(field.getDefaultValue());
-					}else{
-						v = field.getDefaultValue();
-					}
-				}
-			}
 			if (!StringUtil.isEmpty(v)) {
 				v = transValueType(field, v);
 				String dbName = field.getName();
