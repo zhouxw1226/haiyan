@@ -27,7 +27,7 @@ import bsh.TargetError;
 public abstract class HyException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
-    private String desc = null;
+    private String detailMessage = null;
     /**
      * @param desc
      */
@@ -65,7 +65,7 @@ public abstract class HyException extends RuntimeException {
         setMessage(cCode.toString());
     }
     private void setMessage(String s) {
-        this.desc = s;
+        this.detailMessage = s;
 //        if (Math.random()*10>5) {
 //            String productKey;
 //            try {
@@ -98,25 +98,25 @@ public abstract class HyException extends RuntimeException {
 //    }
     @Override
     public String getMessage() {
-        if (StringUtil.isEmpty(this.desc)) {
+        if (StringUtil.isEmpty(this.detailMessage)) {
             Throwable ex = getCauseEx(this);
             if (ex == this) { 
                 String mes = super.getMessage();
                 if (mes == null)
                     mes = super.toString();
-                this.desc = mes;
+                this.detailMessage = mes;
             } else if (ex instanceof SQLException) { // NOTICE 不能暴露数据库错误信息
                 SQLException sex = (SQLException) ex;
                 String mes = null;
 //                mes = GenSQLException.getMessage(sex);
 //                if (mes == null)
                     mes = sex.toString();
-                this.desc = mes;
+                this.detailMessage = mes;
             } else {
                 String mes = ex.getMessage();
                 if (mes == null)
                     mes = ex.toString();
-                this.desc = mes;
+                this.detailMessage = mes;
             }
 //            if (Math.random()*10>5) {
 //                String productKey;
@@ -129,7 +129,7 @@ public abstract class HyException extends RuntimeException {
 //            }
         }
         // DebugUtil.debug(">GenException.desc:" + this.desc);
-        return this.desc;
+        return this.detailMessage;
     }
     /**
      * @param delimiter

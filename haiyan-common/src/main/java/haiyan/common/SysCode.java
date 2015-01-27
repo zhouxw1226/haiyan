@@ -33,17 +33,17 @@ public class SysCode {
 	}
 	private int code = -1;
 	private String source = null;
-	private String des = null;
+	private String detailMessage = null;
 	/**
 	 * @param code
 	 * @param source
-	 * @param des
+	 * @param detailMessage
 	 */
 	public SysCode(IUser user, int code, String source) {
 		super();
 		this.code = code;
 		this.source = source;
-		this.des = getConfigDes(user, source, null);
+		this.detailMessage = getConfigDes(user, source, null);
 	}
 	/**
 	 * @param code
@@ -53,7 +53,7 @@ public class SysCode {
 		super();
 		this.code = code;
 		this.source = source;
-		this.des = getConfigDes(user, source, values);
+		this.detailMessage = getConfigDes(user, source, values);
 	}
 	/**
 	 * @return int
@@ -69,7 +69,7 @@ public class SysCode {
 	}
 	@Override
 	public String toString() {
-		return this.des;
+		return this.detailMessage;
 	}
 	/**
 	 * @param user
@@ -83,32 +83,32 @@ public class SysCode {
 		try {
 			languageName = Language.getLanguage(user).getName(); // ConfigUtil.getLanguage(user).getName();
 			label = DataConstant.CONST_PROMPT_NAME + "." + source;
-			String configValue = PropUtil.getProperty(languageName, label, null);
+			String configMessage = PropUtil.getProperty(languageName, label, null);
 			// DebugUtil.debug(">" + label + "=" + configCode);
-			if (!StringUtil.isBlankOrNull(configValue)) {
+			if (!StringUtil.isBlankOrNull(configMessage)) {
 				if (values != null)
 					for (int j = 0; j < values.length; j++) {
-						int index = configValue.indexOf("{" + j + "}");
+						int index = configMessage.indexOf("{" + j + "}");
 						int indexLen = ("{" + j + "}").length();
 						String tempErr = "";
 						if (index != -1) {
-							tempErr = configValue.substring(0, index);
+							tempErr = configMessage.substring(0, index);
 							tempErr += values[j];
-							tempErr += configValue.substring(index + indexLen,
-									configValue.length());
+							tempErr += configMessage.substring(index + indexLen,
+									configMessage.length());
 						} else {
-							tempErr += configValue;
+							tempErr += configMessage;
 						}
-						configValue = tempErr;
+						configMessage = tempErr;
 					}
 			} else {
-				configValue = source;
+				configMessage = source;
 			}
-			this.des = configValue;
-			return configValue;
+			this.detailMessage = configMessage;
+			return configMessage;
 		} catch (Throwable ignore) {
 			ignore.printStackTrace();
-			this.des = source;
+			this.detailMessage = source;
 			return source;
 		}
 	}
