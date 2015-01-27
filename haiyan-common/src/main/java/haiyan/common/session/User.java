@@ -19,6 +19,7 @@ import java.util.Map;
 public class User implements IUser, Serializable { // Externalizable
 	private static final long serialVersionUID = 1L;
 	private Map<String, Object> properties = new HashMap<String, Object>(); // 扩展属性
+	private String sessionID;
 	private String ID;
 	private String name;
 	private String code;
@@ -52,6 +53,26 @@ public class User implements IUser, Serializable { // Externalizable
 		this.code = code;
 		this.name = name;
 	}
+	@GetMethod("sessionID")
+	@Override
+	public String getSessionId() {
+		return sessionID;
+	}
+	@SetMethod("sessionID")
+	@Override
+	public void setSessionId(String sessionId) {
+		this.sessionID = sessionId;
+	}
+	@GetMethod("ID")
+	@Override
+	public String getId() {
+		return this.ID;
+	}
+	@SetMethod("ID")
+	@Override
+	public void setId(String id) {
+		this.ID = id;
+	}
 	@GetMethod("DSN")
 	@Override
 	public String getDSN() {
@@ -69,16 +90,6 @@ public class User implements IUser, Serializable { // Externalizable
 	@SetMethod("deptID")
 	public void setDeptID(String deptID) {
 		this.deptID = deptID;
-	}
-	@GetMethod("ID")
-	@Override
-	public String getId() {
-		return this.ID;
-	}
-	@SetMethod("ID")
-	@Override
-	public void setId(String id) {
-		this.ID = id;
 	}
 	@GetMethod("password")
 	@Override

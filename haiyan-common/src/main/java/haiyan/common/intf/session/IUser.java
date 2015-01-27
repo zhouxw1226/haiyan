@@ -10,6 +10,9 @@ import java.util.Map;
  *
  */
 public interface IUser extends IUserSession, Serializable { // Externalizable
+	String getSessionId();
+	void setSessionId(String sessionId);
+	
 	String getId();
 	void setId(String id);
 	String getName();
