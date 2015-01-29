@@ -741,7 +741,8 @@ class SQLRender implements ITableSQLRender {
 		ss.append("##insert(" + table.getId().getName() + "):"+newID+"\t");
 		int i;
 		for (i = 0; i < fields.length; i++) {
-			Object value = record.get(fields[i].getName());
+			String fieldName = fields[i].getName();
+			Object value = record.get(fieldName);
 			String defValue = fields[i].getDefaultValue();
 			if (StringUtil.isBlankOrNull(value) && !isBlankOrNull(defValue)) {
 				if (ExpUtil.isFormula(defValue)) {
@@ -753,7 +754,7 @@ class SQLRender implements ITableSQLRender {
 				}
 			}
 			SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 2, fields[i], value);
-			ss.append("##insert(" + fields[i].getName() + "):"+value+"\t");
+			ss.append("##insert(" + fieldName + "):"+value+"\t");
 		}
 		DebugUtil.debug(ss.toString());
 	}
@@ -784,10 +785,11 @@ class SQLRender implements ITableSQLRender {
 		Set<String> deletedKeySet = record.deletedKeySet();
 		StringBuffer ss = new StringBuffer();
 		for (i = 0; i < fields.length; i++) {
-			Object value = record.get(fields[i].getName());
-			if (deletedKeySet.contains(fields[i].getName())) {
+			String fieldName = fields[i].getName();
+			Object value = record.get(fieldName);
+			if (deletedKeySet.contains(fieldName)) {
 				SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 1, fields[i], null);
-				ss.append("##update(" + fields[i].getName() + "):"+null+"\t");
+				ss.append("##update(" + fieldName + "):"+null+"\t");
 			} else {
 				String defValue = fields[i].getDefaultValue();
 				if (StringUtil.isBlankOrNull(value) && !StringUtil.isBlankOrNull(defValue)) {
@@ -800,7 +802,7 @@ class SQLRender implements ITableSQLRender {
 					}
 				}
 				SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 1, fields[i], value);
-				ss.append("##update(" + fields[i].getName() + "):"+value+"\t");
+				ss.append("##update(" + fieldName + "):"+value+"\t");
 			}
 		}
 		ps.setString(i + 1, (String)record.get(table.getId().getName()));
