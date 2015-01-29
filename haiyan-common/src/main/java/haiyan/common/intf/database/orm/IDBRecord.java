@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.json.JSONObject;
+
 /**
  * 元数据对象
  * @author ZhouXW
@@ -58,6 +60,11 @@ public interface IDBRecord extends Serializable {
 	 * @return
 	 */
 	int getVersion();
+	
+	/**
+	 * @return JSONObject
+	 */
+	JSONObject toJSon();
 
 	Set<String> oreignKeySet();
 	Set<String> insertedKeySet();
