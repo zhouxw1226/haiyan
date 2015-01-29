@@ -15,8 +15,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import net.sf.json.JSONObject;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -153,35 +156,35 @@ public class TestRecordTrancefer {
 	        }
 	        return buf.toString();
 	    }
-//		/**
-//		 * @return JSONObject
-//		 */
-//		public JSONObject toJSon() {
-//			return toJSon(true, null);
-//		}
-//	    /**
-//	     * @return JSONObject
-//	     */
-//	    public JSONObject toJSon(boolean showAll, ArrayList<String> ignore) {
-//	        // JSONObject json = JSONObject.fromObject(getDataMap());
-//	        // return JSONObject.fromObject(getDataMap());
-//	        JSONObject obj = new JSONObject();
-//	        Iterator<?> key = getDataMap().keySet().iterator();
-//	        while (key.hasNext()) {
-//	            String keyName = (String) key.next();
-//	            if (isIgnoredTo(keyName))
-//	                continue;
-//				if (!showAll && ignore!=null && ignore.contains(keyName))
-//					continue;
-//	            Object[] values = getParameterValues(keyName);
-//	            if (values != null && values.length != 0) {
-//	                String value = StringUtil.join(values, ",", "");
-//	                obj.put(keyName, value);
-//	            } else
-//	                obj.put(keyName, "");
-//	        }
-//	        return obj;
-//	    }
+		/**
+		 * @return JSONObject
+		 */
+		public JSONObject toJSon() {
+			return toJSon(true, null);
+		}
+	    /**
+	     * @return JSONObject
+	     */
+	    public JSONObject toJSon(boolean showAll, List<String> ignore) {
+	        // JSONObject json = JSONObject.fromObject(getDataMap());
+	        // return JSONObject.fromObject(getDataMap());
+	        JSONObject json = new JSONObject();
+	        Iterator<?> key = getDataMap().keySet().iterator();
+	        while (key.hasNext()) {
+	            String keyName = (String) key.next();
+	            if (isIgnoredTo(keyName))
+	                continue;
+				if (!showAll && ignore!=null && ignore.contains(keyName))
+					continue;
+	            Object[] values = getParameterValues(keyName);
+	            if (values != null && values.length != 0) {
+	                String value = StringUtil.join(values, ",", "");
+	                json.put(keyName, value);
+	            } else
+	                json.put(keyName, "");
+	        }
+	        return json;
+	    }
 //		public void fromJSon(JSONObject json2) {
 //			if (json2==null)
 //				return;
