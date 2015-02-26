@@ -162,11 +162,14 @@ public class User implements IUser, Serializable { // Externalizable
 	@SetMethod("properties")
 	@Override
 	public void setProperties(Map<String, Object> properties) {
-		this.properties = properties;
+		if(properties!=null)
+			this.properties = properties;
+		else
+			this.properties = new HashMap<String, Object>();
 	}
 	@GetMethod("properties")
 	@Override
-	public Map<?, ?> getProperties() {
+	public Map<String, Object> getProperties() {
 		return this.properties;
 	}
 	@Override
