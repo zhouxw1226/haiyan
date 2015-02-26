@@ -1225,8 +1225,11 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 */
 	protected IDBRecord insert(ITableDBContext context, Table table, IDBRecord record, 
 			int... args) throws Throwable {
-		String newID = (String)context.getNextID(table.getName());
-		record.set(table.getId().getName(), newID);
+		String id = table.getId().getName();
+		if(record.get(id)==null){
+			String newID = (String)context.getNextID(table.getName());
+			record.set(id, newID);
+		}
 		return this.insertNoSyn(context, table, record, args);
 	}
 	@Override
