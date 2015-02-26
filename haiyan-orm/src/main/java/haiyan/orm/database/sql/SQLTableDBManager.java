@@ -24,11 +24,9 @@ import haiyan.common.intf.session.IContext;
 import haiyan.config.castorgen.AbstractField;
 import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Id;
-import haiyan.config.castorgen.Option;
 import haiyan.config.castorgen.PluginInterceptor;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-import haiyan.config.castorgen.types.QueryConditionTypeType;
 import haiyan.config.intf.database.ITableDBManager;
 import haiyan.config.intf.database.orm.ITableRecordCacheManager;
 import haiyan.config.intf.database.sql.ITableSQLRender;
@@ -37,7 +35,6 @@ import haiyan.config.util.ConfigUtil;
 import haiyan.config.util.NamingUtil;
 import haiyan.database.SQLDatabase;
 import haiyan.orm.database.DBContextFactory;
-import haiyan.orm.database.DBPage;
 import haiyan.orm.database.DBRecord;
 import haiyan.orm.database.DBRecordCacheFactory;
 import haiyan.orm.database.TableDBContext;
@@ -1245,21 +1242,21 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @throws Throwable
 	 */
 	protected List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records, int... args) throws Throwable {
-		for (IDBRecord form:records)
-			this.checkVersion(context, table, form);
+		for (IDBRecord record:records)
+			this.checkVersion(context, table, record);
 		PreparedStatement ps = null;
 		try {
 			ps = getSQLRender().getUpdatePreparedStatement(context, table);
 			Field[] fields = getSQLRender().getUpdateValidField(context, table);
-			for (IDBRecord form:records) {
-				String newID = (String)form.get(table.getId().getName());
-				form.updateVersion();
-				getSQLRender().updatePreparedStatementValue(context, table, form, ps, fields);
+			for (IDBRecord record:records) {
+				String newID = (String)record.get(table.getId().getName());
+				record.updateVersion();
+				getSQLRender().updatePreparedStatementValue(context, table, record, ps, fields);
 				ps.addBatch();
-				SQLDBMappingManager.setMappingTableValue(context, table, form, newID, TableDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
+				SQLDBMappingManager.setMappingTableValue(context, table, record, newID, TableDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 //				SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
-				this.updateCache(context, table, form, IDBRecordCacheManager.CONTEXT_SESSION);
-				this.changeUsedStatus(context, table, form);
+				this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
+				this.changeUsedStatus(context, table, record);
 			}
 			ps.executeBatch(); 
 		} catch (SQLException ex) {
@@ -1288,7 +1285,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 */
 	protected IDBRecord update(ITableDBContext context, Table table, IDBRecord record, int... args) throws Throwable {
 		this.checkVersion(context, table, record);
-		// DebugUtil.debug(">updateObj:" + form.toXML());
 		PreparedStatement ps = null;
 		try {
 			String newID = (String)record.get(table.getId().getName());
@@ -1296,11 +1292,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			ps = getSQLRender().getUpdatePreparedStatement(context, table, record);
 			// ps.executeUpdate();
 			ps.execute();
-			// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + getSQLDBTemplate().getSQL());
-			SQLDBMappingManager.setMappingTableValue(context, table, record, newID,
-					TableDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
-//			SQLDBOne2OneManager.setOne2OneTableValue(context, table, record, newID,
-//					DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
+			SQLDBMappingManager.setMappingTableValue(context, table, record, newID, TableDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
+//			SQLDBOne2OneManager.setOne2OneTableValue(context, table, record, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 			this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
 			this.changeUsedStatus(context, table, record);
 		} catch (SQLException ex) {
@@ -1327,8 +1320,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @return boolean
 	 * @throws Throwable
 	 */
-	public boolean delete(ITableDBContext context, Table table, String[] ids, 
-			int... args) throws Throwable {
+	protected boolean delete(ITableDBContext context, Table table, String[] ids, int... args) throws Throwable {
 		PreparedStatement ps = null;
 		try {
 			checkUsedStatus(context, table, ids);
@@ -1339,7 +1331,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			ps = getSQLRender().getDeletePreparedStatement(context, table, ids);
 			// return ps.executeUpdate();
 			boolean flag = ps.execute();
-			// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + getSQLDBTemplate().getSQL());
 			removeCache(context, table, ids, IDBRecordCacheManager.CONTEXT_SESSION);
 			return flag;
 		} catch (SQLException ex) {
@@ -2267,238 +2258,238 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		}
 		// asFlds.refValue = asEFilds;
 	}
-	/**
-	 * 追加filter，自定义条件
-	 * 
-	 * @param context
-	 * @param filterByID
-	 *            自定义过滤的方案ID
-	 * @throws Throwable
-	 */
-	public String getExtendFilterBy(ITableDBContext context, String filterByID)
-			throws Throwable {
-		// __filterBy sysquerycondition id
-		// String filterBy = context.getParameter("__filterBy");
-		if (StringUtil.isBlankOrNull(filterByID))
-			return "";
-		IDBRecord headFrm = this.select(context, ConfigUtil.getTable("SYSQUERYCONDITION"), filterByID);
-		if (headFrm != null) {
-			Table mainTbl = ConfigUtil.getTable((String)headFrm.get("TABLENAME"));
-			return getExtendFilterBy(context, mainTbl, headFrm, filterByID);
-		} else
-			return "";
-	}
-	/**
-	 * 追加filter，自定义条件
-	 * 
-	 * @param context
-	 * @param mainTbl
-	 *            要过滤的表名
-	 * @param headRecord
-	 *            自定义过滤的配置头表表单
-	 * @param filterByID
-	 *            自定义过滤的方案ID
-	 * @return String
-	 * @throws Throwable
-	 */
-	public String getExtendFilterBy(ITableDBContext context, Table mainTbl, IDBRecord headRecord, String filterByID) throws Throwable {
-		IDBRecord condRecord = this.createRecord();
-		condRecord.set("HEADID", filterByID);
-		IDBResultSet condPg = this.select(context, ConfigUtil.getTable("SYSQUERYCONDITION_D"), condRecord, DBPage.MAXCOUNTPERQUERY, 1);
-		if (condPg.getTotalRecordCount() == 0)
-			return "";
-		String filterSql = "";
-		for (int i = 0; i < condPg.getTotalRecordCount(); i++) {
-			IDBRecord record = condPg.getRecord(i);
-			String COLUMNNAME = (String)record.get("COLUMNNAME"); // 字段名
-			String RELATION = (String)record.get("RELATION"); // 连接符
-			String LEFT_P = (String)record.get("LEFT_P"); 
-			String CONDITIONS = (String)record.get("CONDITIONS"); // 运算符
-			String CONTENT = (String)record.get("CONTENT"); // 值
-			String RIGHT_P = (String)record.get("RIGHT_P");
-			// NOTICE 防止SQL注入
-			if (CONTENT!=null) {
-				CONTENT = StringUtil.unSqlInjection(CONTENT);
-			}
-			if (RELATION != null) {
-//				if (RELATION.length()>18) 
-//					throw new Warning("非法参数COLUMNNAME:"+RELATION);
-				RELATION = StringUtil.unSqlInjection(RELATION);
-				filterSql += " " + RELATION + " ";
-			}
-			if (LEFT_P != null) {
-//				if (LEFT_P.length()>18) 
-//					throw new Warning("非法参数COLUMNNAME:"+LEFT_P);
-				LEFT_P = StringUtil.unSqlInjection(LEFT_P);
-				filterSql += " " + LEFT_P + " ";
-			}
-			if (COLUMNNAME != null) {
-//				if (COLUMNNAME.length()>18) 
-//					throw new Warning("非法参数COLUMNNAME:"+COLUMNNAME);
-				COLUMNNAME = StringUtil.unSqlInjection(COLUMNNAME);
-				int s = COLUMNNAME.lastIndexOf("(");
-				int e = COLUMNNAME.lastIndexOf(")");
-				// String fieldName = COLUMNNAME.substring(0,s);
-				filterSql += " " + COLUMNNAME.substring(s + 1, e) + " ";
-			}
-			if (CONDITIONS != null) {
-//				if (CONDITIONS.length()>18) 
-//					throw new Warning("非法参数CONDITIONS:"+CONDITIONS);
-				CONDITIONS = StringUtil.unSqlInjection(CONDITIONS);
-				filterSql += " " + CONDITIONS + " ";
-			}
-			if (CONTENT != null
-				&& CONDITIONS.indexOf("is not null") == -1
-				&& CONDITIONS.indexOf("is null") == -1) {
-				int s = COLUMNNAME.lastIndexOf(".");
-				int e = COLUMNNAME.lastIndexOf(")");
-				int f = COLUMNNAME.lastIndexOf("(");
-				String startIndex = COLUMNNAME.substring(f + 1, s);
-				String refFldName = COLUMNNAME.substring(s + 1, e);
-				Table refTbl = null;
-				int ref_count = 1;
-				for (Field fld : mainTbl.getField())
-					if (fld.getReferenceTable() != null) {
-						ref_count++;
-						if (("t_" + ref_count).equals(startIndex)) {
-							refTbl = ConfigUtil.getTable(fld.getReferenceTable());
-							break;
-						}
-					}
-				// if (refTbl == null)// debug 20081104 by zhouxw
-				// refTbl = mainTbl;
-				Field refFld = null;
-				if (refTbl != null)
-					refFld = ConfigUtil.getFieldByName(refTbl, refFldName, true);
-				else
-					refFld = ConfigUtil.getFieldByName(mainTbl, refFldName, true);
-				if (refFld == null)
-					continue;
-				
-				if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.BIGDECIMAL)
-					filterSql += " " + CONTENT + " ";
-				else {
-					if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.STRING
-						&& (record.get("CONDITIONS").toString().indexOf("like") != -1 
-						|| record.get("CONDITIONS").toString().indexOf("not like") != -1))
-						filterSql += " '%" + CONTENT + "%' ";
-					else
-						filterSql += " '" + CONTENT + "' ";
-				}
-			}
-			if (RIGHT_P != null)
-				filterSql += " " + RIGHT_P + " ";
-		}
-		return filterSql;
-	}
-	/**
-	 * 追加filter，快速查询语句
-	 * 
-	 * TODO 名称应该叫 getQuickFilterBy
-	 * 
-	 * @param context
-	 * @param mainTbl
-	 *            要过滤的主表名
-	 * @param filterValue
-	 *            快速查询条件
-	 * @return String
-	 * @throws Throwable
-	 */
-	public String getExtendFilterBy(ITableDBContext context, Table mainTbl, String filterValue) throws Throwable {
-		// filterValue
-		if (StringUtil.isBlankOrNull(filterValue))
-			return "";
-		// NOTICE 防止SQL注入
-		//filterValue = filterValue.substring(0, Math.min(filterValue.length(), 12));
-		filterValue = StringUtil.unSqlInjection(filterValue);
-		String[][] colOptions = SQLDBHelper.getIndexFields(mainTbl, null);
-		if (colOptions.length == 0)
-			return "";
-		int count = 0;
-		String filterSql = " and (";
-		for (String[] colOption : colOptions) {
-			String COLUMNNAME = " " + colOption[0];
-			{ // t_n.COLUMNNAME
-				int s = COLUMNNAME.lastIndexOf(".");
-				// int e = COLUMNNAME.lastIndexOf(")");
-				// int f = COLUMNNAME.lastIndexOf("(");
-				String startIndex = COLUMNNAME.substring(0, s).trim();
-				String refFldName = COLUMNNAME.substring(s + 1).trim();
-				Table refTbl = null;
-				int ref_count = 1;
-				for (Field fld : mainTbl.getField())
-					if (fld.getReferenceTable() != null) {
-						ref_count++;
-						if (("t_" + ref_count).equals(startIndex)) {
-							refTbl = ConfigUtil.getTable(fld.getReferenceTable());
-							break;
-						}
-					}
-				// if (refTbl == null)// debug 20081104 by zhouxw
-				// refTbl = mainTbl;
-				Field refFld = null;
-				if (refTbl != null)// 联合表字段
-					refFld = ConfigUtil.getFieldByName(refTbl, refFldName, true);
-				else // 本表字段
-					refFld = ConfigUtil.getFieldByName(mainTbl, refFldName, true);
-				if (refFld == null)
-					continue;
-				if ("HYVERSION".equalsIgnoreCase(refFld.getName()))
-					continue;
-				if (refFld.getQueryCondition()!=null 
-						&& refFld.getQueryCondition().getType()==QueryConditionTypeType.NONE)
-					continue;
-				// TODO 暂不考虑BLOB
-				if (refFld != null
-					&& (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.BLOB 
-					 || refFld.getJavaType() == AbstractCommonFieldJavaTypeType.DBBLOB
-					 || refFld.getJavaType() == AbstractCommonFieldJavaTypeType.DBCLOB))
-					continue;
-				// boolean hasFilter = false;
-				if (refFld.getOptionCount() > 0) {
-					for (Option o : refFld.getOption()) {
-						if (o.getDisplayName().toLowerCase().indexOf(filterValue.toLowerCase()) >= 0) {
-							if (count++ > 0)
-								filterSql += " or ";
-							filterSql += COLUMNNAME;
-							if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.BIGDECIMAL)
-								filterSql += "=" + o.getValue() + " ";
-							else
-								filterSql += " like '" + o.getValue() + "' ";
-						}
-					}
-				}
-				// if (refFld==null)
-				if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
-					if (StringUtil.isNumeric(filterValue)) {
-						if (count++ > 0)
-							filterSql += " or ";
-						filterSql += COLUMNNAME;
-						filterSql += "=" + filterValue + " ";
-					}
-				} else {
-					if (count++ > 0)
-						filterSql += " or ";
-					filterSql += COLUMNNAME;
-					if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.STRING) {
-						filterSql += " like '%" + filterValue + "%' ";
-					} else {
-						filterSql += " like '" + filterValue + "' ";
-					}
-					// if (refTbl == null && refFld.getJavaType() == AbstractCommonFieldJavaTypeType.STRING
-					// && (refFld.getQueryCondition() == null 
-					// || refFld.getQueryCondition().getType() == QueryConditionTypeType.BLURMATCHING))
-					// filterSql += " like '%" + filterValue + "%' ";
-					// else {
-					// filterSql += " like '" + filterValue + "' ";
-					// }
-				}
-			}
-		}
-		filterSql += ")";
-		//
-		return filterSql;
-	}
+//	/**
+//	 * 追加filter，自定义条件
+//	 * 
+//	 * @param context
+//	 * @param filterByID
+//	 *            自定义过滤的方案ID
+//	 * @throws Throwable
+//	 */
+//	public String getExtendFilterBy(ITableDBContext context, String filterByID)
+//			throws Throwable {
+//		// __filterBy sysquerycondition id
+//		// String filterBy = context.getParameter("__filterBy");
+//		if (StringUtil.isBlankOrNull(filterByID))
+//			return "";
+//		IDBRecord mainRecord = this.select(context, ConfigUtil.getTable("SYSQUERYCONDITION"), filterByID);
+//		if (mainRecord != null) {
+//			Table mainTbl = ConfigUtil.getTable((String)mainRecord.get("TABLENAME"));
+//			return getExtendFilterBy(context, mainTbl, mainRecord, filterByID);
+//		} else
+//			return "";
+//	}
+//	/**
+//	 * 追加filter，自定义条件
+//	 * 
+//	 * @param context
+//	 * @param mainTbl
+//	 *            要过滤的表名
+//	 * @param headRecord
+//	 *            自定义过滤的配置头表表单
+//	 * @param filterByID
+//	 *            自定义过滤的方案ID
+//	 * @return String
+//	 * @throws Throwable
+//	 */
+//	public String getExtendFilterBy(ITableDBContext context, Table mainTbl, IDBRecord headRecord, String filterByID) throws Throwable {
+//		IDBRecord condRecord = this.createRecord();
+//		condRecord.set("HEADID", filterByID);
+//		IDBResultSet condPg = this.select(context, ConfigUtil.getTable("SYSQUERYCONDITION_D"), condRecord, DBPage.MAXCOUNTPERQUERY, 1);
+//		if (condPg.getTotalRecordCount() == 0)
+//			return "";
+//		String filterSql = "";
+//		for (int i = 0; i < condPg.getTotalRecordCount(); i++) {
+//			IDBRecord record = condPg.getRecord(i);
+//			String COLUMNNAME = (String)record.get("COLUMNNAME"); // 字段名
+//			String RELATION = (String)record.get("RELATION"); // 连接符
+//			String LEFT_P = (String)record.get("LEFT_P"); 
+//			String CONDITIONS = (String)record.get("CONDITIONS"); // 运算符
+//			String CONTENT = (String)record.get("CONTENT"); // 值
+//			String RIGHT_P = (String)record.get("RIGHT_P");
+//			// NOTICE 防止SQL注入
+//			if (CONTENT!=null) {
+//				CONTENT = StringUtil.unSqlInjection(CONTENT);
+//			}
+//			if (RELATION != null) {
+////				if (RELATION.length()>18) 
+////					throw new Warning("非法参数COLUMNNAME:"+RELATION);
+//				RELATION = StringUtil.unSqlInjection(RELATION);
+//				filterSql += " " + RELATION + " ";
+//			}
+//			if (LEFT_P != null) {
+////				if (LEFT_P.length()>18) 
+////					throw new Warning("非法参数COLUMNNAME:"+LEFT_P);
+//				LEFT_P = StringUtil.unSqlInjection(LEFT_P);
+//				filterSql += " " + LEFT_P + " ";
+//			}
+//			if (COLUMNNAME != null) {
+////				if (COLUMNNAME.length()>18) 
+////					throw new Warning("非法参数COLUMNNAME:"+COLUMNNAME);
+//				COLUMNNAME = StringUtil.unSqlInjection(COLUMNNAME);
+//				int s = COLUMNNAME.lastIndexOf("(");
+//				int e = COLUMNNAME.lastIndexOf(")");
+//				// String fieldName = COLUMNNAME.substring(0,s);
+//				filterSql += " " + COLUMNNAME.substring(s + 1, e) + " ";
+//			}
+//			if (CONDITIONS != null) {
+////				if (CONDITIONS.length()>18) 
+////					throw new Warning("非法参数CONDITIONS:"+CONDITIONS);
+//				CONDITIONS = StringUtil.unSqlInjection(CONDITIONS);
+//				filterSql += " " + CONDITIONS + " ";
+//			}
+//			if (CONTENT != null
+//				&& CONDITIONS.indexOf("is not null") == -1
+//				&& CONDITIONS.indexOf("is null") == -1) {
+//				int s = COLUMNNAME.lastIndexOf(".");
+//				int e = COLUMNNAME.lastIndexOf(")");
+//				int f = COLUMNNAME.lastIndexOf("(");
+//				String startIndex = COLUMNNAME.substring(f + 1, s);
+//				String refFldName = COLUMNNAME.substring(s + 1, e);
+//				Table refTbl = null;
+//				int ref_count = 1;
+//				for (Field fld : mainTbl.getField())
+//					if (fld.getReferenceTable() != null) {
+//						ref_count++;
+//						if (("t_" + ref_count).equals(startIndex)) {
+//							refTbl = ConfigUtil.getTable(fld.getReferenceTable());
+//							break;
+//						}
+//					}
+//				// if (refTbl == null)// debug 20081104 by zhouxw
+//				// refTbl = mainTbl;
+//				Field refFld = null;
+//				if (refTbl != null)
+//					refFld = ConfigUtil.getFieldByName(refTbl, refFldName, true);
+//				else
+//					refFld = ConfigUtil.getFieldByName(mainTbl, refFldName, true);
+//				if (refFld == null)
+//					continue;
+//				
+//				if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.BIGDECIMAL)
+//					filterSql += " " + CONTENT + " ";
+//				else {
+//					if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.STRING
+//						&& (record.get("CONDITIONS").toString().indexOf("like") != -1 
+//						|| record.get("CONDITIONS").toString().indexOf("not like") != -1))
+//						filterSql += " '%" + CONTENT + "%' ";
+//					else
+//						filterSql += " '" + CONTENT + "' ";
+//				}
+//			}
+//			if (RIGHT_P != null)
+//				filterSql += " " + RIGHT_P + " ";
+//		}
+//		return filterSql;
+//	}
+//	/**
+//	 * 追加filter，快速查询语句
+//	 * 
+//	 * TODO 名称应该叫 getQuickFilterBy
+//	 * 
+//	 * @param context
+//	 * @param mainTbl
+//	 *            要过滤的主表名
+//	 * @param filterValue
+//	 *            快速查询条件
+//	 * @return String
+//	 * @throws Throwable
+//	 */
+//	public String getExtendFilterBy(ITableDBContext context, Table mainTbl, String filterValue) throws Throwable {
+//		// filterValue
+//		if (StringUtil.isBlankOrNull(filterValue))
+//			return "";
+//		// NOTICE 防止SQL注入
+//		//filterValue = filterValue.substring(0, Math.min(filterValue.length(), 12));
+//		filterValue = StringUtil.unSqlInjection(filterValue);
+//		String[][] colOptions = SQLDBHelper.getIndexFields(mainTbl, null);
+//		if (colOptions.length == 0)
+//			return "";
+//		int count = 0;
+//		String filterSql = " and (";
+//		for (String[] colOption : colOptions) {
+//			String COLUMNNAME = " " + colOption[0];
+//			{ // t_n.COLUMNNAME
+//				int s = COLUMNNAME.lastIndexOf(".");
+//				// int e = COLUMNNAME.lastIndexOf(")");
+//				// int f = COLUMNNAME.lastIndexOf("(");
+//				String startIndex = COLUMNNAME.substring(0, s).trim();
+//				String refFldName = COLUMNNAME.substring(s + 1).trim();
+//				Table refTbl = null;
+//				int ref_count = 1;
+//				for (Field fld : mainTbl.getField())
+//					if (fld.getReferenceTable() != null) {
+//						ref_count++;
+//						if (("t_" + ref_count).equals(startIndex)) {
+//							refTbl = ConfigUtil.getTable(fld.getReferenceTable());
+//							break;
+//						}
+//					}
+//				// if (refTbl == null)// debug 20081104 by zhouxw
+//				// refTbl = mainTbl;
+//				Field refFld = null;
+//				if (refTbl != null)// 联合表字段
+//					refFld = ConfigUtil.getFieldByName(refTbl, refFldName, true);
+//				else // 本表字段
+//					refFld = ConfigUtil.getFieldByName(mainTbl, refFldName, true);
+//				if (refFld == null)
+//					continue;
+//				if ("HYVERSION".equalsIgnoreCase(refFld.getName()))
+//					continue;
+//				if (refFld.getQueryCondition()!=null 
+//						&& refFld.getQueryCondition().getType()==QueryConditionTypeType.NONE)
+//					continue;
+//				// TODO 暂不考虑BLOB
+//				if (refFld != null
+//					&& (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.BLOB 
+//					 || refFld.getJavaType() == AbstractCommonFieldJavaTypeType.DBBLOB
+//					 || refFld.getJavaType() == AbstractCommonFieldJavaTypeType.DBCLOB))
+//					continue;
+//				// boolean hasFilter = false;
+//				if (refFld.getOptionCount() > 0) {
+//					for (Option o : refFld.getOption()) {
+//						if (o.getDisplayName().toLowerCase().indexOf(filterValue.toLowerCase()) >= 0) {
+//							if (count++ > 0)
+//								filterSql += " or ";
+//							filterSql += COLUMNNAME;
+//							if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.BIGDECIMAL)
+//								filterSql += "=" + o.getValue() + " ";
+//							else
+//								filterSql += " like '" + o.getValue() + "' ";
+//						}
+//					}
+//				}
+//				// if (refFld==null)
+//				if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
+//					if (StringUtil.isNumeric(filterValue)) {
+//						if (count++ > 0)
+//							filterSql += " or ";
+//						filterSql += COLUMNNAME;
+//						filterSql += "=" + filterValue + " ";
+//					}
+//				} else {
+//					if (count++ > 0)
+//						filterSql += " or ";
+//					filterSql += COLUMNNAME;
+//					if (refFld.getJavaType() == AbstractCommonFieldJavaTypeType.STRING) {
+//						filterSql += " like '%" + filterValue + "%' ";
+//					} else {
+//						filterSql += " like '" + filterValue + "' ";
+//					}
+//					// if (refTbl == null && refFld.getJavaType() == AbstractCommonFieldJavaTypeType.STRING
+//					// && (refFld.getQueryCondition() == null 
+//					// || refFld.getQueryCondition().getType() == QueryConditionTypeType.BLURMATCHING))
+//					// filterSql += " like '%" + filterValue + "%' ";
+//					// else {
+//					// filterSql += " like '" + filterValue + "' ";
+//					// }
+//				}
+//			}
+//		}
+//		filterSql += ")";
+//		//
+//		return filterSql;
+//	}
 	// ---------------------------------------------------------------------------------------------------------------------- //
 	/**
 	 * 错误判断

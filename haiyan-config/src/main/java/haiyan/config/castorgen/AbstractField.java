@@ -22,7 +22,7 @@ implements java.io.Serializable
     //--------------------------/
 
     /**
-     * allow indexl
+     * allow index
      */
     private boolean _indexAllowed = false;
 
@@ -40,6 +40,16 @@ implements java.io.Serializable
      * keeps track of state for field: _nullAllowed
      */
     private boolean _has_nullAllowed;
+
+    /**
+     * safe html
+     */
+    private boolean _safeHtml = false;
+
+    /**
+     * keeps track of state for field: _safeHtml
+     */
+    private boolean _has_safeHtml;
 
     /**
      * default value
@@ -136,6 +146,13 @@ implements java.io.Serializable
     }
 
     /**
+     */
+    public void deleteSafeHtml(
+    ) {
+        this._has_safeHtml= false;
+    }
+
+    /**
      * Returns the value of field 'dataStyle'. The field
      * 'dataStyle' has the following description: field db style
      * 
@@ -159,7 +176,7 @@ implements java.io.Serializable
 
     /**
      * Returns the value of field 'indexAllowed'. The field
-     * 'indexAllowed' has the following description: allow indexl
+     * 'indexAllowed' has the following description: allow index
      * 
      * @return the value of field 'IndexAllowed'.
      */
@@ -226,6 +243,17 @@ implements java.io.Serializable
     }
 
     /**
+     * Returns the value of field 'safeHtml'. The field 'safeHtml'
+     * has the following description: safe html
+     * 
+     * @return the value of field 'SafeHtml'.
+     */
+    public boolean getSafeHtml(
+    ) {
+        return this._safeHtml;
+    }
+
+    /**
      * Method hasIndexAllowed.
      * 
      * @return true if at least one IndexAllowed has been added
@@ -276,8 +304,18 @@ implements java.io.Serializable
     }
 
     /**
+     * Method hasSafeHtml.
+     * 
+     * @return true if at least one SafeHtml has been added
+     */
+    public boolean hasSafeHtml(
+    ) {
+        return this._has_safeHtml;
+    }
+
+    /**
      * Returns the value of field 'indexAllowed'. The field
-     * 'indexAllowed' has the following description: allow indexl
+     * 'indexAllowed' has the following description: allow index
      * 
      * @return the value of field 'IndexAllowed'.
      */
@@ -295,6 +333,17 @@ implements java.io.Serializable
     public boolean isNullAllowed(
     ) {
         return this._nullAllowed;
+    }
+
+    /**
+     * Returns the value of field 'safeHtml'. The field 'safeHtml'
+     * has the following description: safe html
+     * 
+     * @return the value of field 'SafeHtml'.
+     */
+    public boolean isSafeHtml(
+    ) {
+        return this._safeHtml;
     }
 
     /**
@@ -336,7 +385,7 @@ implements java.io.Serializable
 
     /**
      * Sets the value of field 'indexAllowed'. The field
-     * 'indexAllowed' has the following description: allow indexl
+     * 'indexAllowed' has the following description: allow index
      * 
      * @param indexAllowed the value of field 'indexAllowed'.
      */
@@ -405,6 +454,18 @@ implements java.io.Serializable
             final boolean nullAllowed) {
         this._nullAllowed = nullAllowed;
         this._has_nullAllowed = true;
+    }
+
+    /**
+     * Sets the value of field 'safeHtml'. The field 'safeHtml' has
+     * the following description: safe html
+     * 
+     * @param safeHtml the value of field 'safeHtml'.
+     */
+    public void setSafeHtml(
+            final boolean safeHtml) {
+        this._safeHtml = safeHtml;
+        this._has_safeHtml = true;
     }
 
     /**

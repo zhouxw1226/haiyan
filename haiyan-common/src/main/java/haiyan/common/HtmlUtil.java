@@ -12,7 +12,6 @@ public class HtmlUtil {
 
 	private HtmlUtil() {
 	}
-	
 	/**
 	 * @param context
 	 */
@@ -26,8 +25,6 @@ public class HtmlUtil {
 //		context.setHeader("Pragma", "no-cache");
 //		// HTTP 1.0 backward compatibility
 	}
-	
-
 	/**
 	 * @param str
 	 * @return String
@@ -41,7 +38,6 @@ public class HtmlUtil {
 			result = "";
 		return result;
 	}
-
 	/**
 	 * @param action
 	 * @return String
@@ -59,7 +55,6 @@ public class HtmlUtil {
 			result = "";
 		return result;
 	}
-
 	/**
 	 * @param str
 	 * @return String
@@ -77,16 +72,15 @@ public class HtmlUtil {
 //			result = "";
 //		return result;
 	}
-	
 	// JSONUtils.quote
-	 public static String quote(String string)
+	public static String quote(String string)
 	 /*     */   {
 //	 /* 471 */     if (isFunction(string)) {
 //	 /* 472 */       return string;
 //	 /*     */     }
 	 /* 474 */     if ((string == null) || (string.length() == 0)) {
 //	 /* 475 */       return "\"\"";
-		 return "";
+		 				return "";
 	 /*     */     }
 	 /*     */ 
 	 /* 479 */     char c = '\0';
@@ -139,7 +133,6 @@ public class HtmlUtil {
 //	 /* 526 */     sb.append('"');
 	 /* 527 */     return sb.toString();
 	 /*     */   }
-
 //	/**
 //	 * @param str
 //	 * @return String
@@ -154,7 +147,6 @@ public class HtmlUtil {
 //			result = "";
 //		return result;
 //	}
-
 	/**
 	 * @param str
 	 * @return String
@@ -168,7 +160,6 @@ public class HtmlUtil {
 			result = "";
 		return result;
 	}
-
 	/**
 	 * @param str
 	 * @return String
@@ -182,7 +173,6 @@ public class HtmlUtil {
 			result = "";
 		return result;
 	}
-
 	/**
 	 * return safe html
 	 * 
@@ -200,7 +190,6 @@ public class HtmlUtil {
 			result = "";
 		return result;
 	}
-
 	/**
 	 * @param str
 	 * @return String
@@ -217,25 +206,23 @@ public class HtmlUtil {
 			result = "";
 		return result;
 	}
-
-	/**
-	 * @param context
-	 * @param name
-	 * @return String
-	 */
-	public static String getHiddenStrForParamValue(IContext context,
-			String name) {
-		String str = (String)context.getAttribute(name);
-		// DebugUtil.debug("+++++++++++" + name + " " + str);
-		HyStringBuffer buf = new HyStringBuffer();
-		// if (str != null) {
-		str = StringUtil.isStrBlankOrNull(str) ? "" : str;
-		buf.append("<input type='hidden' id='").append(name).append("' name='")
-				.append(name).append("' value='").append(str).appendln("'/>");
-		// }
-		return buf.toString();
-	}
-
+//	/**
+//	 * @param context
+//	 * @param name
+//	 * @return String
+//	 */
+//	public static String getHiddenStrForParamValue(IContext context,
+//			String name) {
+//		String str = (String)context.getAttribute(name);
+//		// DebugUtil.debug("+++++++++++" + name + " " + str);
+//		HyStringBuffer buf = new HyStringBuffer();
+//		// if (str != null) {
+//		str = StringUtil.isStrBlankOrNull(str) ? "" : str;
+//		buf.append("<input type='hidden' id='").append(name).append("' name='")
+//				.append(name).append("' value='").append(str).appendln("'/>");
+//		// }
+//		return buf.toString();
+//	}
 //	/**
 //	 * @param context
 //	 * @param name

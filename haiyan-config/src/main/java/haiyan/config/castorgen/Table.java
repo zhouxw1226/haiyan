@@ -21,7 +21,7 @@ import org.exolab.castor.xml.Unmarshaller;
  * 
  * @version $Revision$ $Date$
  */
-public class Table implements java.io.Serializable, ITableConfig {
+public class Table implements ITableConfig, java.io.Serializable {
 
 
       //--------------------------/

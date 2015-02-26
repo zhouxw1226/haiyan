@@ -13,8 +13,6 @@ package haiyan.config.castorgen;
 
 import haiyan.common.intf.config.IBillConfig;
 
-import haiyan.common.intf.config.IBillConfig;
-
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
 
@@ -23,7 +21,7 @@ import org.exolab.castor.xml.Unmarshaller;
  * 
  * @version $Revision$ $Date$
  */
-public class Bill implements java.io.Serializable, IBillConfig {
+public class Bill implements IBillConfig, java.io.Serializable {
 
 
       //--------------------------/

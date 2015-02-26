@@ -2,6 +2,7 @@ package haiyan.cache;
 
 import haiyan.common.ByteUtil;
 import haiyan.common.VarUtil;
+import haiyan.common.exception.Warning;
 import haiyan.common.intf.session.IUser;
 
 import java.io.Serializable;
@@ -25,10 +26,10 @@ import bsh.StringUtil;
 public class RedisDataCache extends EHDataCache {
 
 //	private Jedis defaultJedis;//非切片额客户端连接
-    private JedisPool defaultJedisPool;//非切片连接池
-//    private ShardedJedis shardedJedis;//切片额客户端连接
+    private JedisPool masterJedisPool;//非切片连接池
     private ShardedJedisPool shardedJedisPool;//切片连接池
-    private BinaryJedisCommands jedis;
+    private BinaryJedisCommands jedisImplWriter;
+    private BinaryJedisCommands jedisImplReader;
     private String[] servers = null;
 	public RedisDataCache() {
 		super();
@@ -36,15 +37,17 @@ public class RedisDataCache extends EHDataCache {
 	/**
 	 * 初始化非切片池
 	 */
-	private void initialPool() {
+	private void initialMasterPool() {
 		// 池基本配置
 		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMaxActive(20);
-		config.setMaxIdle(5);
+		config.setMaxActive(200);
+		config.setMaxIdle(50);
 		config.setMaxWait(1000l);
 		config.setTestOnBorrow(false);
-		String[] arr = StringUtil.split(servers[0],":");
-		defaultJedisPool = new JedisPool(config, arr[0], VarUtil.toInt(arr[1]));//"127.0.0.1", 6379);
+		{
+			String[] arr = StringUtil.split(servers[0],":"); // 第一个为master
+			masterJedisPool = new JedisPool(config, arr[0], VarUtil.toInt(arr[1]));//"127.0.0.1", 6379);
+		}
 	}
 	/**
 	 * 初始化切片池
@@ -52,15 +55,17 @@ public class RedisDataCache extends EHDataCache {
 	private void initialShardedPool() {
 		// 池基本配置
 		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMaxActive(20);
-		config.setMaxIdle(5);
+		config.setMaxActive(200);
+		config.setMaxIdle(50);
 		config.setMaxWait(1000l);
 		config.setTestOnBorrow(false);
 		// slave链接
 		List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-		for (String server:servers) {
-			String[] arr = StringUtil.split(server,":");
-			shards.add(new JedisShardInfo(arr[0], VarUtil.toInt(arr[1]), "master"));//"127.0.0.1", 6379, "master"));
+		int length = servers.length;
+		for (int i=1;i<length;i++) {
+			String[] arr = StringUtil.split(servers[i],":");
+			JedisShardInfo jsi = new JedisShardInfo(arr[0], VarUtil.toInt(arr[1]), "slave"); // "master"
+			shards.add(jsi);
 		}
 		// 构造池
 		shardedJedisPool = new ShardedJedisPool(config, shards);
@@ -71,13 +76,28 @@ public class RedisDataCache extends EHDataCache {
     }
     @Override
     public void initialize() {
-    	super.initialize();
     	if (servers.length>1) {
+    		initialMasterPool();
+    		jedisImplWriter = masterJedisPool.getResource();
     		initialShardedPool();
-    		jedis = shardedJedisPool.getResource();
+    		jedisImplReader = shardedJedisPool.getResource();
     	} else {
-    		initialPool();
-    		jedis = defaultJedisPool.getResource();
+    		initialMasterPool();
+    		jedisImplWriter = masterJedisPool.getResource();
+    	}
+    }
+    protected BinaryJedisCommands getJedisWriter() {
+    	try {
+    		return jedisImplWriter;
+    	}catch(Throwable e){
+    		throw Warning.wrapException(e);
+    	}
+    }
+    protected BinaryJedisCommands getJedisReader() {
+    	try {
+    		return jedisImplReader;
+    	}catch(Throwable e){
+    		throw Warning.wrapException(e);
     	}
     }
     // --------------------- user cache --------------------- //
@@ -88,8 +108,8 @@ public class RedisDataCache extends EHDataCache {
 	public IUser setUser(String sessionId, IUser user) {
 		super.setUser(sessionId, user);
 		String k = getUserKey(sessionId);
-		jedis.set(k.getBytes(), ByteUtil.toBytes(user));
-		jedis.set((k+"._status").getBytes(), "0".getBytes()); // login
+		getJedisWriter().set(k.getBytes(), ByteUtil.toBytes(user));
+		getJedisWriter().set((k+"._status").getBytes(), "0".getBytes()); // login
 		return user;
 	}
 	@Override
@@ -98,7 +118,7 @@ public class RedisDataCache extends EHDataCache {
 		String k = getUserKey(sessionId);
 		{
 			Integer status = -1;
-			byte[] bytes = jedis.get((k+"._status").getBytes());
+			byte[] bytes = getJedisReader().get((k+"._status").getBytes());
 			if (bytes!=null) {
 				status = VarUtil.toInt(bytes);
 			}
@@ -109,7 +129,7 @@ public class RedisDataCache extends EHDataCache {
 			}
 		}
 		if (user==null) {
-			byte[] bytes = jedis.get(k.getBytes());
+			byte[] bytes = getJedisReader().get(k.getBytes());
 			if (bytes!=null)
 				user = (IUser)ByteUtil.toObject(bytes);
 			if (user!=null)
@@ -121,11 +141,11 @@ public class RedisDataCache extends EHDataCache {
 	public boolean removeUser(String sessionId) {
 		super.removeUser(sessionId);
 		String k = getUserKey(sessionId);
-		if (jedis instanceof ShardedJedis)
-			((ShardedJedis)jedis).del(k);
-		else if (jedis instanceof Jedis)
-			((Jedis)jedis).del(k.getBytes());
-		jedis.set((k+"._status").getBytes(), "-1".getBytes()); // logout
+		if (getJedisWriter() instanceof ShardedJedis)
+			((ShardedJedis)getJedisWriter()).del(k);
+		else if (getJedisWriter() instanceof Jedis)
+			((Jedis)getJedisWriter()).del(k.getBytes());
+		getJedisWriter().set((k+"._status").getBytes(), "-1".getBytes()); // logout
 		return true;
 	}
     // --------------------- data cache --------------------- //
@@ -135,85 +155,31 @@ public class RedisDataCache extends EHDataCache {
 	@Override
 	public Object setData(String cacheID, Object key, Object ele) {
 		String mk = getDataKey(cacheID, key);
-//		super.setLocalData(cacheID, mk, ele);
-		jedis.set(mk.getBytes(), ByteUtil.toBytes((Serializable)ele));
+		getJedisWriter().set(mk.getBytes(), ByteUtil.toBytes((Serializable)ele));
 		return ele;
 	}
 	@Override
 	public Object getData(String cacheID, Object key) {
 		String mk = getDataKey(cacheID, key);
-		byte[] bytes = jedis.get(mk.getBytes());
+		byte[] bytes = getJedisReader().get(mk.getBytes());
 		if (bytes!=null) {
 			return ByteUtil.toObject(bytes);
 		}
 		return null;
-//		Integer v = (Integer)super.getLocalData(cacheID, key+"._version");
-//		Integer mv = VarUtil.toInt(jedis.get(mk+"._version"));
-//		if (v==null || (mv!=null && v.intValue()<mv.intValue())) {
-//			Object mo = jedis.get(mk);
-//			if (mo!=null) {
-//				super.setLocalData(cacheID, key+"._version", mv);
-//				return super.setLocalData(cacheID, key, mo);
-//			}
-//			return null;
-//		}
-//		Object o = super.getLocalData(cacheID, key);
-//		if (o!=null) {
-//			return o;
-//		}
-//		Object mo = jedis.get(mk);
-//		if (mo!=null) {
-//			if (mv==null)
-//				mv = 0;
-//			super.setLocalData(cacheID, key+"._version", mv);
-//			return super.setLocalData(cacheID, key, mo);
-//		}
-//		return null;
 	}
 	@Override
 	public Object updateData(String cacheID, Object key, Object ele) {
 		return this.setData(cacheID, key, ele);
-//		String mk = getDataKey(cacheID, key);
-//		Integer v = (Integer)super.getLocalData(cacheID, key+"._version");
-//		Integer mv = (Integer)mcc.get(mk+"._version");
-//		if (v!=null && mv!=null && v.intValue()!=mv.intValue()) {
-//			throw new Warning(VERSION_WARNING);
-//		}
-//		mcc.set(mk, ele); // update cluster
-//		super.setLocalData(cacheID, key, ele); // update local
-//		{
-//			if (mv==null)
-//				mv = 0;
-//			mv++;
-//			mcc.set(mk+"._version", mv);
-//			super.setLocalData(cacheID, key+"._version", mv);
-//		}
-//		return ele;
 	}
 	@Override
 	public Object deleteData(String cacheID, Object key) {
 		Object o = this.getData(cacheID, key);
 		String mk = getDataKey(cacheID, key);
-		if (jedis instanceof ShardedJedis)
-			((ShardedJedis)jedis).del(mk);
-		else if (jedis instanceof Jedis)
-			((Jedis)jedis).del(mk.getBytes());
+		if (getJedisWriter() instanceof ShardedJedis)
+			((ShardedJedis)getJedisWriter()).del(mk);
+		else if (getJedisWriter() instanceof Jedis)
+			((Jedis)getJedisWriter()).del(mk.getBytes());
 		return o;
-//		Integer v = (Integer)super.getLocalData(cacheID, key+"._version");
-//		Integer mv = (Integer)mcc.get(mk+"._version");
-//		if (v!=null && mv!=null && v.intValue()!=mv.intValue()) {
-//			throw new Warning(VERSION_WARNING);
-//		}
-//	    mcc.delete(mk); // update cluster
-//	    Object o = super.removeLocalData(cacheID, key); // update local
-//		{
-//			if (mv==null)
-//				mv = 0;
-//			mv++;
-//			mcc.set(mk+"._version", mv);
-//			super.removeLocalData(cacheID, key+"._version");
-//		}
-//	    return o;
     }
 //	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";
 	

@@ -28,10 +28,10 @@ import bsh.StringUtil;
 public class RedisDataCacheRemote extends AbstractDataCache {
 
 //	private Jedis defaultJedis;//非切片额客户端连接
-    private JedisPool defaultJedisPool;//非切片连接池
-//  private ShardedJedis shardedJedis;//切片额客户端连接
+    private JedisPool masterJedisPool;//非切片连接池
     private ShardedJedisPool shardedJedisPool;//切片连接池
-    private BinaryJedisCommands jedisImpl;
+    private BinaryJedisCommands jedisImplWriter;
+    private BinaryJedisCommands jedisImplReader;
     private String[] servers = null;
 	public RedisDataCacheRemote() {
 		super();
@@ -39,15 +39,18 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	/**
 	 * 初始化非切片池
 	 */
-	private void initialPool() {
+	private void initialMasterPool() {
 		// 池基本配置
 		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMaxActive(20);
-		config.setMaxIdle(5);
+		config.setMaxActive(200);
+		config.setMaxIdle(50);
 		config.setMaxWait(1000l);
 		config.setTestOnBorrow(false);
-		String[] arr = StringUtil.split(servers[0],":");
-		defaultJedisPool = new JedisPool(config, arr[0], VarUtil.toInt(arr[1]));//"127.0.0.1", 6379);
+		{
+			DebugUtil.debug("redis.master:"+servers[0]);
+			String[] arr = StringUtil.split(servers[0],":"); // 第一个为master
+			masterJedisPool = new JedisPool(config, arr[0], VarUtil.toInt(arr[1]));//"127.0.0.1", 6379);
+		}
 	}
 	/**
 	 * 初始化切片池
@@ -55,15 +58,18 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	private void initialShardedPool() {
 		// 池基本配置
 		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMaxActive(20);
-		config.setMaxIdle(5);
+		config.setMaxActive(200);
+		config.setMaxIdle(50);
 		config.setMaxWait(1000l);
 		config.setTestOnBorrow(false);
 		// slave链接
 		List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-		for (String server:servers) {
-			String[] arr = StringUtil.split(server,":");
-			shards.add(new JedisShardInfo(arr[0], VarUtil.toInt(arr[1]), "master"));//"127.0.0.1", 6379, "master"));
+		int length = servers.length;
+		for (int i=1;i<length;i++) {
+			DebugUtil.debug("redis.slave:"+servers[i]);
+			String[] arr = StringUtil.split(servers[i],":");
+			JedisShardInfo jsi = new JedisShardInfo(arr[0], VarUtil.toInt(arr[1]), "slave"); // "master"
+			shards.add(jsi);
 		}
 		// 构造池
 		shardedJedisPool = new ShardedJedisPool(config, shards);
@@ -75,16 +81,25 @@ public class RedisDataCacheRemote extends AbstractDataCache {
     @Override
     public void initialize() {
     	if (servers.length>1) {
+    		initialMasterPool();
+    		jedisImplWriter = masterJedisPool.getResource();
     		initialShardedPool();
-    		jedisImpl = shardedJedisPool.getResource();
+    		jedisImplReader = shardedJedisPool.getResource();
     	} else {
-    		initialPool();
-    		jedisImpl = defaultJedisPool.getResource();
+    		initialMasterPool();
+    		jedisImplWriter = masterJedisPool.getResource();
     	}
     }
-    protected BinaryJedisCommands getJedis() {
+    protected BinaryJedisCommands getJedisWriter() {
     	try {
-    		return jedisImpl;
+    		return jedisImplWriter;
+    	}catch(Throwable e){
+    		throw Warning.wrapException(e);
+    	}
+    }
+    protected BinaryJedisCommands getJedisReader() {
+    	try {
+    		return jedisImplReader;
     	}catch(Throwable e){
     		throw Warning.wrapException(e);
     	}
@@ -100,8 +115,8 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			if (user==null)
 				throw new Warning("user is null");
 			String k = getUserKey(sessionId);
-			getJedis().set(k.getBytes(), ByteUtil.toBytes(user));
-			getJedis().set((k+"._status").getBytes(), "0".getBytes()); // login
+			getJedisWriter().set(k.getBytes(), ByteUtil.toBytes(user));
+			getJedisWriter().set((k+"._status").getBytes(), "0".getBytes()); // login
 			return user;
 		}catch (JedisConnectionException ex) {
 			DebugUtil.error(ex);
@@ -123,7 +138,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			IUser user = null; // super.getUser();
 			String k = getUserKey(sessionId);
 			Integer status = -1;
-			byte[] bytes = getJedis().get((k+"._status").getBytes());
+			byte[] bytes = getJedisReader().get((k+"._status").getBytes());
 			if (bytes!=null) {
 				status = VarUtil.toInt(bytes);
 			}
@@ -133,7 +148,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 				return null;
 			}
 			if (user==null) {
-				bytes = getJedis().get(k.getBytes());
+				bytes = getJedisReader().get(k.getBytes());
 				if (bytes!=null)
 					user = (IUser)ByteUtil.toObject(bytes);
 	//			if (user!=null)
@@ -157,13 +172,12 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	@Override
 	public boolean removeUser(String sessionId) {
 		try {
-	//		super.removeUser(sessionId);
 			String k = getUserKey(sessionId);
-			if (getJedis() instanceof ShardedJedis)
-				((ShardedJedis)getJedis()).del(k);
-			else if (getJedis() instanceof Jedis)
-				((Jedis)getJedis()).del(k.getBytes());
-			getJedis().set((k+"._status").getBytes(), "-1".getBytes()); // logout
+			if (getJedisWriter() instanceof ShardedJedis)
+				((ShardedJedis)getJedisWriter()).del(k);
+			else if (getJedisWriter() instanceof Jedis)
+				((Jedis)getJedisWriter()).del(k.getBytes());
+			getJedisWriter().set((k+"._status").getBytes(), "-1".getBytes()); // logout
 			return true;
 		}catch (JedisConnectionException ex) {
 			DebugUtil.error(ex);
@@ -186,85 +200,31 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	@Override
 	public Object setData(String schema, Object key, Object ele) {
 		String mk = getDataKey(schema, key);
-//		super.setLocalData(schema, mk, ele);
-		getJedis().set(mk.getBytes(), ByteUtil.toBytes((Serializable)ele));
+		getJedisWriter().set(mk.getBytes(), ByteUtil.toBytes((Serializable)ele));
 		return ele;
 	}
 	@Override
 	public Object getData(String schema, Object key) {
 		String mk = getDataKey(schema, key);
-		byte[] bytes = getJedis().get(mk.getBytes());
+		byte[] bytes = getJedisReader().get(mk.getBytes());
 		if (bytes!=null) {
 			return ByteUtil.toObject(bytes);
 		}
 		return null;
-//		Integer v = (Integer)super.getLocalData(schema, key+"._version");
-//		Integer mv = VarUtil.toInt(getJedis().get(mk+"._version"));
-//		if (v==null || (mv!=null && v.intValue()<mv.intValue())) {
-//			Object mo = getJedis().get(mk);
-//			if (mo!=null) {
-//				super.setLocalData(schema, key+"._version", mv);
-//				return super.setLocalData(schema, key, mo);
-//			}
-//			return null;
-//		}
-//		Object o = super.getLocalData(schema, key);
-//		if (o!=null) {
-//			return o;
-//		}
-//		Object mo = getJedis().get(mk);
-//		if (mo!=null) {
-//			if (mv==null)
-//				mv = 0;
-//			super.setLocalData(schema, key+"._version", mv);
-//			return super.setLocalData(schema, key, mo);
-//		}
-//		return null;
 	}
 	@Override
 	public Object updateData(String schema, Object key, Object ele) {
 		return this.setData(schema, key, ele);
-//		String mk = getDataKey(schema, key);
-//		Integer v = (Integer)super.getLocalData(schema, key+"._version");
-//		Integer mv = (Integer)mcc.get(mk+"._version");
-//		if (v!=null && mv!=null && v.intValue()!=mv.intValue()) {
-//			throw new Warning(VERSION_WARNING);
-//		}
-//		mcc.set(mk, ele); // update cluster
-//		super.setLocalData(schema, key, ele); // update local
-//		{
-//			if (mv==null)
-//				mv = 0;
-//			mv++;
-//			mcc.set(mk+"._version", mv);
-//			super.setLocalData(schema, key+"._version", mv);
-//		}
-//		return ele;
 	}
 	@Override
 	public Object deleteData(String schema, Object key) {
 		Object o = this.getData(schema, key);
 		String mk = getDataKey(schema, key);
-		if (getJedis() instanceof ShardedJedis)
-			((ShardedJedis)getJedis()).del(mk);
-		else if (getJedis() instanceof Jedis)
-			((Jedis)getJedis()).del(mk.getBytes());
+		if (getJedisWriter() instanceof ShardedJedis)
+			((ShardedJedis)getJedisWriter()).del(mk);
+		else if (getJedisWriter() instanceof Jedis)
+			((Jedis)getJedisWriter()).del(mk.getBytes());
 		return o;
-//		Integer v = (Integer)super.getLocalData(schema, key+"._version");
-//		Integer mv = (Integer)mcc.get(mk+"._version");
-//		if (v!=null && mv!=null && v.intValue()!=mv.intValue()) {
-//			throw new Warning(VERSION_WARNING);
-//		}
-//	    mcc.delete(mk); // update cluster
-//	    Object o = super.removeLocalData(schema, key); // update local
-//		{
-//			if (mv==null)
-//				mv = 0;
-//			mv++;
-//			mcc.set(mk+"._version", mv);
-//			super.removeLocalData(schema, key+"._version");
-//		}
-//	    return o;
     }
 //	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";
     // --------------------- local data cache --------------------- //

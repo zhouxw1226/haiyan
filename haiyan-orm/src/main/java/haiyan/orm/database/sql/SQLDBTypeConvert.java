@@ -7,6 +7,7 @@ import static haiyan.config.util.ConfigUtil.getDisplayRefFields;
 import haiyan.common.ByteUtil;
 import haiyan.common.CloseUtil;
 import haiyan.common.DebugUtil;
+import haiyan.common.HtmlUtil;
 import haiyan.common.StringUtil;
 import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;
@@ -104,6 +105,9 @@ public class SQLDBTypeConvert {
         // HASIT:System.out.println("##setValue().fieldName=" + field.getName());
         AbstractCommonFieldJavaTypeType type = field.getJavaType();
         value = StringUtil.isBlankOrNull(value) ? null : value;
+//        if (field.isSafeHtml() && value!=null) {
+//        	value = HtmlUtil.getHtmlSafeStr(VarUtil.toString(value));
+//        }
         if (AbstractCommonFieldJavaTypeType.BIGDECIMAL==type) {
             BigDecimal b = toBigDecimal(value, field);
             if (b == null)
@@ -116,6 +120,8 @@ public class SQLDBTypeConvert {
                 if (value instanceof String && value.toString().indexOf(",") >= 0) {
                     value = value.toString().substring(0, value.toString().indexOf(","));
                 }
+            } else {
+            	// Nothing
             }
             java.sql.Timestamp t = toTimestamp(value, field);
             ps.setTimestamp(index, t);

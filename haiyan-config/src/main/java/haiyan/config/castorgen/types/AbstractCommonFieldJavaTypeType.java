@@ -46,9 +46,19 @@ public class AbstractCommonFieldJavaTypeType implements java.io.Serializable {
     public static final AbstractCommonFieldJavaTypeType STRING = new AbstractCommonFieldJavaTypeType(STRING_TYPE, "string");
 
     /**
+     * The integer type
+     */
+    public static final int INTEGER_TYPE = 2;
+
+    /**
+     * The instance of the integer type
+     */
+    public static final AbstractCommonFieldJavaTypeType INTEGER = new AbstractCommonFieldJavaTypeType(INTEGER_TYPE, "integer");
+
+    /**
      * The bigDecimal type
      */
-    public static final int BIGDECIMAL_TYPE = 2;
+    public static final int BIGDECIMAL_TYPE = 3;
 
     /**
      * The instance of the bigDecimal type
@@ -58,7 +68,7 @@ public class AbstractCommonFieldJavaTypeType implements java.io.Serializable {
     /**
      * The date type
      */
-    public static final int DATE_TYPE = 3;
+    public static final int DATE_TYPE = 4;
 
     /**
      * The instance of the date type
@@ -68,7 +78,7 @@ public class AbstractCommonFieldJavaTypeType implements java.io.Serializable {
     /**
      * The blob type
      */
-    public static final int BLOB_TYPE = 4;
+    public static final int BLOB_TYPE = 5;
 
     /**
      * The instance of the blob type
@@ -78,7 +88,7 @@ public class AbstractCommonFieldJavaTypeType implements java.io.Serializable {
     /**
      * The dbBlob type
      */
-    public static final int DBBLOB_TYPE = 5;
+    public static final int DBBLOB_TYPE = 6;
 
     /**
      * The instance of the dbBlob type
@@ -88,22 +98,12 @@ public class AbstractCommonFieldJavaTypeType implements java.io.Serializable {
     /**
      * The dbClob type
      */
-    public static final int DBCLOB_TYPE = 6;
+    public static final int DBCLOB_TYPE = 7;
 
     /**
      * The instance of the dbClob type
      */
     public static final AbstractCommonFieldJavaTypeType DBCLOB = new AbstractCommonFieldJavaTypeType(DBCLOB_TYPE, "dbClob");
-    
-    /**
-     * The dbClob type
-     */
-    public static final int INTEGER_TYPE = 7;
-
-    /**
-     * The instance of the dbClob type
-     */
-    public static final AbstractCommonFieldJavaTypeType INTEGER = new AbstractCommonFieldJavaTypeType(DBCLOB_TYPE, "integer");
 
     /**
      * Field _memberTable.
@@ -169,12 +169,12 @@ public class AbstractCommonFieldJavaTypeType implements java.io.Serializable {
         Hashtable members = new Hashtable();
         members.put("password", PASSWORD);
         members.put("string", STRING);
+        members.put("integer", INTEGER);
         members.put("bigDecimal", BIGDECIMAL);
         members.put("date", DATE);
         members.put("blob", BLOB);
         members.put("dbBlob", DBBLOB);
         members.put("dbClob", DBCLOB);
-        members.put("integer", INTEGER);
         return members;
     }
 

@@ -293,13 +293,19 @@
 				<xs:attribute name="indexAllowed" type="xs:boolean" use="optional"
 					default="false">
 					<xs:annotation>
-						<xs:documentation>allow indexl</xs:documentation>
+						<xs:documentation>allow index</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="nullAllowed" type="xs:boolean" use="optional"
 					default="true">
 					<xs:annotation>
 						<xs:documentation>allow null</xs:documentation>
+					</xs:annotation>
+				</xs:attribute>
+				<xs:attribute name="safeHtml" type="xs:boolean" use="optional"
+					default="false">
+					<xs:annotation>
+						<xs:documentation>safe html</xs:documentation>
 					</xs:annotation>
 				</xs:attribute>
 				<xs:attribute name="defaultValue" type="xs:string" use="optional">
@@ -343,6 +349,11 @@
 							<xs:enumeration value="string">
 								<xs:annotation>
 									<xs:documentation>string</xs:documentation>
+								</xs:annotation>
+							</xs:enumeration>
+							<xs:enumeration value="integer">
+								<xs:annotation>
+									<xs:documentation>integer</xs:documentation>
 								</xs:annotation>
 							</xs:enumeration>
 							<xs:enumeration value="bigDecimal">
