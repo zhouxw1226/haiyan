@@ -15,6 +15,10 @@ import net.sf.json.JSONObject;
  */
 public interface IDBRecord extends Serializable {
 
+	static byte DEFAULT = (byte)0;
+	static byte INSERT = (byte)1;
+	static byte UPDATE = (byte)2;
+	static byte DELETE = (byte)2;
 	/**
 	 * 把DB读出的数据刷新到record中的一级缓存中
 	 * @throws Throwable
@@ -36,6 +40,18 @@ public interface IDBRecord extends Serializable {
 	 * @throws Throwable
 	 */
 	void commit() throws Throwable;
+	/**
+	 * @param status
+	 */
+	void setStatus(byte status);
+    /**
+     * 
+     */
+    public void clearStatus();
+    /**
+     * @return
+     */
+    public byte getStatus();
 	/**
 	 * 设置脏标记
 	 * @throws Throwable

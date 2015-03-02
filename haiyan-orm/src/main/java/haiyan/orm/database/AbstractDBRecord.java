@@ -505,15 +505,29 @@ public abstract class AbstractDBRecord implements IDBRecord {
     private transient byte dirty = 0;
     @Override
     public boolean isDirty() {
-        return dirty == 1;
+        return this.dirty == 1;
     }
     @Override
     public void setDirty() {
-        dirty = 1;
+    	this.dirty = 1;
     }
     @Override
     public void clearDirty() {
-        dirty = 0;
+    	this.dirty = 0;
+    }
+    // 只在一个事务内有效
+    private transient byte status = 0;
+    @Override
+    public void setStatus(byte status) {
+    	this.status = status;
+    }
+    @Override
+    public byte getStatus() {
+    	return this.status;
+    }
+    @Override
+    public void clearStatus() {
+    	this.status = DEFAULT;
     }
 //    不同table配置根据field.key来copy的，现在只保证同table.key的版本控制
 //    private short version = 0;
