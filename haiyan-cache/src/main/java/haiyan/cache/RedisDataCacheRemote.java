@@ -69,6 +69,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.debug("redis.slave:"+servers[i]);
 			String[] arr = StringUtil.split(servers[i],":");
 			JedisShardInfo jsi = new JedisShardInfo(arr[0], VarUtil.toInt(arr[1]), "slave"); // "master"
+//			jsi.setTimeout(0);
 			shards.add(jsi);
 		}
 		// 构造池
@@ -117,6 +118,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			String k = getUserKey(sessionId);
 			getJedisWriter().set(k.getBytes(), ByteUtil.toBytes(user));
 			getJedisWriter().set((k+"._status").getBytes(), "0".getBytes()); // login
+			reconn = 0;
 			return user;
 		}catch (JedisConnectionException ex) {
 			DebugUtil.error(ex);
@@ -154,6 +156,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	//			if (user!=null)
 	//				super.setUser(sessionId, user);
 			}
+			reconn = 0;
 			return user;
 		}catch (JedisConnectionException ex) {
 			DebugUtil.error(ex);
@@ -178,6 +181,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			else if (getJedisWriter() instanceof Jedis)
 				((Jedis)getJedisWriter()).del(k.getBytes());
 			getJedisWriter().set((k+"._status").getBytes(), "-1".getBytes()); // logout
+			reconn = 0;
 			return true;
 		}catch (JedisConnectionException ex) {
 			DebugUtil.error(ex);
@@ -200,17 +204,40 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	@Override
 	public Object setData(String schema, Object key, Object ele) {
 		String mk = getDataKey(schema, key);
-		getJedisWriter().set(mk.getBytes(), ByteUtil.toBytes((Serializable)ele));
-		return ele;
+		try {
+			getJedisWriter().set(mk.getBytes(), ByteUtil.toBytes((Serializable)ele));
+			reconn = 0;
+			return ele;
+		}catch (JedisConnectionException e) {
+			DebugUtil.error(e);
+			if (reconn>=3) {
+				reconn = 0;
+				return null;
+			}
+			reconn++;
+			this.initialize();
+			return setData(schema,key,ele);
+		}
 	}
 	@Override
 	public Object getData(String schema, Object key) {
-		String mk = getDataKey(schema, key);
-		byte[] bytes = getJedisReader().get(mk.getBytes());
-		if (bytes!=null) {
-			return ByteUtil.toObject(bytes);
+		try {
+			String mk = getDataKey(schema, key);
+			byte[] bytes = getJedisReader().get(mk.getBytes());
+			if (bytes!=null) {
+				return ByteUtil.toObject(bytes);
+			}
+			return null;
+		} catch (JedisConnectionException e) {
+			DebugUtil.error(e);
+			if (reconn>=3) {
+				reconn = 0;
+				return null;
+			}
+			reconn++;
+			this.initialize();
+			return getData(schema,key);
 		}
-		return null;
 	}
 	@Override
 	public Object updateData(String schema, Object key, Object ele) {
@@ -220,11 +247,23 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	public Object deleteData(String schema, Object key) {
 		Object o = this.getData(schema, key);
 		String mk = getDataKey(schema, key);
-		if (getJedisWriter() instanceof ShardedJedis)
-			((ShardedJedis)getJedisWriter()).del(mk);
-		else if (getJedisWriter() instanceof Jedis)
-			((Jedis)getJedisWriter()).del(mk.getBytes());
-		return o;
+		try {
+			if (getJedisWriter() instanceof ShardedJedis)
+				((ShardedJedis)getJedisWriter()).del(mk);
+			else if (getJedisWriter() instanceof Jedis)
+				((Jedis)getJedisWriter()).del(mk.getBytes());
+			reconn = 0;
+			return o;
+		} catch (JedisConnectionException e) {
+			DebugUtil.error(e);
+			if (reconn>=3) {
+				reconn = 0;
+				return null;
+			}
+			reconn++;
+			this.initialize();
+			return deleteData(schema,key);
+		}
     }
 //	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";
     // --------------------- local data cache --------------------- //
