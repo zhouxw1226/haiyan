@@ -29,7 +29,6 @@ public class SQLDBFilter implements IDBFilter {
 	protected SQLDBFilter(String sql) {
 		this.sqlFilter = sql;
 		this.sqlFilter = this.sqlFilter == null ? "" : this.sqlFilter;
-		
 	}
 	/**
 	 * @param sql
@@ -39,6 +38,14 @@ public class SQLDBFilter implements IDBFilter {
 		this.sqlFilter = sql;
 		this.sqlFilter = this.sqlFilter == null ? "" : this.sqlFilter;
 		this.values = values;
+	}
+	@Override
+	public String getFilter() {
+		return sqlFilter;
+	}
+	@Override
+	public void setFilter(String sFilter) {
+		this.sqlFilter = sFilter;
 	}
 	@Override
 	public List<Object> getParas() {

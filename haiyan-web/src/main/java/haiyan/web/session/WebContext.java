@@ -33,6 +33,10 @@ public class WebContext extends AppContext implements IWebContext {
 		return res.getOutputStream();
 	}
 	@Override
+	public Object getParameter(String key) {
+		return req.getParameter(key);
+	} 
+	@Override
 	public Object removeAttribute(String key) {
 		Object o = req.getAttribute(key);
 		req.removeAttribute(key);
@@ -65,5 +69,5 @@ public class WebContext extends AppContext implements IWebContext {
 		super.close();
 		req = null;
 		res = null;
-	} 
+	}
 }

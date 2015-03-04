@@ -40,8 +40,8 @@ public class CacheUtil {
 			}
 		return CACHE;
 	}
-	public static Object setData(String tbl, Object id, Object form) {
-		return getDataCache().setData(tbl, id, form);
+	public static Object setData(String tbl, Object id, Object o) {
+		return getDataCache().setData(tbl, id, o);
 	}
 	public static Object getData(String tbl, Object id) {
 		return getDataCache().getData(tbl, id);
@@ -49,8 +49,8 @@ public class CacheUtil {
 	public static Object setLocalData(String cacheID, Object id, Object o) {
 		return getDataCache().setLocalData(cacheID, id, o);
 	}
-	public static Object updateData(String tbl, Object id, Object form) {
-		return getDataCache().updateData(tbl, id, form);
+	public static Object updateData(String tbl, Object id, Object o) {
+		return getDataCache().updateData(tbl, id, o);
 	}
 	public static Object deleteData(String tbl, Object id) {
 		return getDataCache().deleteData(tbl, id);

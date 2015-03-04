@@ -138,19 +138,19 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	public IUser getUser(String sessionId) {
 		try {
 			IUser user = null; // super.getUser();
-			String k = getUserKey(sessionId);
+			String key = getUserKey(sessionId);
 			Integer status = -1;
-			byte[] bytes = getJedisReader().get((k+"._status").getBytes());
+			byte[] bytes = getJedisReader().get((key+"._status").getBytes());
 			if (bytes!=null) {
 				status = VarUtil.toInt(bytes);
 			}
-			if (status == -1) { // is logout
+			if (status == -1) { // is deleted
 				// mcc.delete(k+"._status"); NOTICE 不能加，有些服务器还没通知完
 				// super.removeUser(sessionId);
 				return null;
 			}
 			if (user==null) {
-				bytes = getJedisReader().get(k.getBytes());
+				bytes = getJedisReader().get(key.getBytes());
 				if (bytes!=null)
 					user = (IUser)ByteUtil.toObject(bytes);
 	//			if (user!=null)
@@ -175,12 +175,12 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	@Override
 	public boolean removeUser(String sessionId) {
 		try {
-			String k = getUserKey(sessionId);
+			String key = getUserKey(sessionId);
 			if (getJedisWriter() instanceof ShardedJedis)
-				((ShardedJedis)getJedisWriter()).del(k);
+				((ShardedJedis)getJedisWriter()).del(key);
 			else if (getJedisWriter() instanceof Jedis)
-				((Jedis)getJedisWriter()).del(k.getBytes());
-			getJedisWriter().set((k+"._status").getBytes(), "-1".getBytes()); // logout
+				((Jedis)getJedisWriter()).del(key.getBytes());
+			getJedisWriter().set((key+"._status").getBytes(), "-1".getBytes()); // logout
 			reconn = 0;
 			return true;
 		}catch (JedisConnectionException ex) {

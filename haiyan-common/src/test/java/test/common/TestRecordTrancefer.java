@@ -400,6 +400,20 @@ public class TestRecordTrancefer {
 	        Object[] result = obj == null ? null : (obj instanceof Object[] ? (Object[]) obj : new Object[] { obj });
 	        return result;
 	    }
+	    // 只在一个事务内有效
+	    private transient byte status = 0;
+	    @Override
+	    public void setStatus(byte status) {
+	    	this.status = status;
+	    }
+	    @Override
+	    public byte getStatus() {
+	    	return this.status;
+	    }
+	    @Override
+	    public void clearStatus() {
+	    	this.status = DEFAULT;
+	    }
 		
 	}
 }

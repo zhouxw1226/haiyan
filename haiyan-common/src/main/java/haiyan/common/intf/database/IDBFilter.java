@@ -8,5 +8,6 @@ public interface IDBFilter {
 
 	List<Object> getParas();
 	boolean filter(IDBRecord record);
-
+	String getFilter();
+	void setFilter(String sFilter);
 }

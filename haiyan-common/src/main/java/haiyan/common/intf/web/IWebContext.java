@@ -16,4 +16,8 @@ import java.io.Writer;
 public interface IWebContext extends IWebSession, IContext {
 	OutputStream getOutputStream() throws IOException;
 	Writer getWriter() throws IOException;
+	Object getParameter(String key);
+
+//	HttpServletRequest getServletRequest();
+//	HttpServletResponse getServletResponse();
 }
