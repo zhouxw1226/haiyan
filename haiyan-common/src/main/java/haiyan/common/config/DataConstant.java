@@ -46,6 +46,8 @@ public class DataConstant {
 	public static final String UPLOADFILE_ATTRIBUTE_PREFIX = "com.suddenzhou.genmis.AttributeForFileUpload";
 
 	public static final String PARAM_PRE_REQUEST_URL = "com.suddenzhou.genmis.RequestURL";
+	
+	// ---------------------------------------------------------------------------------------------------------- //
 
 	public static final String DOWNLOAD_ORIGIN_ENCODE = "DOWNLOAD_ORIGIN_ENCODE";
 
@@ -86,7 +88,6 @@ public class DataConstant {
 	public static final String UPLOAD_SERVICE = "UPLOAD_SERVICE";
 
 	public static final int MAXLENTH_LOG = 1021;
-
 	// @deprecated
     public static final String USEDSTATUS_FLDNAME = "USEDSTATUS";
 
@@ -100,7 +101,7 @@ public class DataConstant {
 	
 	public static final String HYVERSIONCHECK = "HYVERSIONCHECK";
 
-	///////////////////////////////// for webpara /////////////////////////////////
+	//------------------------------------------------- for webpara --------------------------------------------- //
 	
 	public static final String CHARSET = "UTF-8";
 
@@ -154,7 +155,7 @@ public class DataConstant {
 
 	public static final String PASSWORD_DISNAME = "PassWord__";
 
-	public static final String PLUGINVIEW1_FRMNAME = "iframe1.";
+//	public static final String PLUGINVIEW1_FRMNAME = "iframe1.";
 	
 	public static final String BUTTON_RIGHTSTR = "disabled";
 
@@ -249,111 +250,48 @@ public class DataConstant {
 	public static final String DATA_SET = "__dataSet";
 	
 	///////////////////////////////// for midpara /////////////////////////////////
-
+	/**
+	 * for SQLRender.getQueryFilterPlugin
+	 */
+	public static final String EXTRA_FILTER_PREFIX = "__extraFilter.";
 	/**
 	 * for ConfigUtil.getProperty
 	 */
 	public static final String CONST_DBERRORS_NAME = "dberrors";
-
 	/**
 	 * for ConfigUtil.getProperty
 	 */
 	public static final String CONST_PROMPT_NAME = "prompt";
-
 	/**
 	 * for ConfigUtil.getProperty
 	 */
 	public static final String CONST_ALERT_NAME = "alert";
-
 	/**
 	 * for ConfigUtil.getProperty
 	 */
 	public static final String CONST_WARNING_NAME = "warning";
-	
+
 	/**
 	 * condition para
 	 **/
 	public static final String ALL_RELATIONOPR = "__allRelationOpr";
-	
 	/**
 	 * sysautonumber para
 	 **/
 	public static final String NEWID_LASTTIME = "__newIDLastTime";
 	
 //	////////////////////////////////// for defaultopt //////////////////////////////////
-//
-//	public static final Accesskey PRE_ACCESSKEY = new Accesskey('P');
-//
-//	public static final String PRE_NAME = "__button_pre";
-//
-//	public static final Accesskey NEXT_ACCESSKEY = new Accesskey('N');
-//
-//	public static final String NEXT_NAME = "__button_next";
-//
-//	public static final Accesskey ADD_ACCESSKEY = new Accesskey('A');
-//
-//	public static final String ADD_NAME = "__button_add";
-//
-//	public static final Accesskey QUERY_ACCESSKEY = new Accesskey('Q');
-//
-//	public static final String QUERY_NAME = "__button_query";
-//
-//	public static final Accesskey SELECT_AND_RETURN_ACCESSKEY = new Accesskey('R');
-//
-//	public static final String SELECT_AND_RETURN_NAME = "__button_selectAndReturn";
-//
-//	public static final Accesskey DELETE_ACCESSKEY = new Accesskey('D');
-//
-//	public static final String DELETE_NAME = "__button_delete";
-//
-//	public static final Accesskey QUERYEDIT_ACCESSKEY = new Accesskey('E');
-//
-//	public static final String QUERYEDIT_NAME = "__button_queryEdit";
-//
-//	public static final Accesskey SAVE_AND_ADD_ACCESSKEY = new Accesskey('Z');
-//
-//	public static final String SAVE_AND_ADD_NAME = "__button_saveAndAdd";
-//
-//	public static final Accesskey SAVE_AND_ADD_COPY_ACCESSKEY = new Accesskey('C');
-//
-//	public static final String SAVE_AND_ADD_COPY_NAME = "__button_saveAndAddCopy";
-//
-//	public static final Accesskey SAVE_ACCESSKEY = new Accesskey('S');
-//
-//	public static final String SAVE_NAME = "__button_save";
-//
-//	public static final Accesskey CLOSE_ACCESSKEY = new Accesskey('X');
-//
-//	public static final String CLOSE_NAME = "__button_close";
-//
-//	public static final Accesskey PRINT_ACCESSKEY = new Accesskey('P');
-//
-//	public static final String PRINT_NAME = "__button_print";
-//
-//	public static final Accesskey COLUMNS_ACCESSKEY = new Accesskey('U');
-//
-//	public static final String COLUMNS_NAME = "__button_columns";
 	
-	public final static int USER_DEFINED = 0;
-
-	public final static int ADD_BT_TYPE = 1;
-
-	public final static int DELETE_BT_TYPE = 2;
-
-	public final static int COLUMNS_BT_TYPE = 3;
-
-	public final static int PRINT_BT_TYPE = 4;
-
-	public final static int SAVE_BT_TYPE = 5;
-
+	public static final int USER_DEFINED = 0;
+	public static final int ADD_BT_TYPE = 1;
+	public static final int DELETE_BT_TYPE = 2;
+	public static final int COLUMNS_BT_TYPE = 3;
+	public static final int PRINT_BT_TYPE = 4;
+	public static final int SAVE_BT_TYPE = 5;
 	public static final int SAVEANDADD_BT_TYPE = 6;
-
 	public static final int SAVEANDADDCOPY_BT_TYPE = 7;
-
 	public static final int QUERYEDIT_BT_TYPE = 8;
-
 	public static final int FCKEDIT_BT_TYPE = 9;
-
 	public static final int QUERY_BT_TYPE = 10;
 	
 	////////////////////////////////// for delimeter //////////////////////////////////
@@ -571,7 +509,6 @@ public class DataConstant {
 	public static final String DESCEND = "DESC";
 	
 	////////////////////////////////// for ignore //////////////////////////////////
-
 	/**
 	 * 
 	 */

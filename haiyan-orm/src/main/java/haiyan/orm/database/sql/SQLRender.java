@@ -65,9 +65,7 @@ import java.util.Set;
  * @author zhouxw
  */
 class SQLRender implements ITableSQLRender {
-
 	protected transient String mainSQL = null;
-
 	protected transient HashMap<String, HashSet<String>> visComponentSPM = new HashMap<String, HashSet<String>>();
 	@Override
 	public String getSQL() {
@@ -1308,17 +1306,17 @@ class SQLRender implements ITableSQLRender {
 	private final static String getPluginQueryFilter(ITableDBContext context, Table table, String tableAlias, boolean hasOrderBy)
 			throws Throwable {
 		String result = "";
-//		// extend filter
-//		if (context != null) {
-//			SQLDBFilter extendFilter = (SQLDBFilter)context.getAttribute("__extendFilter." + table.getName());
-//			if (extendFilter != null) {
-//				int s = result.lastIndexOf("order by");
-//				if (s >= 0) { // 补充过滤
-//					result = result.substring(0, s) + extendFilter.getSql() + result.substring(s);
-//				} else
-//					result += extendFilter.getSql();
-//			}
-//		}
+		// extend filter
+		if (context != null) {
+			SQLDBFilter extendFilter = (SQLDBFilter)context.getAttribute(DataConstant.EXTRA_FILTER_PREFIX + table.getName());
+			if (extendFilter != null) {
+				int s = result.lastIndexOf("order by");
+				if (s >= 0) { // 补充过滤
+					result = result.substring(0, s) + extendFilter.getSql() + result.substring(s);
+				} else
+					result += extendFilter.getSql();
+			}
+		}
 		// getPluginQueryFilter
 		PluggedFilter[] filters = SQLDBFilterFactory.getQueryFilter(context, table, tableAlias);
 		if (filters != null) {
@@ -1327,8 +1325,7 @@ class SQLRender implements ITableSQLRender {
 				if (pf == null) 
 					continue;
 				String filterStr = "";
-				String className = isEmpty(pf.getClassName()) ? 
-						PropUtil.getProperty("DEFAULT_FILTER") : pf.getClassName();
+				String className = isEmpty(pf.getClassName()) ? PropUtil.getProperty("DEFAULT_FILTER") : pf.getClassName();
 				String methodName = pf.getMethodName();
 				String parameter = pf.getParameter();
 				String content = pf.getContent();
@@ -1340,9 +1337,6 @@ class SQLRender implements ITableSQLRender {
 					boolean needContent = false;
 					if (isEmpty(parameter)) {
 						throw new Warning("PluggedFilter.parameter is null");
-//						if (!isEmpty(content)) {
-//							needContent = true;
-//						}
 					} else {
 						Object v = expUtil.evalExp(parameter);
 						if (v instanceof Boolean && v==Boolean.TRUE) {
