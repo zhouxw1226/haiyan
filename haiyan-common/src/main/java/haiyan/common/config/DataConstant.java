@@ -251,10 +251,6 @@ public class DataConstant {
 	
 	///////////////////////////////// for midpara /////////////////////////////////
 	/**
-	 * for SQLRender.getQueryFilterPlugin
-	 */
-	public static final String EXTRA_FILTER_PREFIX = "__extraFilter.";
-	/**
 	 * for ConfigUtil.getProperty
 	 */
 	public static final String CONST_DBERRORS_NAME = "dberrors";

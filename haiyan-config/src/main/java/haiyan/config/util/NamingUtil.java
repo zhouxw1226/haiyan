@@ -4,10 +4,11 @@
 package haiyan.config.util;
 
 import haiyan.config.castorgen.AbstractField;
+import haiyan.config.castorgen.Table;
 
 
 /**
- * 平台特殊命名法
+ * 平台特殊命名法(潜规则)
  * 
  * @author zhouxw
  */
@@ -21,6 +22,10 @@ public class NamingUtil {
 	 * 
 	 */
 	public final static int REGION_END = 2;
+	/**
+	 * 
+	 */
+	public final static String _PREFIX_DEFAULTFILTER = "__defaultFilter";
 	/**
 	 * 
 	 */
@@ -66,6 +71,14 @@ public class NamingUtil {
 	 * 
 	 */
 	public final static String QUICKCONDITION_VALUE_NAME = _PREFIX  + "QuickConditionByValue" + _DELIMITER + CONSTANT_POSTFIX;
+	/**
+	 * @param fld
+	 * @return String
+	 */
+	public static String getDefaultFilterAlias(Table table) {
+		String result = _PREFIX_DEFAULTFILTER  + _DELIMITER + table.getName();
+		return result;
+	}
 	/**
 	 * @param fld
 	 * @return String

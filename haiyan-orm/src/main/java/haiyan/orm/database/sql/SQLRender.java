@@ -1308,13 +1308,13 @@ class SQLRender implements ITableSQLRender {
 		String result = "";
 		// extend filter
 		if (context != null) {
-			SQLDBFilter extendFilter = (SQLDBFilter)context.getAttribute(DataConstant.EXTRA_FILTER_PREFIX + table.getName());
-			if (extendFilter != null) {
+			SQLDBFilter defaultFilter = (SQLDBFilter)context.getAttribute(NamingUtil.getDefaultFilterAlias(table));
+			if (defaultFilter != null) {
 				int s = result.lastIndexOf("order by");
 				if (s >= 0) { // 补充过滤
-					result = result.substring(0, s) + extendFilter.getSql() + result.substring(s);
+					result = result.substring(0, s) + defaultFilter.getSql() + result.substring(s);
 				} else
-					result += extendFilter.getSql();
+					result += defaultFilter.getSql();
 			}
 		}
 		// getPluginQueryFilter
