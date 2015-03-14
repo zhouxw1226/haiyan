@@ -12,26 +12,12 @@ public class Warning extends HyException {
 
     private static final long serialVersionUID = 1L;
     private int errorCode;
-//    private String source;
-//    private Throwable exception;
     public int getErrorCode() {
 		return errorCode;
 	}
 	public void setErrorCode(int errorCode) {
 		this.errorCode = errorCode;
 	}
-//	public String getSource() {
-//		return source;
-//	}
-//	public void setSource(String source) {
-//		this.source = source;
-//	} 
-//	public Throwable getException() {
-//		return exception;
-//	}
-//	public void setException(Throwable exception) {
-//		this.exception = exception;
-//	}
 	/**
      * @param errCode
      */

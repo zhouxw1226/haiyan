@@ -9,6 +9,8 @@ import haiyan.common.config.Language;
 import haiyan.common.intf.session.IUser;
 
 /**
+ * 中间层系统级别错误代码
+ * 
  * @author zhouxw
  * 
  */ 
@@ -81,10 +83,9 @@ public class SysCode {
 		String languageName = null;
 		String label = null;
 		try {
-			languageName = Language.getLanguage(user).getName(); // ConfigUtil.getLanguage(user).getName();
+			languageName = Language.getLanguage(user).getName();
 			label = DataConstant.CONST_PROMPT_NAME + "." + source;
 			String configMessage = PropUtil.getProperty(languageName, label, null);
-			// DebugUtil.debug(">" + label + "=" + configCode);
 			if (!StringUtil.isBlankOrNull(configMessage)) {
 				if (values != null)
 					for (int j = 0; j < values.length; j++) {
@@ -94,8 +95,7 @@ public class SysCode {
 						if (index != -1) {
 							tempErr = configMessage.substring(0, index);
 							tempErr += values[j];
-							tempErr += configMessage.substring(index + indexLen,
-									configMessage.length());
+							tempErr += configMessage.substring(index + indexLen, configMessage.length());
 						} else {
 							tempErr += configMessage;
 						}

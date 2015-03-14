@@ -25,11 +25,11 @@ public class NamingUtil {
 	/**
 	 * 
 	 */
-	public final static String _PREFIX_DEFAULTFILTER = "__defaultFilter";
+	public final static String _DELIMITER = "__";
 	/**
 	 * 
 	 */
-	public final static String _DELIMITER = "__";
+	public final static String _DELIMITER2 = ".";
 	/**
 	 * AutoNaming太长了直接去掉
 	 */
@@ -38,7 +38,6 @@ public class NamingUtil {
 	 * 
 	 */
 	public final static String _OPTION = "option";
-	
 	/**
 	 * 
 	 */
@@ -50,27 +49,31 @@ public class NamingUtil {
 	/**
 	 * 
 	 */
-	public final static String CONSTANT_POSTFIX = "Conatant";
+	private final static String _PREFIX_DEFAULTFILTER = "__defaultFilter";
 	/**
 	 * 
 	 */
-	public final static String ORDER_BY_FIELD_NAME = _PREFIX  + "OrderByField" + _DELIMITER + CONSTANT_POSTFIX;
+	private final static String CONSTANT_POSTFIX = "Conatant";
 	/**
 	 * 
 	 */
-	public final static String ORDER_BY_METHOD_NAME = _PREFIX  + "OrderByMethod" + _DELIMITER + CONSTANT_POSTFIX;
+	private final static String ORDER_BY_FIELD_NAME = _PREFIX  + "OrderByField" + _DELIMITER + CONSTANT_POSTFIX;
 	/**
 	 * 
 	 */
-	public final static String QUICKCONDITION_FIELD_NAME = _PREFIX  + "QuickConditionByField" + _DELIMITER + CONSTANT_POSTFIX;
-	/**
-	 * 
-	 */
-	public final static String QUICKCONDITION_METHOD_NAME = _PREFIX  + "QuickConditionByMethod" + _DELIMITER + CONSTANT_POSTFIX;
-	/**
-	 * 
-	 */
-	public final static String QUICKCONDITION_VALUE_NAME = _PREFIX  + "QuickConditionByValue" + _DELIMITER + CONSTANT_POSTFIX;
+	private final static String ORDER_BY_METHOD_NAME = _PREFIX  + "OrderByMethod" + _DELIMITER + CONSTANT_POSTFIX;
+//	/**
+//	 * 
+//	 */
+//	private final static String QUICKCONDITION_FIELD_NAME = _PREFIX  + "QuickConditionByField" + _DELIMITER + CONSTANT_POSTFIX;
+//	/**
+//	 * 
+//	 */
+//	private final static String QUICKCONDITION_METHOD_NAME = _PREFIX  + "QuickConditionByMethod" + _DELIMITER + CONSTANT_POSTFIX;
+//	/**
+//	 * 
+//	 */
+//	private final static String QUICKCONDITION_VALUE_NAME = _PREFIX  + "QuickConditionByValue" + _DELIMITER + CONSTANT_POSTFIX;
 	/**
 	 * @param fld
 	 * @return String
@@ -156,5 +159,11 @@ public class NamingUtil {
 			break;
 		}
 		return result;
+	}
+	public static String getOrderFieldKey(Table table) {
+		return table.getName()+_DELIMITER2+ORDER_BY_FIELD_NAME;
+	}
+	public static String getOrderMethodKey(Table table) {
+		return table.getName()+_DELIMITER2+ORDER_BY_METHOD_NAME;
 	}
 }

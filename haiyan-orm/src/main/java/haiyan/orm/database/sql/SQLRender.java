@@ -704,12 +704,14 @@ class SQLRender implements ITableSQLRender {
 	 * @param oItems
 	 * @return ArrayList<OrderByItem>
 	 */
-	protected ArrayList<OrderByItem> getOrderByItems(ITableDBContext context, OrderByItem[] oItems) {
+	protected ArrayList<OrderByItem> getOrderByItems(ITableDBContext context, Table table, OrderByItem[] oItems) {
 		ArrayList<OrderByItem> orderItems = new ArrayList<OrderByItem>();
 		if (context != null) {
 			String[] orderByFields, orderByMethods;
-			orderByFields = SQLDBTypeConvert.toStringArray(context.getAttribute(NamingUtil.ORDER_BY_FIELD_NAME));
-			orderByMethods = SQLDBTypeConvert.toStringArray(context.getAttribute(NamingUtil.ORDER_BY_METHOD_NAME));
+			String orderByFieldKey = NamingUtil.getOrderFieldKey(table);
+			String orderByMethodKey = NamingUtil.getOrderMethodKey(table);
+			orderByFields = SQLDBTypeConvert.toStringArray(context.getAttribute(orderByFieldKey));
+			orderByMethods = SQLDBTypeConvert.toStringArray(context.getAttribute(orderByMethodKey));
 			if (orderByFields != null) {
 				for (int i = 0; i < orderByMethods.length; i++) {
 					OrderByItem item = new OrderByItem(orderByFields[i], orderByMethods[i]);
@@ -928,7 +930,7 @@ class SQLRender implements ITableSQLRender {
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
 //		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
-		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
 		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
@@ -956,7 +958,7 @@ class SQLRender implements ITableSQLRender {
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
 		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
-		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
 		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
@@ -984,7 +986,7 @@ class SQLRender implements ITableSQLRender {
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
 //		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
-		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
 //		    // count
 ////		String sCoundSQL; // NOTICE 可能是联立SQL无法取count(id)
 ////		Id id = table.getId();
@@ -1021,7 +1023,7 @@ class SQLRender implements ITableSQLRender {
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
 		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
-		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
 		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
@@ -1051,7 +1053,7 @@ class SQLRender implements ITableSQLRender {
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
 //		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
-		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, filter, true);
 		Query selectQry = new Query(pTable.getSQL(), sFilter, orderByItems);
@@ -1080,7 +1082,7 @@ class SQLRender implements ITableSQLRender {
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
 		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
-		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
+		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, null, true);
 		Query selectQry = new Query(pTable.getSQL(), sFilter, criticalItems, orderByItems);

@@ -1994,8 +1994,9 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			};
 			// 配置模板处理（对象-关系元数据映射处理）
 			template.deal(table, new Object[] { rs, record });
-			// 更新缓存
-			// form.clearDirty();
+//			// 更新缓存
+//			record.setStatus(IDBRecord.UPDATE);
+			// record.clearDirty();
 			// flush源数据集
 			flushOreign(context, table, record, type);
 			// 更新到缓存框架
