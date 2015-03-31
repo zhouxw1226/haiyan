@@ -1,11 +1,15 @@
 package haiyan.cache;
 
+import haiyan.common.DebugUtil;
 import haiyan.common.intf.cache.IDataCache;
 import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.session.IUser;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -112,25 +116,59 @@ public class CacheUtil {
 		return getDataCache().getTableFile(tbl);
 	}
 	// -------------------- user --------------------//
+	private static Map<String,IUser> USER_CACHE = new HashMap<String,IUser>();
 	public static IUser setUser(String sessionId, IUser user) {
+		USER_CACHE.put(sessionId, user);
 		return getDataCache().setUser(sessionId, user);
 	}
 	public static IUser getUser(String sessionId) {
-		return getDataCache().getUser(sessionId);
-	}
-	public static IUser[] getAllUsers() {
-		return getDataCache().getAllUsers();
+		IUser user = (IUser) USER_CACHE.get(sessionId);
+		if (user != null) {
+			return user;
+		}
+		user = getDataCache().getUser(sessionId);
+		DebugUtil.debug("getDataCache().getUser(sessionId),sessionId="
+				+ sessionId + ",user=" + user);
+		if (user != null) {
+			USER_CACHE.put(sessionId, user);
+		}
+		return user;
 	}
 	public static void removeUser(String sessionId) {
+		USER_CACHE.remove(sessionId);
 		getDataCache().removeUser(sessionId);
 	}
 	public static boolean containsUser(String sessionId) {
+		if (USER_CACHE.containsKey(sessionId))
+			return true;
 		return getDataCache().containsUser(sessionId);
 	}
+	@Deprecated
+	public static IUser[] getAllUsers() {
+		List<IUser> users = new ArrayList<IUser>();
+		Iterator<String> iter = USER_CACHE.keySet().iterator();
+		while (iter.hasNext()) {
+			String sessionId = (String) iter.next();
+			users.add((IUser) USER_CACHE.get(sessionId));
+		}
+		return (IUser[]) users.toArray(new IUser[0]);
+	}
+	@Deprecated
 	public static IUser getUserByCode(String userCode) {
+		IUser[] users = getAllUsers();
+		for (IUser user : users) {
+			if (userCode.equals(user.getCode()))
+				return user;
+		}
 		return getDataCache().getUserByCode(userCode);
 	}
+	@Deprecated
 	public static IUser getUserByID(String userID) {
+		IUser[] users = getAllUsers();
+		for (IUser user : users) {
+			if (userID.equals(user.getId()))
+				return user;
+		}
 		return getDataCache().getUserByID(userID);
 	}
 
