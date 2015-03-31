@@ -4,6 +4,7 @@ import haiyan.common.DebugUtil;
 import haiyan.common.intf.cache.IDataCache;
 import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.session.IUser;
+import haiyan.common.session.SessionMap;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -116,7 +117,13 @@ public class CacheUtil {
 		return getDataCache().getTableFile(tbl);
 	}
 	// -------------------- user --------------------//
-	private static Map<String,IUser> USER_CACHE = new HashMap<String,IUser>();
+	private static Map<String, Object> USER_CACHE = new SessionMap<String, IUser>() {
+		private static final long serialVersionUID = 1L;
+		@Override
+		protected boolean isOverTime(String key) {
+			return System.currentTimeMillis() - ((Long) this.sessions.get(key)).longValue() > overTime;
+		}
+	};
 	public static IUser setUser(String sessionId, IUser user) {
 		USER_CACHE.put(sessionId, user);
 		return getDataCache().setUser(sessionId, user);
