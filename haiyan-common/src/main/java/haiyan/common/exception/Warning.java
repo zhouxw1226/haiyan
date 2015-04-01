@@ -12,11 +12,18 @@ public class Warning extends HyException {
 
     private static final long serialVersionUID = 1L;
     private int errorCode;
+    private String debug;
     public int getErrorCode() {
 		return errorCode;
 	}
 	public void setErrorCode(int errorCode) {
 		this.errorCode = errorCode;
+	}
+	public String getDebug() {
+		return debug;
+	}
+	public void setDebug(String debug) {
+		this.debug = debug;
 	}
 	/**
      * @param errCode
@@ -45,6 +52,14 @@ public class Warning extends HyException {
      * @param errCode
      */
     public Warning(int errorCode, String source) {
+        super(SysCode.create(null, errorCode, source, null));
+        this.errorCode = errorCode;
+//        this.source = source;
+    }
+    /**
+     * @param errCode
+     */
+    public Warning(int errorCode, String source, String debug) {
         super(SysCode.create(null, errorCode, source, null));
         this.errorCode = errorCode;
 //        this.source = source;

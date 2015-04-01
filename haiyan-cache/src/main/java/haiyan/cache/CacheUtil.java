@@ -1,5 +1,6 @@
 package haiyan.cache;
 
+import haiyan.common.DebugUtil;
 import haiyan.common.intf.cache.IDataCache;
 import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.session.IUser;
@@ -116,11 +117,11 @@ public class CacheUtil {
 		return getDataCache().getTableFile(tbl);
 	}
 	// -------------------- user --------------------//
-	private static Map<String, Object> USER_CACHE = new SessionMap<String, IUser>(){
+	private static Map<String, Object> USER_CACHE = new SessionMap<String, IUser>() {
 		private static final long serialVersionUID = 1L;
 		@Override
-		protected boolean isOverTime(java.lang.String key) {
-			return System.currentTimeMillis()-sessions.get(key)>overTime;
+		protected boolean isOverTime(String key) {
+			return System.currentTimeMillis() - ((Long) this.sessions.get(key)).longValue() > overTime;
 		}
 	};
 	public static IUser setUser(String sessionId, IUser user) {
@@ -128,10 +129,17 @@ public class CacheUtil {
 		return getDataCache().setUser(sessionId, user);
 	}
 	public static IUser getUser(String sessionId) {
-		IUser user = (IUser)USER_CACHE.get(sessionId);
-		if (user!=null)
+		IUser user = (IUser) USER_CACHE.get(sessionId);
+		if (user != null) {
 			return user;
-		return getDataCache().getUser(sessionId);
+		}
+		user = getDataCache().getUser(sessionId);
+		DebugUtil.debug("getDataCache().getUser(sessionId),sessionId="
+				+ sessionId + ",user=" + user);
+		if (user != null) {
+			USER_CACHE.put(sessionId, user);
+		}
+		return user;
 	}
 	public static void removeUser(String sessionId) {
 		USER_CACHE.remove(sessionId);
@@ -146,17 +154,16 @@ public class CacheUtil {
 	public static IUser[] getAllUsers() {
 		List<IUser> users = new ArrayList<IUser>();
 		Iterator<String> iter = USER_CACHE.keySet().iterator();
-		while(iter.hasNext()) {
-			String sessionId = iter.next();
-			users.add((IUser)USER_CACHE.get(sessionId));
+		while (iter.hasNext()) {
+			String sessionId = (String) iter.next();
+			users.add((IUser) USER_CACHE.get(sessionId));
 		}
-		return users.toArray(new IUser[0]);
-//		return getDataCache().getAllUsers(); // 数据量太大的socket取数不可取
+		return (IUser[]) users.toArray(new IUser[0]);
 	}
 	@Deprecated
 	public static IUser getUserByCode(String userCode) {
 		IUser[] users = getAllUsers();
-		for (IUser user:users) {
+		for (IUser user : users) {
 			if (userCode.equals(user.getCode()))
 				return user;
 		}
@@ -165,7 +172,7 @@ public class CacheUtil {
 	@Deprecated
 	public static IUser getUserByID(String userID) {
 		IUser[] users = getAllUsers();
-		for (IUser user:users) {
+		for (IUser user : users) {
 			if (userID.equals(user.getId()))
 				return user;
 		}

@@ -526,6 +526,15 @@ public final class StringUtil {
 	 * @param obj
 	 * @return boolean
 	 */
+	public static boolean isWebEmpty(Object obj) {
+		if (obj == null)
+			return true;
+		return isBlankOrNull(obj.toString()) || "undefined".equals(obj);
+	}
+	/**
+	 * @param obj
+	 * @return boolean
+	 */
 	public static boolean isEmpty(Object obj) {
 		if (obj == null)
 			return true;

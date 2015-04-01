@@ -846,6 +846,7 @@ class SQLRender implements ITableSQLRender {
 			SQLDBTypeConvert.setValue(ps, context.getDBM().getClear(), i+1, table.getId(), ids[i]);
 			ss.append("##delete(" + table.getId().getName() + "):"+ids[i]+"\t");
 		}
+		DebugUtil.debug(ss.toString());
 		DebugUtil.debug("------delete().end------");
 		return ps;
 	}

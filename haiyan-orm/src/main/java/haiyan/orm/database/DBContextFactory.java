@@ -11,7 +11,6 @@ import haiyan.config.intf.session.ITableDBContext;
 import haiyan.exp.ExpUtil;
 import haiyan.orm.database.sql.DBManagerFactory;
 
-
 /**
  * AppSession
  * 
@@ -49,6 +48,8 @@ public class DBContextFactory implements IFactory {
 	}
 	public static ITableDBContext createDBContext(IContext parent, IDBManager dbm) {
 		TableDBContext context = new TableDBContext(parent);
+		if (parent!=null)
+			context.setUser(parent.getUser());
 		String DSN = StringUtil.isEmpty(context.getDSN())?PropUtil.getProperty("SERVER.DSN"):context.getDSN();
 		dbm = dbm==null?DBManagerFactory.createDBManager(DSN):dbm;
 		context.setDBM(dbm);
