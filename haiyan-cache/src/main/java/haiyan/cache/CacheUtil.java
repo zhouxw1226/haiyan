@@ -1,6 +1,8 @@
 package haiyan.cache;
 
 import haiyan.common.DebugUtil;
+import haiyan.common.PropUtil;
+import haiyan.common.VarUtil;
 import haiyan.common.intf.cache.IDataCache;
 import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.session.IUser;
@@ -117,10 +119,19 @@ public class CacheUtil {
 		return getDataCache().getTableFile(tbl);
 	}
 	// -------------------- user --------------------//
+	private static int USER_CACHE_COUNT = 5000;
+	static {
+		int count = VarUtil.toInt(PropUtil.getProperty("cache.usercount"));
+		if (count<=0)
+			count = 5000;
+		USER_CACHE_COUNT = count;
+	}
 	private static Map<String, Object> USER_CACHE = new SessionMap<String, IUser>() {
 		private static final long serialVersionUID = 1L;
 		@Override
 		protected boolean isOverTime(String key) {
+			if (this.size()<USER_CACHE_COUNT) // USER_CACHE_COUNT个以内不需要清理
+				return false;
 			return System.currentTimeMillis() - ((Long) this.sessions.get(key)).longValue() > overTime;
 		}
 	};

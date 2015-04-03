@@ -33,8 +33,9 @@ public abstract class SessionMap<K, V> extends HashMap<String, Object> {
 				sOverTime = PropUtil.getProperty("server.overTime");
 			} catch (Throwable localThrowable2) {
 			}
-			if (!StringUtil.isBlankOrNull(sOverTime))
+			if (!StringUtil.isBlankOrNull(sOverTime)) {
 				overTime = Double.valueOf(sOverTime).intValue() * 1000;
+			}
 		} catch (Throwable ex) {
 			DebugUtil.error(ex);
 		}
