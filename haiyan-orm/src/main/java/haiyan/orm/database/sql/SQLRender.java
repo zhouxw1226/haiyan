@@ -174,10 +174,10 @@ class SQLRender implements ITableSQLRender {
 //							needContent = true;
 //					}
 //				}
-				if (needContent) {
+				if (needContent && content!=null) {
 					String sql;
-					if (ExpUtil.isFormula(content))
-						sql = VarUtil.toString(expUtil.evalExp(content));
+					if (ExpUtil.isFormula(content.trim()))
+						sql = VarUtil.toString(expUtil.evalExp(content.trim().substring(1)));
 					else
 						sql = content;
 					pTable.setPrimaryTableSQL(sql);
@@ -846,7 +846,6 @@ class SQLRender implements ITableSQLRender {
 			SQLDBTypeConvert.setValue(ps, context.getDBM().getClear(), i+1, table.getId(), ids[i]);
 			ss.append("##delete(" + table.getId().getName() + "):"+ids[i]+"\t");
 		}
-		DebugUtil.debug(ss.toString());
 		DebugUtil.debug("------delete().end------");
 		return ps;
 	}

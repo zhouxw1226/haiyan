@@ -95,6 +95,8 @@ public class RedisDataCache extends EHDataCache {
     }
     protected BinaryJedisCommands getJedisReader() {
     	try {
+    		if(jedisImplReader == null)
+    			return jedisImplWriter;
     		return jedisImplReader;
     	}catch(Throwable e){
     		throw Warning.wrapException(e);
