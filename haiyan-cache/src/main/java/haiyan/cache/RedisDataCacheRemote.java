@@ -207,7 +207,10 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	public Object setData(String schema, Object key, Object ele) {
 		String mk = getDataKey(schema, key);
 		try {
-			getJedisWriter().set(mk.getBytes(), ByteUtil.toBytes((Serializable)ele));
+			BinaryJedisCommands cmds = getJedisWriter();
+			byte[] kBytes = mk.getBytes();
+			byte[] vBytes = ByteUtil.toBytes((Serializable)ele);
+			cmds.set(kBytes, vBytes);
 			reconn = 0;
 			return ele;
 		}catch (JedisConnectionException e) {
