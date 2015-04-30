@@ -147,16 +147,16 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 				status = VarUtil.toInt(bytes);
 			}
 			if (status == -1) { // is deleted
-				// mcc.delete(k+"._status"); NOTICE 不能加，有些服务器还没通知完
-				// super.removeUser(sessionId);
+//				mcc.delete(k+"._status"); NOTICE 不能加，有些服务器还没通知完
+//				super.removeUser(sessionId);
 				return null;
 			}
 			if (user==null) {
 				bytes = getJedisReader().get(key.getBytes());
 				if (bytes!=null)
 					user = (IUser)ByteUtil.toObject(bytes);
-	//			if (user!=null)
-	//				super.setUser(sessionId, user);
+//				if (user!=null)
+//					super.setUser(sessionId, user);
 			}
 			reconn = 0;
 			return user;
@@ -213,7 +213,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			cmds.set(kBytes, vBytes);
 			reconn = 0;
 			return ele;
-		}catch (JedisConnectionException e) {
+		} catch (JedisConnectionException e) {
 			DebugUtil.error(e);
 			if (reconn>=3) {
 				reconn = 0;
@@ -242,6 +242,9 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			reconn++;
 			this.initialize();
 			return getData(schema,key);
+		} catch(Throwable e){
+			DebugUtil.error(e);
+			return null;
 		}
 	}
 	@Override
@@ -268,6 +271,9 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			reconn++;
 			this.initialize();
 			return deleteData(schema,key);
+		} catch(Throwable e){
+			DebugUtil.error(e);
+			return null;
 		}
     }
 //	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";

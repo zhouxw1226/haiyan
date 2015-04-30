@@ -17,9 +17,9 @@ import haiyan.database.JNDIDatabase;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 public class DBManagerFactory implements IFactory {
 
+	// DataBase必须是单例的，否则类似DBCP的DataSource不能起到Connection复用的效果。
 	private static final Map<String, ISQLDatabase> DATABASES = new ConcurrentHashMap<String, ISQLDatabase>();
 	private DBManagerFactory() {
 	}
@@ -33,17 +33,17 @@ public class DBManagerFactory implements IFactory {
 				throw new Warning(SysCode.SysCodeNum.NO_MATCHEDSQLDATABASE,SysCode.SysCodeMessage.NO_MATCHEDSQLDATABASE);
 			String dbType = database.getDBType();
 			database.setDSN(DSN);
-			if ("mysql".equalsIgnoreCase(dbType)) 
+			if ("mysql".equalsIgnoreCase(dbType))
 				return new MySqlDBManager(database);
-			else if ("oracle".equalsIgnoreCase(dbType)) 
+			else if ("oracle".equalsIgnoreCase(dbType))
 				return new OracleDBManager(database);
-			else if ("sqlserver".equalsIgnoreCase(dbType)) 
+			else if ("sqlserver".equalsIgnoreCase(dbType))
 				return new SqlServerDBManager(database);
-			else if ("derby".equalsIgnoreCase(dbType)) 
+			else if ("derby".equalsIgnoreCase(dbType))
 				return new DerbyDBManager(database);
-			else if ("hsql".equalsIgnoreCase(dbType)) 
+			else if ("hsql".equalsIgnoreCase(dbType))
 				return new HSqldbDBManager(database);
-			else if ("jndi".equalsIgnoreCase(dbType)) 
+			else if ("jndi".equalsIgnoreCase(dbType))
 				return new SQLTableDBManager(database) {
 					@Override
 					public ITableSQLRender getSQLRender() {
@@ -61,8 +61,8 @@ public class DBManagerFactory implements IFactory {
 		if (DATABASES.containsKey(DSN))
 			return DATABASES.get(DSN);
 		ISQLDatabase database = null;
-		JdbcURL jdbcURL = ConfigUtil.getJdbcURL(DSN);
 		String dbType = null;
+		JdbcURL jdbcURL = ConfigUtil.getJdbcURL(DSN);
 		if (jdbcURL!=null) {
 			if (jdbcURL.isDbcp())
 				database = new DBCPDatabase(jdbcURL.getDriver(), jdbcURL.getUrl(), jdbcURL.getUsername(), jdbcURL.getPassword());

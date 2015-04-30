@@ -47,26 +47,29 @@ public class CacheUtil {
 			}
 		return CACHE;
 	}
-	public static Object setData(String tbl, Object id, Object o) {
-		return getDataCache().setData(tbl, id, o);
+	public static Object setData(String schema, Object id, Object o) {
+		return getDataCache().setData(schema, id, o);
 	}
-	public static Object getData(String tbl, Object id) {
-		return getDataCache().getData(tbl, id);
+	public static Object getData(String schema, Object id) {
+		return getDataCache().getData(schema, id);
 	}
-	public static Object setLocalData(String cacheID, Object id, Object o) {
-		return getDataCache().setLocalData(cacheID, id, o);
+	public static Object setLocalData(String schema, Object id, Object o) {
+		return getDataCache().setLocalData(schema, id, o);
 	}
-	public static Object updateData(String tbl, Object id, Object o) {
-		return getDataCache().updateData(tbl, id, o);
+	public static Object getLocalData(String schema, Object id) {
+		return getDataCache().getLocalData(schema, id);
 	}
-	public static Object deleteData(String tbl, Object id) {
-		return getDataCache().deleteData(tbl, id);
+	public static Object removeLocalData(String schema, Object id) {
+		return getDataCache().removeLocalData(schema, id);
 	}
-	public static Object removeLocalData(String tbl, Object id) {
-		return getDataCache().removeLocalData(tbl, id);
+	public static Object updateData(String schema, Object id, Object o) {
+		return getDataCache().updateData(schema, id, o);
 	}
-	public static void clearData(String key) {
-		getDataCache().clearData(key);
+	public static Object deleteData(String schema, Object id) {
+		return getDataCache().deleteData(schema, id);
+	}
+	public static void clearData(String schema) {
+		getDataCache().clearData(schema);
 	}
 //	// -------------------- list opr --------------------//
 //	public static Object setListData(String cacheID, Object id, Object o) {
@@ -94,7 +97,7 @@ public class CacheUtil {
 	private static Map<String,ITableConfig> TABLE_CACHE = new HashMap<String,ITableConfig>();
 	public static void setTable(String tbl, ITableConfig table) {
 		TABLE_CACHE.put(tbl, table);
-		//getCache().setTable(tbl, table);
+//		getCache().setTable(tbl, table);
 	}
 	public static ITableConfig getTable(String tbl) {
 		return TABLE_CACHE.get(tbl);
@@ -145,8 +148,7 @@ public class CacheUtil {
 			return user;
 		}
 		user = getDataCache().getUser(sessionId);
-		DebugUtil.debug("getDataCache().getUser(sessionId),sessionId="
-				+ sessionId + ",user=" + user);
+		DebugUtil.debug("getDataCache().getUser(sessionId),sessionId=" + sessionId + ",user=" + user);
 		if (user != null) {
 			USER_CACHE.put(sessionId, user);
 		}
