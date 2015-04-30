@@ -109,7 +109,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
     	}
     }
 	/** 归还jedis对象 */
-	public void recycleJedisResouce(BinaryJedisCommands jedis) {
+	public void recycleJedisResource(BinaryJedisCommands jedis) {
 		if (jedis==null)
 			return;
 		if (jedis instanceof ShardedJedis)
@@ -147,7 +147,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisResouce(writer);
+			recycleJedisResource(writer);
 		}
 	}
 	@Override
@@ -195,7 +195,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisResouce(reader);
+			recycleJedisResource(reader);
 		}
 	}
 	@Override
@@ -226,7 +226,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return false;
 		}finally{
-			recycleJedisResouce(writer);
+			recycleJedisResource(writer);
 		}
 	}
     // --------------------- data cache --------------------- //
@@ -254,7 +254,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			this.initialize();
 			return setData(schema,key,ele);
 		}finally{
-			recycleJedisResouce(writer);
+			recycleJedisResource(writer);
 		}
 	}
 	@Override
@@ -281,7 +281,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisResouce(reader);
+			recycleJedisResource(reader);
 		}
 	}
 	@Override
@@ -316,7 +316,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisResouce(writer);
+			recycleJedisResource(writer);
 		}
     }
 //	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";
