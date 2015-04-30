@@ -53,7 +53,7 @@ public class NamingUtil {
 	/**
 	 * 
 	 */
-	private final static String CONSTANT_POSTFIX = "Conatant";
+	private final static String CONSTANT_POSTFIX = "Constant";
 	/**
 	 * 
 	 */
