@@ -109,19 +109,13 @@ public class RedisDataCacheRemote extends AbstractDataCache {
     	}
     }
 	/** 归还jedis对象 */
-	public void recycleJedisWriter(BinaryJedisCommands jedis) {
+	public void recycleJedisResouce(BinaryJedisCommands jedis) {
 		if (jedis==null)
 			return;
-		masterJedisPool.returnResource((Jedis)jedis);
-	}
-	public void recycleJedisReader(BinaryJedisCommands jedis) {
-		if (jedis==null)
-			return;
-		if (servers.length==1) {
+		if (jedis instanceof ShardedJedis)
+			shardedJedisPool.returnResource((ShardedJedis)jedis);
+		else
 			masterJedisPool.returnResource((Jedis)jedis);
-			return;
-		}
-		shardedJedisPool.returnResource((ShardedJedis)jedis);
 	}
     // --------------------- user cache --------------------- //
 	private String getUserKey(String schema) {
@@ -135,9 +129,9 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			writer = getJedisWriter();
 			if (user==null)
 				throw new Warning("user is null");
-			String k = getUserKey(sessionId);
-			writer.set(k.getBytes(), ByteUtil.toBytes(user));
-			writer.set((k+"._status").getBytes(), "0".getBytes()); // login
+			String key = getUserKey(sessionId);
+			writer.set(key.getBytes(), ByteUtil.toBytes(user));
+			writer.set((key+"._status").getBytes(), "0".getBytes()); // login
 			reconn = 0;
 			return user;
 		}catch (JedisConnectionException ex) {
@@ -153,7 +147,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisWriter(writer);
+			recycleJedisResouce(writer);
 		}
 	}
 	@Override
@@ -201,7 +195,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisWriter(reader);
+			recycleJedisResouce(reader);
 		}
 	}
 	@Override
@@ -232,7 +226,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return false;
 		}finally{
-			recycleJedisWriter(writer);
+			recycleJedisResouce(writer);
 		}
 	}
     // --------------------- data cache --------------------- //
@@ -260,7 +254,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			this.initialize();
 			return setData(schema,key,ele);
 		}finally{
-			recycleJedisWriter(writer);
+			recycleJedisResouce(writer);
 		}
 	}
 	@Override
@@ -287,7 +281,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisReader(reader);
+			recycleJedisResouce(reader);
 		}
 	}
 	@Override
@@ -322,7 +316,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisReader(writer);
+			recycleJedisResouce(writer);
 		}
     }
 //	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";
