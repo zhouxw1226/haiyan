@@ -14,6 +14,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Cache Facade
@@ -47,8 +54,100 @@ public class CacheUtil {
 			}
 		return CACHE;
 	}
+	private static class CacheBean {
+		CacheBean(String schema, Object id, Object val) {
+			this.schema = schema;
+			this.id = id;
+			this.val = val;
+		}
+		String schema;
+		Object id;
+		Object val;
+	}
+	private static Lock LOCK = new ReentrantLock();
+	private static Condition CONDITION = LOCK.newCondition();
+	private static Queue<CacheBean> QUEUE = new ArrayBlockingQueue<CacheBean>(1024*1024, false);
+	private static ThreadPoolExecutor pool = new ThreadPoolExecutor(
+			20,
+            100,
+            0,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue<Runnable>(1000));
+	static {
+		pool.execute(new Runnable(){
+			@Override
+			public void run() {
+				while(true) {
+					if (QUEUE.size()==0) {
+						LOCK.lock();
+						try {
+							CONDITION.await();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						} finally {
+							LOCK.unlock();
+						}
+					}
+					CacheBean bean = QUEUE.poll();
+					if (bean == null) {
+						LOCK.lock();
+						try {
+							CONDITION.await();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						} finally {
+							LOCK.unlock();
+						}
+					} else {
+						String schema = bean.schema;
+						Object id = bean.id;
+						Object val = bean.val;
+						getDataCache().setData(schema, id, val);
+					}
+				}
+			}
+		});
+	}
+//	private static String getKey(String schema, Object id) {
+//		return schema+"_"+id;
+//	}
+	public static Object deleteData(String schema, Object id) {
+//		String key = getKey(schema, id);
+//		if (QUEUE.contains(key)) {
+//			QUEUE.remove();
+//		}
+		return getDataCache().deleteData(schema, id);
+	}
+	public static Object updateData(String schema, Object id, Object o) {
+		return getDataCache().updateData(schema, id, o);
+	}
+//	// 缓存对象只要一个在队列里即可
+//	public static Object setData(String schema, Object id, Object o, boolean newAlways) {
+//		String key = getKey(schema,id);
+//		if (newAlways!=true) {
+//			return o;
+//		}
+//		QUEUE.add(new CacheBean(schema, id, o));
+//		return o;
+//		//return getDataCache().setData(schema, id, o);
+//	}
+	// 缓存对象只要一个在队列里即可
 	public static Object setData(String schema, Object id, Object o) {
-		return getDataCache().setData(schema, id, o);
+//		String key = getKey(schema,id);
+//		if (newAlways!=true) {
+//			return o;
+//		}
+		QUEUE.add(new CacheBean(schema, id, o));
+		LOCK.lock();
+		try {
+			CONDITION.signal();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			LOCK.unlock();
+		}
+		return o;
+//		//return getDataCache().setData(schema, id, o);
 	}
 	public static Object getData(String schema, Object id) {
 		return getDataCache().getData(schema, id);
@@ -61,12 +160,6 @@ public class CacheUtil {
 	}
 	public static Object removeLocalData(String schema, Object id) {
 		return getDataCache().removeLocalData(schema, id);
-	}
-	public static Object updateData(String schema, Object id, Object o) {
-		return getDataCache().updateData(schema, id, o);
-	}
-	public static Object deleteData(String schema, Object id) {
-		return getDataCache().deleteData(schema, id);
 	}
 	public static void clearData(String schema) {
 		getDataCache().clearData(schema);
