@@ -14,9 +14,13 @@ import haiyan.database.DBCPDatabase;
 import haiyan.database.JDBCDatabase;
 import haiyan.database.JNDIDatabase;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 
 public class DBManagerFactory implements IFactory {
 
+	private static final Map<String, ISQLDatabase> DATABASES = new ConcurrentHashMap<String, ISQLDatabase>();
 	private DBManagerFactory() {
 	}
 	public static IDBManager createDBManager(IUser user)  {
@@ -54,6 +58,8 @@ public class DBManagerFactory implements IFactory {
 		}
 	}
 	public static ISQLDatabase createDatabase(String DSN) throws Throwable {
+		if (DATABASES.containsKey(DSN))
+			return DATABASES.get(DSN);
 		ISQLDatabase database = null;
 		JdbcURL jdbcURL = ConfigUtil.getJdbcURL(DSN);
 		String dbType = null;
@@ -72,6 +78,7 @@ public class DBManagerFactory implements IFactory {
 		if (database==null)
 	        throw new Warning(SysCode.SysCodeNum.NO_MATCHEDDSN,SysCode.SysCodeMessage.NO_MATCHEDDSN);
 		database.setDBType(dbType);
+		DATABASES.put(DSN, database);
 		return database;
 	}
 
