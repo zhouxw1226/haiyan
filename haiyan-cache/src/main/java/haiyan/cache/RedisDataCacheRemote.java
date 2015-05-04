@@ -2,6 +2,7 @@ package haiyan.cache;
 
 import haiyan.common.ByteUtil;
 import haiyan.common.DebugUtil;
+import haiyan.common.PropUtil;
 import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.session.IUser;
@@ -31,6 +32,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
     private JedisPool masterJedisPool;//非切片连接池
     private ShardedJedisPool shardedJedisPool;//切片连接池
     private String[] servers = null;
+    private String password = PropUtil.getProperty(null,"REDISCACHE.PASSWORD",null);
 	public RedisDataCacheRemote() {
 		super();
 	}
@@ -48,7 +50,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 		{
 			DebugUtil.debug("redis.master:"+servers[0]);
 			String[] arr = StringUtil.split(servers[0],":"); // 第一个为master
-			masterJedisPool = new JedisPool(config, arr[0], VarUtil.toInt(arr[1]));//"127.0.0.1", 6379);
+			masterJedisPool = new JedisPool(config, arr[0], VarUtil.toInt(arr[1]),2000,password);//"127.0.0.1", 6379);
 		}
 	}
 	/**
@@ -69,6 +71,8 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			DebugUtil.debug("redis.slave:"+servers[i]);
 			String[] arr = StringUtil.split(servers[i],":");
 			JedisShardInfo jsi = new JedisShardInfo(arr[0], VarUtil.toInt(arr[1]), "slave"); // "master"
+			if(password != null)
+				jsi.setPassword(password);
 //			jsi.setTimeout(0);
 			shards.add(jsi);
 		}
