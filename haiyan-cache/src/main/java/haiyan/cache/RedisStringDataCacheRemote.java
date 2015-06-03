@@ -1,18 +1,16 @@
 package haiyan.cache;
 
-import haiyan.common.ByteUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.PropUtil;
 import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.session.IUser;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import redis.clients.jedis.BinaryJedisCommands;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCommands;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
@@ -23,17 +21,17 @@ import bsh.StringUtil;
 
 
 /**
- * @author zhouxw
+ * @author shangjie
  *
  */
-public class RedisDataCacheRemote extends AbstractDataCache {
+public class RedisStringDataCacheRemote extends AbstractDataCache {
 
 //	private Jedis defaultJedis;//非切片额客户端连接
     private JedisPool masterJedisPool;//非切片连接池
     private ShardedJedisPool shardedJedisPool;//切片连接池
     private String[] servers = null;
     private String password = PropUtil.getProperty(null,"REDISCACHE.PASSWORD",null);
-	public RedisDataCacheRemote() {
+	public RedisStringDataCacheRemote() {
 		super();
 	}
 	/**
@@ -50,7 +48,11 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 		{
 			DebugUtil.debug("redis.master:"+servers[0]);
 			String[] arr = StringUtil.split(servers[0],":"); // 第一个为master
-			masterJedisPool = new JedisPool(config, arr[0], VarUtil.toInt(arr[1]),2000,password);//"127.0.0.1", 6379);
+			if(password != null){
+				masterJedisPool = new JedisPool(config, arr[0], VarUtil.toInt(arr[1]),2000,password);//"127.0.0.1", 6379);
+			}else{
+				masterJedisPool = new JedisPool(config, arr[0], VarUtil.toInt(arr[1]),2000);//"127.0.0.1", 6379);
+			}
 		}
 	}
 	/**
@@ -87,22 +89,19 @@ public class RedisDataCacheRemote extends AbstractDataCache {
     public void initialize() {
     	if (servers.length>1) {
     		initialMasterPool();
-//    		jedisImplWriter = masterJedisPool.getResource();
     		initialShardedPool();
-//    		jedisImplReader = shardedJedisPool.getResource();
     	} else {
     		initialMasterPool();
-//    		jedisImplWriter = masterJedisPool.getResource();
     	}
     }
-    protected BinaryJedisCommands getJedisWriter() {
+    protected JedisCommands getJedisWriter() {
     	try {
     		return masterJedisPool.getResource();
     	}catch(Throwable e){
     		throw Warning.wrapException(e);
     	}
     }
-    protected BinaryJedisCommands getJedisReader() {
+    protected JedisCommands getJedisReader() {
     	try {
     		if(servers.length==1) {
     			return masterJedisPool.getResource();
@@ -113,7 +112,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
     	}
     }
 	/** 归还jedis对象 */
-	public void recycleJedisResource(BinaryJedisCommands jedis) {
+	public void recycleJedisResource(JedisCommands jedis) {
 		if (jedis==null)
 			return;
 		if (jedis instanceof ShardedJedis)
@@ -122,116 +121,18 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 			masterJedisPool.returnResource((Jedis)jedis);
 	}
     // --------------------- user cache --------------------- //
-	private String getUserKey(String schema) {
-    	return "Haiyan.USERS."+schema;
-    } 
 	private int reconn = 0;
 	@Override
 	public IUser setUser(String sessionId, IUser user) {
-		BinaryJedisCommands writer = null;
-		try {
-			writer = getJedisWriter();
-			if (user==null)
-				throw new Warning("user is null");
-			String key = getUserKey(sessionId);
-			writer.set(key.getBytes(), ByteUtil.toBytes(user));
-			writer.set((key+"._status").getBytes(), "0".getBytes()); // login
-			reconn = 0;
-			return user;
-		}catch (JedisConnectionException ex) {
-			DebugUtil.error(ex);
-			if (reconn>=3) {
-				reconn = 0;
-				return null;
-			}
-			reconn++;
-			this.initialize();
-			return setUser(sessionId, user);
-		}catch(Throwable e){
-			DebugUtil.error(e);
-			return null;
-		}finally{
-			recycleJedisResource(writer);
-		}
+		return null;
 	}
 	@Override
 	public IUser getUser(String sessionId) {
-		BinaryJedisCommands reader = null;
-		try {
-			reader = getJedisReader();
-			IUser user = null; // super.getUser();
-			String key = getUserKey(sessionId);
-			Integer status = -1;
-			byte[] bytes = reader.get((key+"._status").getBytes());
-			if (bytes!=null) {
-				status = VarUtil.toInt(bytes);
-			}
-			if (status == -1) { // is deleted
-//				mcc.delete(k+"._status"); NOTICE 不能加，有些服务器还没通知完
-//				super.removeUser(sessionId);
-				return null;
-			}
-			if (user==null) {
-				bytes = reader.get(key.getBytes());
-				if (bytes!=null){
-					Object obj = ByteUtil.toObject(bytes);
-					if(obj instanceof String){
-						DebugUtil.error(obj);
-					}else{
-						user = (IUser)obj;
-					}
-				}
-//				if (user!=null)
-//					super.setUser(sessionId, user);
-			}
-			reconn = 0;
-			return user;
-		}catch (JedisConnectionException ex) {
-			DebugUtil.error(ex);
-			if (reconn>=3) {
-				reconn = 0;
-				return null;
-			}
-			reconn++;
-			this.initialize();
-			return getUser(sessionId);
-		}catch(Throwable e){
-			DebugUtil.error(e);
-			return null;
-		}finally{
-			recycleJedisResource(reader);
-		}
+		return null;
 	}
 	@Override
 	public boolean removeUser(String sessionId) {
-		BinaryJedisCommands writer = null;
-		try {
-			writer = getJedisWriter();
-			String key = getUserKey(sessionId);
-			if (writer instanceof ShardedJedis) {
-				((ShardedJedis)writer).del(key);
-			}
-			else if (writer instanceof Jedis) {
-				((Jedis)writer).del(key.getBytes());
-			}
-			writer.set((key+"._status").getBytes(), "-1".getBytes()); // logout
-			reconn = 0;
-			return true;
-		}catch (JedisConnectionException ex) {
-			DebugUtil.error(ex);
-			if (reconn>=3) {
-				reconn = 0;
-				return false;
-			}
-			reconn++;
-			this.initialize();
-			return removeUser(sessionId);
-		}catch(Throwable e){
-			DebugUtil.error(e);
-			return false;
-		}finally{
-			recycleJedisResource(writer);
-		}
+		return false;
 	}
     // --------------------- data cache --------------------- //
 	private String getDataKey(String schema, Object key) {
@@ -239,13 +140,11 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	}
 	@Override
 	public Object setData(String schema, Object key, Object ele) {
-		BinaryJedisCommands writer = null;
+		JedisCommands writer = null;
 		try {
 			writer = getJedisWriter();
 			String mk = getDataKey(schema, key);
-			byte[] kBytes = mk.getBytes();
-			byte[] vBytes = ByteUtil.toBytes((Serializable)ele);
-			writer.set(kBytes, vBytes);
+			writer.set(mk, (String)ele);
 			reconn = 0;
 			return ele;
 		} catch (JedisConnectionException e) {
@@ -263,15 +162,11 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	}
 	@Override
 	public Object getData(String schema, Object key) {
-		BinaryJedisCommands reader = null;
+		JedisCommands reader = null;
 		try {
 			reader = getJedisReader();
 			String mk = getDataKey(schema, key);
-			byte[] bytes = reader.get(mk.getBytes());
-			if (bytes!=null) {
-				return ByteUtil.toObject(bytes);
-			}
-			return null;
+			return reader.get(mk);
 		} catch (JedisConnectionException e) {
 			DebugUtil.error(e);
 			if (reconn>=3) {
@@ -294,7 +189,7 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 	}
 	@Override
 	public Object deleteData(String schema, Object key) {
-		BinaryJedisCommands writer = null;
+		JedisCommands writer = null;
 		try {
 			writer = getJedisWriter();
 			Object o = this.getData(schema, key);

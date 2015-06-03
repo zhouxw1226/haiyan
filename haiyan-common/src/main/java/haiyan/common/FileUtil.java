@@ -546,4 +546,170 @@ public class FileUtil {
 		}
 	}
 
+
+	
+	/**
+	 * @param str
+	 * @param filePath
+	 * @param charset
+	 * @return File
+	 * @throws Throwable
+	 */
+	public static File String2File(String str, String filePath, String charset)
+			throws IOException {
+		if (filePath == null || filePath.equals("") || filePath.length() == 0)
+			return null;
+		File destFile = new File(filePath);
+		return String2File(str, destFile, charset, false);
+	}
+
+	/**
+	 * @param str
+	 * @param filePath
+	 * @param charset
+	 * @return File
+	 * @throws Throwable
+	 */
+	public static File String2File(String str, String filePath, String charset,boolean bAppend) throws IOException {
+		if (filePath == null || filePath.equals("") || filePath.length() == 0)
+			return null;
+		File destFile = new File(filePath);
+		return String2File(str, destFile, charset, bAppend);
+	}
+
+	/**
+	 * @param str
+	 * @param destFile
+	 * @param charset
+	 * @param append
+	 *            是否追加写入
+	 * @return File
+	 * @throws Throwable
+	 */
+	public static File String2File(String str, File destFile, String charset,boolean bAppend) throws IOException {
+		byte[] bytes = null;
+		if (destFile == null)
+			return null;
+		// }
+		OutputStream out = null;
+		try {
+			// File parentFile = new File(destFile.getParent());
+			if (!destFile.exists()) {
+				File parentFile = destFile.getParentFile();
+				if (!parentFile.exists())
+					parentFile.mkdirs();
+			}
+			// if (destFile.canWrite()) { // 不存在时canWrite为false
+			out = new FileOutputStream(destFile, bAppend);
+			if (charset != null)
+				bytes = str.getBytes(charset);
+			else
+				bytes = str.getBytes();
+			out.write(bytes);
+			out.flush();
+			// }
+			// succ = true;
+		}
+		// catch (Throwable ex) {
+		// // exp = ex;
+		// throw ex;
+		// }
+		finally {
+			CloseUtil.close(out);
+			// if (exp != null)
+			// throw new BKException(exp);
+		}
+		return destFile;
+	}
+
+	/**
+	 * @param str
+	 * @param destFile
+	 * @return File
+	 * @throws Throwable
+	 */
+	public static File String2File(String str, File destFile, String charset)throws IOException {
+		return String2File(str, destFile, charset, false);
+	}
+	
+	/**
+	 * 获取文件内容，以String形式返回
+	 * 
+	 * @param file
+	 * @return String
+	 * @throws IOException
+	 */
+	public static String File2String(File srcFile, String encoding)
+			throws IOException {
+		String content = null;
+		// StringBuffer buffer = null;
+		byte[] bytes = null;
+		FileInputStream fin = null;
+//		Exception exp = null;
+		if (srcFile == null || !srcFile.exists())
+			return content;
+		try {
+			bytes = new byte[(int) srcFile.length()];
+			if (srcFile.canRead()) {
+				fin = new FileInputStream(srcFile);
+				fin.read(bytes);
+				if (encoding == null)
+					content = new String(bytes);
+				else
+					content = new String(bytes, encoding);// encoding="gb2312";
+			}
+		}
+		// catch (Throwable ex) {
+		// throw BKException.deal2(ex);
+		// }
+		finally {
+			CloseUtil.close(fin);
+//			if (exp != null)
+//				throw new RuntimeException(exp);
+		}
+		return content;
+	}
+	
+	/**
+	 * @param srcPath
+	 * @param encoding
+	 * @return String
+	 * @throws IOException
+	 */
+	public static String File2String(String srcPath, String encoding)
+			throws IOException {
+		String content = null;
+		// StringBuffer buffer = null;
+		byte[] bytes = null;
+		FileInputStream fin = null;
+//		Exception exp = null;
+		// boolean succ = false;
+		File srcFile = null;
+		try {
+			srcFile = new File(srcPath);
+			if (!srcFile.exists())
+//				return "";
+				throw new Warning("file not exists:"+srcPath); 
+			bytes = new byte[(int) srcFile.length()];
+			if (srcFile.canRead()) {
+				fin = new FileInputStream(srcFile);
+				fin.read(bytes);
+				// DebugUtil.debug();
+				if (encoding != null)
+					content = new String(bytes, encoding); // encoding="gb2312";
+				else
+					content = new String(bytes);
+			}
+		}
+		// catch (Throwable ex) {
+		// throw BKException.deal2(ex);
+		// }
+		finally {
+			CloseUtil.close(fin);
+//			if (exp != null)
+//				throw new RuntimeException(exp);
+		}
+		return content;
+	}
+
 }

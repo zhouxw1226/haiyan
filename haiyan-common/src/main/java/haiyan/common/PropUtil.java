@@ -85,16 +85,12 @@ public class PropUtil {
         	else
 	        	b = getPropertyBundle();
             if (!b.containsKey(key)) {
-            	if (!StringUtil.isEmpty(def))
-            		return def;
-                return "";
+            	return def;
             }
             return b.getString(key);
         } catch (Throwable ignore) {
         	ignore.printStackTrace();
-        	if (!StringUtil.isEmpty(def))
-        		return def;
-            return "";
+        	return def;
         }
     }
     /**
