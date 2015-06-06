@@ -32,11 +32,10 @@ public abstract class AbstractDBRecord implements IDBRecord {
     protected abstract Object getParameter(String key);
     protected abstract void setParameterValues(String key, Object[] values);
     protected abstract Object[] getParameterValues(String key);
-//	public abstract void setDataMap(Map map);
-    public abstract Map<String, Object> getDataMap();
-    private Map<String, Object> oreignDataMap = new HashMap<String, Object>(10, 1);
-    private Set<String> updatedKeys = new HashSet<String>(10, 1);
-    private Set<String> deletedKeys = new HashSet<String>(10, 1);
+    public abstract Map<String, Object> getDataMap(); // 内存数据容器
+    private Map<String, Object> oreignDataMap = new HashMap<String, Object>(10, 1); // 原数据容器
+    private Set<String> updatedKeys = new HashSet<String>(10, 1); // 修改的key
+    private Set<String> deletedKeys = new HashSet<String>(10, 1); // 删除的key
     private String tableName;
     public String getTableName() {
         return this.tableName;
@@ -80,7 +79,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
 //			for (String b:blobs) {
 //				if (b!=null) {
 //					File f = new File(b+".bak");
-//					File f2 = new File(b);
+//			File f2 = new File(b);
 //					FileUtil.copy(f, f2);
 //					if (f.exists())
 //						f.delete();
@@ -90,6 +89,8 @@ public abstract class AbstractDBRecord implements IDBRecord {
 	    	this.deletedKeys.clear();
 			this.updatedKeys.clear();
 			this.blobs.clear();
+			this.status = IDBRecord.DEFAULT;
+			this.statusOld = IDBRecord.DEFAULT;
 			Map dataMap = this.getDataMap();
 			if (dataMap!=null && dataMap.size()>0) {
 				Map oreignMap = this.oreignDataMap;
@@ -116,6 +117,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
 	    	this.deletedKeys.clear();
 			this.updatedKeys.clear();
 			this.blobs.clear();
+			this.status = this.statusOld;
 			Map oreignMap = this.oreignDataMap;
 			if (oreignMap!=null && oreignMap.size()>0) {
 				Map dataMap = this.getDataMap();
@@ -133,24 +135,25 @@ public abstract class AbstractDBRecord implements IDBRecord {
 	}
     @Override
     public String toString() {
-        StringBuffer buf = new StringBuffer("");
-        Iterator<?> key = getDataMap().keySet().iterator();
-        while (key.hasNext()) {
-            String keyName = (String) key.next();
-            if (isIgnoredTo(keyName))
-                continue;
-            buf.append(keyName + "=");
-            Object[] values = getParameterValues(keyName);
-            if (values != null)
-                for (int i = 0; i < values.length; i++) {
-                    if (!StringUtil.isEmpty(values[i])) {
-                        buf.append(values[i]);
-                    }
-                    buf.append(" ");
-                }
-            buf.append(" ");
-        }
-        return buf.toString();
+//        StringBuffer buf = new StringBuffer("");
+//        Iterator<?> key = getDataMap().keySet().iterator();
+//        while (key.hasNext()) {
+//            String keyName = (String) key.next();
+//            if (isIgnoredTo(keyName))
+//                continue;
+//            buf.append(keyName + "=");
+//            Object[] values = getParameterValues(keyName);
+//            if (values != null)
+//                for (int i = 0; i < values.length; i++) {
+//                    if (!StringUtil.isEmpty(values[i])) {
+//                        buf.append(values[i]);
+//                    }
+//                    buf.append(" ");
+//                }
+//            buf.append(" ");
+//        }
+//        return buf.toString();
+        return this.toJSon().toString();
     }
 	/**
 	 * @return JSONObject
@@ -499,20 +502,21 @@ public abstract class AbstractDBRecord implements IDBRecord {
 //        return map.keySet().iterator();
 //    }
     // 只在一个事务内有效
-    private transient byte dirty = 0;
+    private transient byte dirty = 0; // 4 UnitOfWork
     @Override
-    public boolean isDirty() {
+    public boolean isDirty() { // 4 UnitOfWork
         return this.dirty == 1;
     }
     @Override
-    public void setDirty() {
+    public void setDirty() { // 4 UnitOfWork
     	this.dirty = 1;
     }
     @Override
-    public void clearDirty() {
+    public void clearDirty() { // 4 UnitOfWork
     	this.dirty = 0;
     }
     // 只在一个事务内有效
+    private transient byte statusOld = 0;
     private transient byte status = 0;
     @Override
     public void setStatus(byte status) {

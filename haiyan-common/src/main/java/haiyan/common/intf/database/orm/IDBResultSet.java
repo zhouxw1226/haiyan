@@ -4,6 +4,8 @@ import haiyan.common.intf.database.IPredicate;
 
 import java.util.Collection;
 
+import net.sf.json.JSONArray;
+
 public interface IDBResultSet {
 
 	void setTotalRecordCount(long c);
@@ -21,5 +23,14 @@ public interface IDBResultSet {
 	
 	IDBRecord find(IPredicate predicate);
 	void filter(IPredicate predicate);
+	IDBRecord insertRowAfter(int rowIndex);
+	IDBRecord insertRowBefore(int rowIndex);
+	IDBRecord appendRow();
+	IDBRecord deleteRow(int rowIndex);
+	
+	JSONArray toJSon();
+	
+	void commit();
+	void rollback();
 
 }

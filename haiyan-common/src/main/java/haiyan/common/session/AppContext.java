@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * 功能程序上下文
@@ -114,10 +113,10 @@ public class AppContext implements IAppContext {
 	public String getDSN() {
 		return !StringUtil.isBlankOrNull(this.DSN)?this.DSN:(user!=null?user.getDSN():null);
 	}
-	@Override
-	public Object getNextID(String tableName) {
-		return UUID.randomUUID().toString();
-	}
+//	@Override
+//	public Object getNextID(String tableName) throws Throwable {
+//		return UUID.randomUUID().toString();
+//	}
 	@Override
 	public void close() {
 		CloseUtil.close(this.dbm);

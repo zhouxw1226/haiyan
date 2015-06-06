@@ -10,7 +10,11 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+
 /**
+ * DBPage Bean
+ * 
  * @author zhouxw
  */
 public class DBPage implements Serializable, IDBResultSet {
@@ -159,16 +163,26 @@ public class DBPage implements Serializable, IDBResultSet {
 	 * @return String
 	 */
 	public String toString() {
-		StringBuffer result = new StringBuffer("");
+//		StringBuffer result = new StringBuffer("");
+//		Iterator<?> iter = this.getRecords().iterator();
+//		while (iter.hasNext()) {
+//			IDBRecord form = (IDBRecord) iter.next();
+//			if (result.length() > 0)
+//				result.append("\n");
+//			result.append(form.toString());
+//		}
+//		// DebugUtil.debug(result);
+//		return result.toString();
+		return this.toJSon().toString();
+	}
+	public JSONArray toJSon() {
+		JSONArray list = new JSONArray();
 		Iterator<?> iter = this.getRecords().iterator();
 		while (iter.hasNext()) {
 			IDBRecord form = (IDBRecord) iter.next();
-			if (result.length() > 0)
-				result.append("\n");
-			result.append(form.toString());
+			list.add(form.toJSon());
 		}
-		// DebugUtil.debug(result);
-		return result.toString();
+		return list;
 	}
 	private int activeIndex = 0;
 	@Override
@@ -206,5 +220,73 @@ public class DBPage implements Serializable, IDBResultSet {
 			//return answer;
 		}
 		//return null;
+	}
+	@Override
+	public IDBRecord insertRowAfter(int rowIndex) {
+		IDBRecord record = new DBRecord();
+		record.setStatus(IDBRecord.INSERT);
+		int position = 0;
+		if (rowIndex<this.records.size() && rowIndex>=0)
+			position=rowIndex+1;
+		else if (rowIndex<0)
+			position=0;
+		else
+			position=this.records.size();
+		this.records.add(position, record);
+		return record;
+	}
+	@Override
+	public IDBRecord insertRowBefore(int rowIndex) {
+		IDBRecord record = new DBRecord();
+		record.setStatus(IDBRecord.INSERT);
+		int position = this.records.size();
+		if (rowIndex<this.records.size() && rowIndex>0)
+			position=rowIndex;
+		else if (rowIndex>=this.records.size())
+			position=this.records.size()-1;
+		else 
+			position=0;
+		this.records.add(position, record);
+		return record;
+	}
+	@Override
+	public IDBRecord appendRow() {
+		return this.insertRowAfter(this.records.size());
+	}
+	@Override
+	public IDBRecord deleteRow(int rowIndex) {
+		if (rowIndex>=this.records.size())
+			return null;
+		IDBRecord record = this.records.get(rowIndex);
+		if (record.getStatus()==IDBRecord.INSERT) {
+			record.setStatus(IDBRecord.INSERT_DELETE);
+		} else {
+			record.setStatus(IDBRecord.DELETE);
+		}
+		return record;
+	}
+	@Override
+	public void commit() {
+		int size = this.records.size();
+		for (int row=size-1;row>=0;row--) {
+			IDBRecord record=this.records.get(row);
+			if (record.getStatus()==IDBRecord.DELETE || record.getStatus()==IDBRecord.INSERT_DELETE) {
+				this.records.remove(row);
+			} else {
+				//commit.rollback(); // context->dbmanager->cachemanager中已经处理了
+			}
+		}
+	}
+	@Override
+	public void rollback() {
+		int size = this.records.size();
+		for (int row=size-1;row>0;row--) {
+			IDBRecord record=this.records.get(row);
+			if (record.getStatus()==IDBRecord.INSERT || record.getStatus()==IDBRecord.INSERT_DELETE) {
+				this.records.remove(row);
+			} else {
+				//record.rollback(); // context->dbmanager->cachemanager中已经处理了
+			}
+		}
 	}
 }

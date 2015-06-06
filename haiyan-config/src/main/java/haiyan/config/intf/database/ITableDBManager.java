@@ -14,6 +14,8 @@ import java.util.List;
 /**
  * 基于表入口的DB管理器
  * 
+ * 基于Table的DBManager
+ * 
  * @author ZhouXW
  *
  */
@@ -24,8 +26,8 @@ public interface ITableDBManager extends IDBManager {
 	IDBRecord insertNoSyn(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
 	IDBRecord update(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
 	List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records) throws Throwable;
-	void commit(ITableDBContext context) throws Throwable;
-	void rollback(ITableDBContext context) throws Throwable;
+	void commit(ITableDBContext context) throws Throwable; // 4 UnitOfWork
+	void rollback(ITableDBContext context) throws Throwable; // 4 UnitOfWork
 	
 	IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable;
 	void removeCache(ITableDBContext context, Table table, String[] ids, short type) throws Throwable;

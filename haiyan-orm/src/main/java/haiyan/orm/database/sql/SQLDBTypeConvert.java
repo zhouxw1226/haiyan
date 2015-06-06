@@ -7,7 +7,6 @@ import static haiyan.config.util.ConfigUtil.getDisplayRefFields;
 import haiyan.common.ByteUtil;
 import haiyan.common.CloseUtil;
 import haiyan.common.DebugUtil;
-import haiyan.common.HtmlUtil;
 import haiyan.common.StringUtil;
 import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;

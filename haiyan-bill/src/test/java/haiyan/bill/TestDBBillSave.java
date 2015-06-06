@@ -2,18 +2,16 @@ package haiyan.bill;
 
 import haiyan.bill.database.sql.DBBillManagerFactory;
 import haiyan.common.CloseUtil;
-import haiyan.common.cache.AppDataCache;
+import haiyan.common.DateUtil;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.database.IDBBill;
 import haiyan.common.intf.database.bill.IDBBillManager;
+import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.session.IContext;
 import haiyan.common.intf.session.IUser;
 import haiyan.common.session.AppUser;
 import haiyan.config.util.ConfigUtil;
-import haiyan.exp.ExpUtil;
 import haiyan.orm.database.DBContextFactory;
-
-import java.io.File;
 
 import org.junit.Test;
 
@@ -28,119 +26,85 @@ public class TestDBBillSave {
 	}
 	@Test
 	public void test1() throws Throwable {
-		{
-			ConfigUtil.setDataCache(new AppDataCache()); 
-			ConfigUtil.setDataCache(new AppDataCache());
-			ConfigUtil.setExpUtil(new ExpUtil()); // 全局用公式引擎
-			ConfigUtil.setORMUseCache(true); // 开启ORM多级缓存
-//			CacheUtil.setDataCache(new EHDataCache()); // 全局用缓存框架
-//			ConfigUtil.setDataCache(new EHDataCache()); // 配置用缓存框架
-//			ConfigUtil.setExpUtil(new ExpUtil()); // 全局用公式引擎
-//			ConfigUtil.setORMUseCache(true); // 开启ORM多级缓存
-		}
-		{
-			File file;
-			file = new File(System.getProperty("user.dir")
-					+File.separator+"WEB-INF"+File.separator+"haiyan-config.xml");
-			ConfigUtil.loadRootConfig(file);
-			file = new File(TestDBBillSave.class.getResource("SYS.xml").getPath());
-			ConfigUtil.loadTableConfig(file, true);
-			file = new File(TestDBBillSave.class.getResource("SYSCACHE.xml").getPath());
-			ConfigUtil.loadTableConfig(file, true);
-			
-			file = new File(TestDBBillSave.class.getResource("TEST_DBM.xml").getPath());
-			ConfigUtil.loadTableConfig(file, true);
-			
-			file = new File(TestDBBillSave.class.getResource("TEST_BILL.xml").getPath());
-			ConfigUtil.loadBillConfig(file, true);
-		}
+		TestLoadConfig.loadConfig();
 		IDBBillManager billMgr = null;
 		try {
 			IUser user = new AppUser();
 			user.setDSN("MYSQL");
 			IContext context = DBContextFactory.createDBContext(user);
-			billMgr = DBBillManagerFactory.createBillManager(context);
+			billMgr = DBBillManagerFactory.createDBBillManager(context);
 			IBillConfig billCfg = ConfigUtil.getBill("TEST_BILL");
-			IDBBill bill = billMgr.createBill(billCfg);
+			IDBBill billOld = billMgr.createBill(billCfg);
 			
-			billMgr.loadBill(bill);
+			billMgr.loadBill(billOld);
 			System.out.println("-----------------");
-			System.out.println(bill.getResultSet(0).getRecordCount());
-			System.out.println(bill.getResultSet(1).getRecordCount());
-			System.out.println("ID1:"+bill.getValue("ID1"));
-			System.out.println("ID2:"+bill.getValue("ID2"));
-			System.out.println("CODE1:"+bill.getValue("CODE1"));
-			System.out.println("CODE2:"+bill.getValue("CODE2"));
-			System.out.println("NAME1:"+bill.getValue("NAME1"));
-			System.out.println("NAME2:"+bill.getValue("NAME2"));
-			bill.setValue("CODE1","code1");
-			bill.setValue("CODE2","code2");
-			bill.setValue("NAME1","name1");
-			bill.setValue("NAME2","name2");
+			System.out.println(billOld.getResultSet(0).getRecordCount());
+			System.out.println(billOld.getResultSet(1).getRecordCount());
+			System.out.println("ID1:"+billOld.getValue("ID1"));
+			System.out.println("ID2:"+billOld.getValue("ID2"));
+			System.out.println("CODE1:"+billOld.getValue("CODE1"));
+			System.out.println("CODE2:"+billOld.getValue("CODE2"));
+			System.out.println("NAME1:"+billOld.getValue("NAME1"));
+			System.out.println("NAME2:"+billOld.getValue("NAME2"));
 			System.out.println("-----------------");
-			System.out.println("ID1:"+bill.getValue("ID1"));
-			System.out.println("ID2:"+bill.getValue("ID2"));
-			System.out.println("CODE1:"+bill.getValue("CODE1"));
-			System.out.println("CODE2:"+bill.getValue("CODE2"));
-			System.out.println("NAME1:"+bill.getValue("NAME1"));
-			System.out.println("NAME2:"+bill.getValue("NAME2"));
+			billOld.setValue("CODE1","code1");
+			billOld.setValue("CODE2","code2");
+			billOld.setValue("NAME1","name1");
+			billOld.setValue("NAME2","name2");
+			System.out.println("ID1:"+billOld.getValue("ID1"));
+			System.out.println("ID2:"+billOld.getValue("ID2"));
+			System.out.println("CODE1:"+billOld.getValue("CODE1"));
+			System.out.println("CODE2:"+billOld.getValue("CODE2"));
+			System.out.println("NAME1:"+billOld.getValue("NAME1"));
+			System.out.println("NAME2:"+billOld.getValue("NAME2"));
 			
 			billMgr.rollback();
 			System.out.println("-----------------");
-			System.out.println("ID1:"+bill.getValue("ID1"));
-			System.out.println("ID2:"+bill.getValue("ID2"));
-			System.out.println("CODE1:"+bill.getValue("CODE1"));
-			System.out.println("CODE2:"+bill.getValue("CODE2"));
-			System.out.println("NAME1:"+bill.getValue("NAME1"));
-			System.out.println("NAME2:"+bill.getValue("NAME2"));
+			billOld.setValue("CODE1","code1-"+DateUtil.getLastTime());
+			billOld.setValue("CODE2","code2-"+DateUtil.getLastTime());
+			System.out.println("ID1:"+billOld.getValue("ID1"));
+			System.out.println("ID2:"+billOld.getValue("ID2"));
+			System.out.println("CODE1:"+billOld.getValue("CODE1"));
+			System.out.println("CODE2:"+billOld.getValue("CODE2"));
+			System.out.println("NAME1:"+billOld.getValue("NAME1"));
+			System.out.println("NAME2:"+billOld.getValue("NAME2"));
 			
-			billMgr.createBillID(bill);
-			
-//			IDBRecord record1 = bill.insertRowAfter(1, 0);
-//			bill.setValue("CODE1","code1-"+DateUtil.getLastTime());
-//			bill.setValue("CODE2","code2-"+DateUtil.getLastTime());
-//			bill.setValue("NAME1","name1");
-//			bill.setValue("NAME2","name2");
-//			System.out.println("-----------------");
-//			System.out.println("ID1:"+bill.getValue("ID1"));
-//			System.out.println("ID2:"+bill.getValue("ID2"));
-//			System.out.println("CODE1:"+bill.getValue("CODE1"));
-//			System.out.println("CODE2:"+bill.getValue("CODE2"));
-//			System.out.println("NAME1:"+bill.getValue("NAME1"));
-//			System.out.println("NAME2:"+bill.getValue("NAME2"));
+			IDBBill billNew = billMgr.createBill(billCfg);
+			billMgr.createBillID(billNew);
+			IDBRecord record1 = billNew.insertRowAfter(1, 0);
+			System.out.println("record1:"+record1);
 //
-//			IDBRecord record2 = bill.insertRowBefore(1, 0);
-//			bill.setValue("CODE1","code1-"+DateUtil.getLastTime());
-//			bill.setValue("CODE2","code2-"+DateUtil.getLastTime());
-//			bill.setValue("NAME1","name1");
-//			bill.setValue("NAME2","name2");
-//			System.out.println("-----------------");
-//			System.out.println("ID1:"+bill.getValue("ID1"));
-//			System.out.println("ID2:"+bill.getValue("ID2"));
-//			System.out.println("CODE1:"+bill.getValue("CODE1"));
-//			System.out.println("CODE2:"+bill.getValue("CODE2"));
-//			System.out.println("NAME1:"+bill.getValue("NAME1"));
-//			System.out.println("NAME2:"+bill.getValue("NAME2"));
-//
-//			IDBRecord record3 = bill.appendRow(1, 0);
-//			bill.setValue("CODE1","code1-"+DateUtil.getLastTime());
-//			bill.setValue("CODE2","code2-"+DateUtil.getLastTime());
-//			bill.setValue("NAME1","name1");
-//			bill.setValue("NAME2","name2");
-//			System.out.println("-----------------");
-//			System.out.println("ID1:"+bill.getValue("ID1"));
-//			System.out.println("ID2:"+bill.getValue("ID2"));
-//			System.out.println("CODE1:"+bill.getValue("CODE1"));
-//			System.out.println("CODE2:"+bill.getValue("CODE2"));
-//			System.out.println("NAME1:"+bill.getValue("NAME1"));
-//			System.out.println("NAME2:"+bill.getValue("NAME2"));
-//
-//			IDBRecord record6 = bill.deleteRow(1, 0);
+			IDBRecord record2 = billNew.insertRowBefore(1, 0);
+			System.out.println("record2:"+record2);
+
+			IDBRecord record3 = billNew.appendRow(1);
+			System.out.println("record3:"+record3);
+
+			IDBRecord record6 = billNew.deleteRow(1, 0);
+			System.out.println("record6:"+record6);
+			IDBRecord record7 = billNew.deleteRow(1, 1);
+			System.out.println("record7:"+record7);
 //			
 //			billMgr.deleteBill(bill.getBillConfig(), bill.getBillID());
 //			billMgr.deleteBill(bill);
+//			
 //			billMgr.rollback();
-			billMgr.saveBill(bill);
+			billMgr.saveBill(billOld);
+			billMgr.saveBill(billNew);
+			billMgr.commit();
+			System.out.println("-----------------");
+			
+			billNew.setValue("CODE1","code1-"+DateUtil.getLastTime());
+			billNew.setValue("CODE2","code2-"+DateUtil.getLastTime());
+			billNew.setValue("NAME1","name1");
+			billNew.setValue("NAME2","name2");
+			System.out.println("ID1:"+billNew.getValue("ID1"));
+			System.out.println("ID2:"+billNew.getValue("ID2"));
+			System.out.println("CODE1:"+billNew.getValue("CODE1"));
+			System.out.println("CODE2:"+billNew.getValue("CODE2"));
+			System.out.println("NAME1:"+billNew.getValue("NAME1"));
+			System.out.println("NAME2:"+billNew.getValue("NAME2"));
+			billMgr.saveBill(billNew);
 			billMgr.commit();
 			System.out.println("test end");
 		}finally{

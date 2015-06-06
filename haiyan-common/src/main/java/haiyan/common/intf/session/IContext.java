@@ -24,7 +24,6 @@ public interface IContext extends ISession {
 	
 	void setDBM(IDBManager dbm);
 	IDBManager getDBM();
-	Object getNextID(String tableName);
 	void setUser(IUser user);
 	IUser getUser();
 	void setDSN(String DSN);

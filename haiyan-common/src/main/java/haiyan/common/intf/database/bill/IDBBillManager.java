@@ -7,13 +7,16 @@ import haiyan.common.intf.session.IDBSession;
 /**
  * 单据管理器 既是DB管理器也是功能程序上下文
  * 
+ * 基于IDBBill的Manager
+ * 
  * @author ZhouXW
  *
  */
 public interface IDBBillManager extends IDBSession {
 
-	IDBBill createBill(IBillConfig billConfig);
+	IDBBill createBill(IBillConfig billConfig) throws Throwable;
 	Object createBillID(IDBBill bill) throws Throwable;
+	
 	void loadBill(IDBBill bill) throws Throwable;
 	void saveBill(IDBBill bill) throws Throwable;
 	void deleteBill(IDBBill bill) throws Throwable;

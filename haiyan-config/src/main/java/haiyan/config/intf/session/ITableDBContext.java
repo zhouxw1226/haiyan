@@ -15,6 +15,6 @@ public interface ITableDBContext extends IDBSession, IContext {
 
 	void setDBM(ITableDBManager dbm);
 	ITableDBManager getDBM(); // 获取Table数据表入口级别的管理器
-	Object getNextID(Table table);
+	Object getNextID(Table table) throws Throwable;
 	
 }

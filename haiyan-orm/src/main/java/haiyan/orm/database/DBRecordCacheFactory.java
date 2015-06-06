@@ -20,7 +20,8 @@ import java.util.Map;
  */
 public class DBRecordCacheFactory {
 
-	private static final String CACHE_DEMI = "@";
+	private static final String DSN_DEMI = "@";
+	private static final String KEY_DEMI = ":";
 	public static final short parse(String name) {
 		if ("context".equalsIgnoreCase(name)) {
 			return IDBRecordCacheManager.CONTEXT_SESSION;
@@ -39,6 +40,8 @@ public class DBRecordCacheFactory {
 		}
 		throw new RuntimeException("this cachetype:"+name+" not support");
 	}
+	// ITableRecordCacheManager(IDBRecordCacheManager)
+	// Context RecordCacheManager
 	private static ITableRecordCacheManager createRecordCacheManager() {
 		return new ITableRecordCacheManager() { // 模拟了在内存中的ACID
 			// 跟着DBSession走，DBSession既是IDBManager
@@ -51,10 +54,10 @@ public class DBRecordCacheFactory {
 				String DSN = context.getDSN();
 				String tableName = table.getName();
 				if (!StringUtil.isBlankOrNull(DSN))
-					tableName += "." + DSN;
+					tableName += DSN_DEMI + DSN;
 				for (String id : ids) {
 					//CacheUtil.removeData(tableName, IDVal);
-					this.transaction.put(tableName+CACHE_DEMI+id, null);
+					this.transaction.put(tableName+KEY_DEMI+id, null);
 				}
 				String[] linkedTables = ConfigUtil.getSameDBTableNames(table.getName());
 				for (String linkedTable : linkedTables) {
@@ -62,10 +65,10 @@ public class DBRecordCacheFactory {
 						continue;
 					tableName = linkedTable;
 					if (!StringUtil.isBlankOrNull(DSN))
-						tableName += "." + DSN;
+						tableName += DSN_DEMI + DSN;
 					for (String id : ids) {
 						//CacheUtil.removeData(tableName, IDVal);
-						this.transaction.put(tableName+CACHE_DEMI+id, null);
+						this.transaction.put(tableName+KEY_DEMI+id, null);
 					}
 				}
 			}
@@ -78,13 +81,13 @@ public class DBRecordCacheFactory {
 				String DSN = context.getDSN();
 				String tableName = table.getName();
 				if (!StringUtil.isBlankOrNull(DSN))
-					tableName += "." + DSN;
+					tableName += DSN_DEMI + DSN;
 				String id = (String)record.get(table.getId().getName());
 				//if (type==IDBRecordCacheManager.CONTEXT_SESSION) {
 					// record.setDirty(); // 只要update或者insert过重取  
 					// dirty后doEditOne才能取到最新的for executePlugin
 					// NOTICE 但同一个事务中会把可能会回滚修改的记录reget放到trasaction里...
-					this.transaction.put(tableName+CACHE_DEMI+id, record);
+					this.transaction.put(tableName+KEY_DEMI+id, record);
 				//} else 
 //				{ // load from db
 //					record.clearDirty();
@@ -103,11 +106,11 @@ public class DBRecordCacheFactory {
 					if (linkedTableName.equalsIgnoreCase(table.getName()))
 						continue;
 					if (!StringUtil.isBlankOrNull(DSN))
-						linkedTableName += "." + DSN;
+						linkedTableName += DSN_DEMI + DSN;
 					IDBRecord linkedRecord = null;
 //					if (type == IDBRecordCacheManager.PERSIST_SESSION)
 //						linkedRecord = (IDBRecord) CacheUtil.getData(linkedTableName, id);
-					linkedRecord = this.transaction.get(linkedTableName+CACHE_DEMI+id);
+					linkedRecord = this.transaction.get(linkedTableName+KEY_DEMI+id);
 					if (linkedRecord != null) {
 						{ // 更新关联表数据
 //							Iterator<String> iter = linkedRecord.keySet().iterator(); // NOTICE 不同配置字段不同
@@ -140,7 +143,7 @@ public class DBRecordCacheFactory {
 //							if (type == IDBRecordCacheManager.PERSIST_SESSION)
 //								CacheUtil.deleteData(linkedTableName, id); // remove最合适因为version变了
 						    //if (type==CONTEXT_SESSION)
-							this.transaction.remove(linkedTableName+CACHE_DEMI+id); // 说明要更新 其他关联缓存
+							this.transaction.remove(linkedTableName+KEY_DEMI+id); // 说明要更新 其他关联缓存
 						}
 					}
 				}
@@ -153,9 +156,9 @@ public class DBRecordCacheFactory {
 				String DSN = context.getDSN();
 				String tableName = table.getName();
 				if (!StringUtil.isBlankOrNull(DSN))
-					tableName += "." + DSN;
+					tableName += DSN_DEMI + DSN;
 				// String id = rs.getString(1); // 只做索引
-				String k = tableName+CACHE_DEMI+id;
+				String k = tableName+KEY_DEMI+id;
 				//if (type == IDBRecordCacheManager.CONTEXT_SESSION)
 				if (this.transaction.containsKey(k))
 					return this.transaction.get(k);

@@ -25,7 +25,7 @@ import haiyan.orm.database.DBPage;
 import java.util.ArrayList;
 
 /**
- * DB单据
+ * DB单据 Bean
  * 
  * @author ZhouXW
  *
@@ -165,6 +165,8 @@ public class DBBill extends AbstractDBBill {
 				IDBRecord record = rst.getActiveRecord();
 				if (record!=null) {
 					record.set(billID.getDbName(), value);
+					if (record.getStatus()!=IDBRecord.INSERT && record.getStatus()!=IDBRecord.DELETE)
+						record.setStatus(IDBRecord.UPDATE);
 				}
 			}
 		}
@@ -180,6 +182,8 @@ public class DBBill extends AbstractDBBill {
 				IDBRecord record = rst.getActiveRecord();
 				if (record!=null) {
 					record.set(billField.getDbName(), value);
+					if (record.getStatus()!=IDBRecord.INSERT && record.getStatus()!=IDBRecord.DELETE)
+						record.setStatus(IDBRecord.UPDATE);
 				}
 			}
 		}
@@ -247,6 +251,42 @@ public class DBBill extends AbstractDBBill {
 		if (override)
 			this.resultSets[tableIndex]=rst;
 		return rst;
+	}
+	@Override
+	public IDBRecord insertRowBefore(int tableIndex, int rowIndex)
+			throws Throwable {
+		return this.resultSets[tableIndex].insertRowBefore(rowIndex);
+	}
+	@Override
+	public IDBRecord insertRowAfter(int tableIndex, int rowIndex)
+			throws Throwable {
+		return this.resultSets[tableIndex].insertRowAfter(rowIndex);
+	}
+	@Override
+	public IDBRecord appendRow(int tableIndex)
+			throws Throwable {
+		return this.resultSets[tableIndex].appendRow();
+	}
+	@Override
+	public IDBRecord deleteRow(int tableIndex, int rowIndex)
+			throws Throwable {
+		return this.resultSets[tableIndex].deleteRow(rowIndex);
+	}
+	@Override
+	public void commit() {
+		if (this.resultSets==null)
+			return;
+		for (IDBResultSet rst:this.resultSets) {
+			rst.commit();
+		}
+	}
+	@Override
+	public void rollback() {
+		if (this.resultSets==null)
+			return;
+		for (IDBResultSet rst:this.resultSets) {
+			rst.rollback();
+		}
 	}
 
 }

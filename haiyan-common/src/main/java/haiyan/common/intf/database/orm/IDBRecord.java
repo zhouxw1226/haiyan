@@ -10,6 +10,7 @@ import net.sf.json.JSONObject;
 
 /**
  * 元数据对象
+ * 
  * @author ZhouXW
  *
  */
@@ -18,7 +19,8 @@ public interface IDBRecord extends Serializable {
 	static byte DEFAULT = (byte)0;
 	static byte INSERT = (byte)1;
 	static byte UPDATE = (byte)2;
-	static byte DELETE = (byte)2;
+	static byte DELETE = (byte)3;
+	static byte INSERT_DELETE = (byte)4;
 	/**
 	 * 把DB读出的数据刷新到record中的一级缓存中
 	 * @throws Throwable

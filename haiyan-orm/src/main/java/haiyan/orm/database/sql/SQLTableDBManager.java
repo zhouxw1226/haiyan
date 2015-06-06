@@ -1165,7 +1165,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	protected List<IDBRecord> insert(ITableDBContext context, Table table, List<IDBRecord> records,
 			int... args) throws Throwable {
 		for (IDBRecord record:records) {
-			String newID = (String)context.getNextID(table.getName());
+			String newID = (String)context.getNextID(table);
 			record.set(table.getId().getName(), newID);
 		}
 		return this.insertNoSyn(context, table, records, args);
@@ -1223,7 +1223,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			int... args) throws Throwable {
 		String id = table.getId().getName();
 		if(record.get(id)==null){
-			String newID = (String)context.getNextID(table.getName());
+			String newID = (String)context.getNextID(table);
 			record.set(id, newID);
 		}
 		return this.insertNoSyn(context, table, record, args);
@@ -1986,7 +1986,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		record.flushOreign();
 	}
 	// ------------------------------------------------------ Cache ------------------------------------------------------ //
-	protected Map<Short,ITableRecordCacheManager> cacheMgr = new HashMap<Short, ITableRecordCacheManager>(); // 缓存管理器
+	protected Map<Short,ITableRecordCacheManager> cacheMgr = new HashMap<Short, ITableRecordCacheManager>(); // 事务缓存管理器
 	protected ITableRecordCacheManager getCacheMgr(short type) {
 		if (!cacheMgr.containsKey(type)) {
 			synchronized(this) {

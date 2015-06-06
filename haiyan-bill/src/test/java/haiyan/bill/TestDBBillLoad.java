@@ -2,7 +2,6 @@ package haiyan.bill;
 
 import haiyan.bill.database.sql.DBBillManagerFactory;
 import haiyan.common.CloseUtil;
-import haiyan.common.cache.AppDataCache;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.database.IDBBill;
 import haiyan.common.intf.database.IPredicate;
@@ -14,11 +13,8 @@ import haiyan.common.intf.session.IContext;
 import haiyan.common.intf.session.IUser;
 import haiyan.common.session.AppUser;
 import haiyan.config.util.ConfigUtil;
-import haiyan.exp.ExpUtil;
 import haiyan.orm.database.DBContextFactory;
 import haiyan.orm.database.sql.SQLDBFilter;
-
-import java.io.File;
 
 import org.junit.Test;
 
@@ -33,41 +29,17 @@ public class TestDBBillLoad {
 	}
 	@Test
 	public void test1() throws Throwable {
-		{
-			ConfigUtil.setDataCache(new AppDataCache()); 
-			ConfigUtil.setDataCache(new AppDataCache());
-			ConfigUtil.setExpUtil(new ExpUtil()); // 全局用公式引擎
-			ConfigUtil.setORMUseCache(true); // 开启ORM多级缓存
-//			CacheUtil.setDataCache(new EHDataCache()); // 全局用缓存框架
-//			ConfigUtil.setDataCache(new EHDataCache()); // 配置用缓存框架
-//			ConfigUtil.setExpUtil(new ExpUtil()); // 全局用公式引擎
-//			ConfigUtil.setORMUseCache(true); // 开启ORM多级缓存
-		}
-		{
-			File file;
-			file = new File(System.getProperty("user.dir")
-					+File.separator+"WEB-INF"+File.separator+"haiyan-config.xml");
-			ConfigUtil.loadRootConfig(file);
-			file = new File(TestDBBillLoad.class.getResource("SYS.xml").getPath());
-			ConfigUtil.loadTableConfig(file, true);
-			file = new File(TestDBBillLoad.class.getResource("SYSCACHE.xml").getPath());
-			ConfigUtil.loadTableConfig(file, true);
-			
-			file = new File(TestDBBillLoad.class.getResource("TEST_DBM.xml").getPath());
-			ConfigUtil.loadTableConfig(file, true);
-			
-			file = new File(TestDBBillLoad.class.getResource("TEST_BILL.xml").getPath());
-			ConfigUtil.loadBillConfig(file, true);
-		}
+		TestLoadConfig.loadConfig();
 		IDBBillManager billMgr = null;
 		try {
 			IUser user = new AppUser();
 			user.setDSN("MYSQL");
 			IContext context = DBContextFactory.createDBContext(user);
-			billMgr = DBBillManagerFactory.createBillManager(context);
+			billMgr = DBBillManagerFactory.createDBBillManager(context);
 			IBillConfig billCfg = ConfigUtil.getBill("TEST_BILL");
 			IDBBill bill = billMgr.createBill(billCfg);
 			
+			long time = System.currentTimeMillis();
 			billMgr.loadBill(bill);
 			System.out.println("-----------------");
 			bill.find(1, new IPredicate(){
@@ -114,7 +86,7 @@ public class TestDBBillLoad {
 //			IDBResultSet rst5 = bill.sort(1, new ISort());
 
 			billMgr.commit();
-			System.out.println("test end");
+			System.out.println("test end:"+(System.currentTimeMillis()-time)+"ms");
 		}finally{
 			CloseUtil.close(billMgr);
 		}

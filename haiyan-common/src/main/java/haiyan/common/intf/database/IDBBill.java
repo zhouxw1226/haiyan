@@ -40,5 +40,13 @@ public interface IDBBill extends Serializable {
 			int pageRowCount, boolean override) throws Throwable;
 	IDBResultSet queryPrev(IContext context, int tableIndex, ISQLDBFilter dbFilter,
 			int pageRowCount, boolean override) throws Throwable;
+
+	IDBRecord insertRowBefore(int tableIndex, int rowIndex) throws Throwable;
+	IDBRecord insertRowAfter(int tableIndex, int rowIndex) throws Throwable;
+	IDBRecord appendRow(int tableIndex) throws Throwable;
+	IDBRecord deleteRow(int tableIndex, int rowIndex) throws Throwable;
+	
+	void commit();
+	void rollback();
 	
 }

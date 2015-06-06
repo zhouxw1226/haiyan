@@ -5,8 +5,7 @@ import haiyan.common.session.AppContext;
 import haiyan.config.castorgen.Table;
 import haiyan.config.intf.database.ITableDBManager;
 import haiyan.config.intf.session.ITableDBContext;
-
-import java.util.UUID;
+import haiyan.orm.database.sql.DBBillAutoID;
 
 /**
  * AppSession
@@ -30,13 +29,15 @@ public class TableDBContext extends AppContext implements ITableDBContext {
 	public ITableDBManager getDBM() {
 		return (ITableDBManager)super.getDBM();
 	}
+//	@Override
+//	public Object getNextID(String tableName) throws Throwable {
+//		return DBBillAutoID.genNewID(this, ConfigUtil.getTable(tableName), 100);
+////		return UUID.randomUUID().toString();
+//	}
 	@Override
-	public Object getNextID(String tableName) {
-		return UUID.randomUUID().toString();
-	}
-	@Override
-	public Object getNextID(Table table) {
-		return UUID.randomUUID().toString();
+	public Object getNextID(Table table) throws Throwable {
+		return DBBillAutoID.genShortID(this, table, 100);
+//		return UUID.randomUUID().toString();
 	}
 	@Override
 	public Boolean isAlive() {

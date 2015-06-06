@@ -1,4 +1,4 @@
-package haiyan.bill.database.sql;
+package haiyan.orm.database.sql;
 
 import haiyan.common.CloseUtil;
 import haiyan.common.Ref;
@@ -22,13 +22,11 @@ import java.util.UUID;
  */
 class DBBillAutoNumber {
 
-	private final static BigDecimal DESCCACHE = new BigDecimal(200); // 一次申请的最少数值
-	private static final BigDecimal DESCWARN = new BigDecimal(120); // 申请边界警告
-	private static final BigDecimal DESC = new BigDecimal(1);
-	// private final static String strAutoNumberBegin = "AutoNumberBegin";//
-	// 共享属性起始值组的名称
-	// private final static String strAutoNumberEnd = "AutoNumberEnd";//
-	// 共享属性结束值组的名称
+	private final static BigDecimal SEEDCACHE = new BigDecimal(200); // 一次种子的最少数值
+	private static final BigDecimal SEEDWARN = new BigDecimal(120); // 种子边界警告
+	private static final BigDecimal SEED = new BigDecimal(1); // 自增长种子
+	// private final static String strAutoNumberBegin = "AutoNumberBegin";// 共享属性起始值组的名称
+	// private final static String strAutoNumberEnd = "AutoNumberEnd";// 共享属性结束值组的名称
 	/**
 	 * 申请不重复的ID(获取不指定表对象的唯一ID值)
 	 * 
@@ -54,7 +52,7 @@ class DBBillAutoNumber {
 		if (lngNumber <= 0) {
 			throw new Warning("申请的ID个数不能小于等于零.");
 		}
-		String key = ConfigUtil.getRealTableName(table);
+		String key = context.getDSN()+"_"+ConfigUtil.getRealTableName(table);
 		BigDecimal spNumber = BigDecimal.valueOf(lngNumber);
 		BigDecimal spBegin = cacheID.get(key + ".start");
 		BigDecimal spEnd = cacheID.get(key + ".end");
@@ -67,12 +65,12 @@ class DBBillAutoNumber {
 		BigDecimal lngDBIDRequestNumber;
 		Ref<BigDecimal> lngRBeginNumber = new Ref<BigDecimal>();
 		Ref<BigDecimal> lngREndNumber = new Ref<BigDecimal>();
-		if (spBegin.add(spNumber).compareTo(spEnd.add(DESC)) == 1) {
+		if (spBegin.add(spNumber).compareTo(spEnd.add(SEED)) == 1) {
 			// ' 数据库数据请求的数量
-			if (spNumber.compareTo(DESCCACHE) == 1) {
+			if (spNumber.compareTo(SEEDCACHE) == 1) {
 				lngDBIDRequestNumber = spNumber;
 			} else {
-				lngDBIDRequestNumber = DESCCACHE;
+				lngDBIDRequestNumber = SEEDCACHE;
 			}
 			dbGetNumber(context, table, lngDBIDRequestNumber, lngRBeginNumber, lngREndNumber);
 			spBegin = lngRBeginNumber.getValue();
@@ -91,6 +89,8 @@ class DBBillAutoNumber {
 		return ret;
 	}
 	/**
+	 * TODO 可以利用分布式锁框架或NoSQL来实现全局自增长ID
+	 * 
 	 * @param context
 	 * @param strObjName
 	 * @param lngNumber
@@ -125,9 +125,9 @@ class DBBillAutoNumber {
 					if (rsStr != null && !StringUtil.isBlankOrNull(rsStr[0][0])) {
 						if (StringUtil.isNumeric(rsStr[0][0])) {
 							BigDecimal s = VarUtil.toBigDecimal(rsStr[0][0]);
-							lngIniStartNumber = s.add(DESC);
-							lngIniEndNumber = s.add(DESCCACHE);
-							lngIniWarnNumber = s.add(DESCWARN);
+							lngIniStartNumber = s.add(SEED);
+							lngIniEndNumber = s.add(SEEDCACHE);
+							lngIniWarnNumber = s.add(SEEDWARN);
 						}
 					}
 				}
@@ -141,15 +141,15 @@ class DBBillAutoNumber {
 				String ID = VarUtil.toString(rstNumber1[0][0]);
 				lngGetValue = VarUtil.toBigDecimal(rstNumber1[0][1]); // VALUE
 				lngEndNumber = VarUtil.toBigDecimal(rstNumber1[0][2]); // PROP1
-				if (lngGetValue.add(lngDBIDRequestNumber).compareTo(lngEndNumber.add(DESC)) == 1) {
+				if (lngGetValue.add(lngDBIDRequestNumber).compareTo(lngEndNumber.add(SEED)) == 1) {
 					// // '数据库中AutoNumber中的数量不够。要从AutoNumberPool中重新分配
 					// lngIniStartNumber =
 					// rstNumber2.bkGetInt("IniStartNumber");
 					// lngIniEndNumber = rstNumber2.bkGetInt("IniEndNumber");
 					// lngIniWarnNumber = rstNumber2.bkGetInt("IniWarnNumber");
-					lngIniStartNumber = lngEndNumber.add(DESCCACHE).add(DESC);
-					lngIniEndNumber = lngEndNumber.add(DESCCACHE);
-					lngIniWarnNumber = lngIniEndNumber.add(DESCWARN);
+					lngIniStartNumber = lngEndNumber.add(SEEDCACHE).add(SEED);
+					lngIniEndNumber = lngEndNumber.add(SEEDCACHE);
+					lngIniWarnNumber = lngIniEndNumber.add(SEEDWARN);
 					// rstNumber.Close
 					sSQL = "UPDATE SYSCACHE set K=?, VALUE=?, PROP1=?, PROP2=? where ID=? ";
 					subContext.getDBM().executeUpdate(sSQL, new Object[]{strObjName, lngIniStartNumber, lngIniEndNumber, lngIniWarnNumber, ID});
@@ -160,7 +160,7 @@ class DBBillAutoNumber {
 				}
 			}
 			lngRBeginNumber.setValue(lngGetValue);
-			lngREndNumber.setValue(lngRBeginNumber.getValue().add(lngDBIDRequestNumber.subtract(DESC)));
+			lngREndNumber.setValue(lngRBeginNumber.getValue().add(lngDBIDRequestNumber.subtract(SEED)));
 			subContext.commit();
 		} catch (Throwable e) {
 			if (subContext != null)
