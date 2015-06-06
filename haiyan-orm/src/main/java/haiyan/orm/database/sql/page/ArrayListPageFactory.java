@@ -75,8 +75,8 @@ public class ArrayListPageFactory extends SQLDBPageFactory {
         DBPage page = new DBPage();
         page.setTotalRecordCount(data.size());
         page.setRecords(pageData);
-        page.setCurrPageNO(currPageNO);
-        page.setMaxPageRecordCount(maxPageRecordCount);
+        page.setPageIndex(currPageNO);
+        page.setPageRowCount(maxPageRecordCount);
         return page;
     }
 

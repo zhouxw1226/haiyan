@@ -6,8 +6,8 @@ package haiyan.orm.database.sql;
 
 import haiyan.common.DebugUtil;
 import haiyan.common.StringUtil;
-import haiyan.common.intf.database.IDBFilter;
 import haiyan.common.intf.database.orm.IDBRecord;
+import haiyan.common.intf.database.sql.ISQLDBFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
  * @author zhouxw
  * 
  */
-public class SQLDBFilter implements IDBFilter {
+public class SQLDBFilter implements ISQLDBFilter {
 	
 	private String mainSQL;
 	private String sqlFilter;

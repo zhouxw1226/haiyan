@@ -37,8 +37,8 @@ public interface ITableDBManager extends IDBManager {
 	IDBResultSet select(ITableDBContext context, Table table, String[] ids, short type, int... args) throws Throwable;
 	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord record, long startRow, int count) throws Throwable;
 	IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, long startRow, int count) throws Throwable;
-	IDBResultSet select(ITableDBContext context, Table table, IDBRecord record, int maxPageCount, int page) throws Throwable;
-	IDBResultSet select(ITableDBContext context, Table table, IDBFilter filter, int maxPageCount, int page) throws Throwable;
+	IDBResultSet select(ITableDBContext context, Table table, IDBRecord record, int pageRowCount, int pageIndex) throws Throwable;
+	IDBResultSet select(ITableDBContext context, Table table, IDBFilter filter, int pageRowCount, int pageIndex) throws Throwable;
 	void loopBy(ITableDBContext context, Table table, IDBRecord record, IDBRecordCallBack callback) throws Throwable;
 	void loopBy(ITableDBContext context, Table table, IDBFilter filter, IDBRecordCallBack callback) throws Throwable;
 	long countBy(ITableDBContext context, Table table, IDBRecord record) throws Throwable;

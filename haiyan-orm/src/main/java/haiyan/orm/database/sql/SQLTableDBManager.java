@@ -1563,25 +1563,24 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	}
 	@Override
 	public IDBResultSet select(final ITableDBContext context, final Table table, IDBFilter filter,
-			int maxPageRecordCount, int currPageNO) throws Throwable {
-		return selectBy(context, table, filter, maxPageRecordCount, currPageNO, null);
+			int pageRowCount, int pageIndex) throws Throwable {
+		return selectBy(context, table, filter, pageRowCount, pageIndex, null);
 	}
 	/**
 	 * @param table
 	 * @param filter
-	 * @param maxPageRecordCount
-	 * @param currPageNO
+	 * @param pageRowCount
+	 * @param pageIndex
 	 * @param context
 	 * @return Page
 	 * @throws Throwable
 	 */
 	protected IDBResultSet selectBy(final ITableDBContext context, final Table table, IDBFilter filter,
-			int maxPageRecordCount, int currPageNO, 
+			int pageRowCount, int pageIndex, 
 			int... args) throws Throwable {
 		try {
 			ISQLRecordFactory factory = getPageRecordFactory(context, table); //, DBManager.DBBATCHSESSION);
-			IDBResultSet page = getSQLRender().selectBy(context, table, filter, factory,
-					maxPageRecordCount, currPageNO);
+			IDBResultSet page = getSQLRender().selectBy(context, table, filter, factory, pageRowCount, pageIndex);
 			factory = null;
 			// for (Iterator<?> iter = page.getData().iterator();
 			// iter.hasNext();) {
@@ -1597,7 +1596,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			if (isDBCorrect(ex)) {
 				this.tableErrHandle(getSQLRender().getSQL());
 				if (isDeep(args))
-					return selectBy(context, table, filter, maxPageRecordCount, currPageNO, getDeep(args));
+					return selectBy(context, table, filter, pageRowCount, pageIndex, getDeep(args));
 			}
 			throw ex;
 		}

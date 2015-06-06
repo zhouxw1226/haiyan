@@ -170,7 +170,6 @@ class DBBillAutoNumber {
 			CloseUtil.close(subContext);
 		}
 	}
-
 	/**
 	 * 根据种子key，和请求数量lngNumber，计算出一个不重复的长度为6的字符串
 	 * 

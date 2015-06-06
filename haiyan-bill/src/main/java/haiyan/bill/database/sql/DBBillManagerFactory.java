@@ -1,5 +1,6 @@
 package haiyan.bill.database.sql;
 
+import static haiyan.common.intf.database.orm.IDBRecord.UPDATE;
 import haiyan.bill.database.DBBill;
 import haiyan.common.StringUtil;
 import haiyan.common.exception.Warning;
@@ -109,7 +110,7 @@ public class DBBillManagerFactory implements IFactory {
 		@Override
 		public void loadBill(IDBBill bill) throws Throwable {
 			IDBResultSet[] resultSets = bill.getResultSets();
-			IDBFilter[] filters = bill.getFilters();
+			IDBFilter[] filters = bill.getDBFilters();
 			Bill billConfig = (Bill)bill.getBillConfig();
 			int mainTableIndex = ConfigUtil.getMainTableIndex(billConfig);
 			BillTable[] billTables = billConfig.getBillTable();
@@ -149,10 +150,11 @@ public class DBBillManagerFactory implements IFactory {
 				}
 				for (IDBRecord record:rst.getRecords()) {
 					record.set(billID.getDbName(), bill.getBillID()); // 单据外键
-					if (record.getStatus()==IDBRecord.INSERT)
+					if (record.getStatus()==IDBRecord.INSERT) {
 						context.getDBM().insert(context, table, record);
-					else
+					} else if (record.getStatus()==UPDATE) {
 						context.getDBM().update(context, table, record);
+					}
 				}
 			}
 		}

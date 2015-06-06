@@ -123,9 +123,9 @@ public class GeneralDBPageFactory extends SQLDBPageFactory {
 		}
 		DBPage page = new DBPage();
 		page.setRecords(pageData);
-		page.setCurrPageNO(currPageNO);
+		page.setPageIndex(currPageNO);
 		page.setTotalRecordCount(recordCount);
-		page.setMaxPageRecordCount(maxPageRecordCount);
+		page.setPageRowCount(maxPageRecordCount);
 		return page;
 	}
 
