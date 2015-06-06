@@ -20,9 +20,9 @@ import org.junit.Test;
 /**
  * Unit test for simple App.
  */
-public class TestDBBill {
+public class TestDBBillSave {
 	public static void main(String[] args) throws Throwable {
-		TestDBBill t = new TestDBBill();
+		TestDBBillSave t = new TestDBBillSave();
 		t.test1();
 		System.exit(0);
 	}
@@ -43,15 +43,15 @@ public class TestDBBill {
 			file = new File(System.getProperty("user.dir")
 					+File.separator+"WEB-INF"+File.separator+"haiyan-config.xml");
 			ConfigUtil.loadRootConfig(file);
-			file = new File(TestDBBill.class.getResource("SYS.xml").getPath());
+			file = new File(TestDBBillSave.class.getResource("SYS.xml").getPath());
 			ConfigUtil.loadTableConfig(file, true);
-			file = new File(TestDBBill.class.getResource("SYSCACHE.xml").getPath());
-			ConfigUtil.loadTableConfig(file, true);
-			
-			file = new File(TestDBBill.class.getResource("TEST_DBM.xml").getPath());
+			file = new File(TestDBBillSave.class.getResource("SYSCACHE.xml").getPath());
 			ConfigUtil.loadTableConfig(file, true);
 			
-			file = new File(TestDBBill.class.getResource("TEST_BILL.xml").getPath());
+			file = new File(TestDBBillSave.class.getResource("TEST_DBM.xml").getPath());
+			ConfigUtil.loadTableConfig(file, true);
+			
+			file = new File(TestDBBillSave.class.getResource("TEST_BILL.xml").getPath());
 			ConfigUtil.loadBillConfig(file, true);
 		}
 		IDBBillManager billMgr = null;

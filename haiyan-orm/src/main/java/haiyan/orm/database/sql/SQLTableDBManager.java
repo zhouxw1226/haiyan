@@ -1086,30 +1086,26 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			}
 		}
 	}
+	// 乐观离线锁 TODO 用MVCC多版本并发控制来做，其实innoDB实现了
 	public void checkVersion(ITableDBContext context, Table table, IDBRecord record)
 			throws Throwable {
-		if (!ConfigUtil.isORMUseCache() || table.getName().toUpperCase().startsWith("V_"))
+		if (!ConfigUtil.isORMUseCache() || !ConfigUtil.isORMSMCC() || table.getName().toUpperCase().startsWith("V_")) // 系统标记 
 			return;
-		if (ConfigUtil.getFieldByName(table, DataConstant.HYVERSION, true)==null)
+		if (ConfigUtil.getFieldByName(table, DataConstant.HYVERSION, true)==null) // 配置中取消检查的标记
 			return;
-		Boolean check = (Boolean)context.getAttribute(DataConstant.HYVERSIONCHECK);
+		Boolean check = (Boolean)context.getAttribute(DataConstant.HYVERSIONCHECK); // 一个App生命周期中是否需要检查的标记
 		if (check!=null && check==false)
 			return;
 		// 双缓冲：更新缓存后能提高DB->VO的转换效率
 		// 要注意直接执行SQL语句的操作对缓冲数据的影响
 		String IDName = table.getId().getName();
 		String IDVal = (String)record.get(IDName);
-		IDBRecord oldRecord = this.select(context, table, IDVal, IDBRecordCacheManager.PERSIST_SESSION);
+		// NOTICE checkVersion这样会多一次网络和数据库访问，只用在非常严谨的企业应用里
+		IDBRecord oldRecord = this.select(context, table, IDVal); // IDBRecordCacheManager.PERSIST_SESSION);
 		if (oldRecord!=null && oldRecord!=record) { // 同一个dbsession中可能是一个
 			int vOld = oldRecord.getVersion();
 			int vNow = record.getVersion();
 			if (vOld > vNow) {
-//				String tableName = table.getName();
-//				if (!StringUtil.isBlankOrNull(context.getDSN()))
-//					tableName += "." + context.getDSN();
-//				HyCache.removeLocalData(tableName, IDVal);
-				// if (cform.isDirty()) // 脏记录我也可以一直更新
-				//DebugUtil.debug(">vOld="+oldForm.hashCode()+",vNow="+form.hashCode());
 				DebugUtil.debug(">vOld="+vOld+",vNow="+vNow);
 				throw new Warning(VERSION_WARNING);
 			}
@@ -1429,8 +1425,10 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * @throws Throwable
 	 */
 	@Override
-	public IDBResultSet select(ITableDBContext context, Table table, String[] ids,
-			short type, int... args) throws Throwable {
+	public IDBResultSet select(ITableDBContext context, Table table, String[] ids, int... args) throws Throwable {
+//		if (ids.length==1) {
+//			return this.selectById
+//		}
 		String placeholder = "";
 		for (int i=0;i<ids.length;i++) {
 			if (placeholder.length()>0)
@@ -1717,28 +1715,6 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		// return findBy(table, queryForm, null, null, null, maxPageRecordCount,
 		// currPageNO, context);
 	}
-//	/**
-//	 * 忽略事务 only for plugin
-//	 */
-//    public void updateCache(ITableContext context, Table table, IRecord record) throws Throwable {
-//		if (SQLDBManager.USECACHE == 0 || table.getName().toUpperCase().startsWith("V_"))
-//            return;
-//        this.checkVersion(context, table, record);
-//        // form.updateVersion(); // 像打印不需要更新数据版本号
-//        String k = (String)record.get(DataConstant.HYFORMKEY);
-//		try {
-//			record.remove(DataConstant.HYFORMKEY);
-//			String tableName = table.getName();
-//			if (!StringUtil.isBlankOrNull(context.getDSN()))
-//				tableName += "." + context.getDSN();
-//			String IDVal = (String)record.get(table.getId().getName());
-//			HyCache.updateData(tableName, IDVal, record);
-//			// updateCache(context, table, form, DBManager.CACHE); // 忽略事务 for plugin
-//        } finally {
-//			if (StringUtil.isEmpty(k))
-//				record.set(DataConstant.HYFORMKEY, k);
-//		}
-//    }
 	/**
 	 * ### 对象-关系结构模式、元数据映射模式（关系结构及元数据映射工厂）###
 	 *  
@@ -1752,7 +1728,9 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		ISQLRecordFactory factory = new ISQLRecordFactory() {
 			private static final long serialVersionUID = 1L;
 			public Object getRecord(ResultSet rs) throws Throwable {
-				return getRecordByRow(context, table, rs);
+//				if (rs.getRow()==1)
+					return getRecordByRow(context, table, rs, IDBRecordCacheManager.CONTEXT_SESSION);
+//				return getRecordByRow(context, table, rs, IDBRecordCacheManager.NO_SESSION);
 			}
 			public String getTableName() {
 				return table.getName();
@@ -1766,17 +1744,17 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		};
 		return factory;
 	}
-	/**
-	 * @param context
-	 * @param table
-	 * @param rs
-	 * @return
-	 * @throws Throwable
-	 */
-	protected IDBRecord getRecordByRow(final ITableDBContext context,
-            final Table table, final ResultSet rs) throws Throwable {
-	    return getRecordByRow(context, table, rs, IDBRecordCacheManager.CONTEXT_SESSION);
-	}
+//	/**
+//	 * @param context
+//	 * @param table
+//	 * @param rs
+//	 * @return
+//	 * @throws Throwable
+//	 */
+//	protected IDBRecord getRecordByRow(final ITableDBContext context,
+//            final Table table, final ResultSet rs) throws Throwable {
+//	    return getRecordByRow(context, table, rs, IDBRecordCacheManager.CONTEXT_SESSION);
+//	}
 	/**
 	 * 对象-关系结构模式
 	 * 
@@ -1789,10 +1767,9 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 */
 	protected IDBRecord getRecordByRow(final ITableDBContext context,
 			final Table table, final ResultSet rs, short type) throws Throwable {
-		IDBRecord record = getCache(context, table, rs.getString(1), type);
+		IDBRecord record = null;
+		record = getCache(context, table, rs.getString(1), type); // 用Cache可能还会进行网络请求，除非是本地Cache否则不要这么做
 		if (record!=null) {
-//			// flush源数据集
-//			flushOreign(context, table, record, type);
 			return record;
 		}
 		record = this.createRecord();
@@ -1915,10 +1892,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 								IDBRecord resForm = null;
 								Field assoField = null;
 								for (String id:array) {
-//									if ("app".equalsIgnoreCase(loadType))
-//										resForm = getDBM(subContext).select(subContext, resTable, id, IDBRecordCacheManager.APP_SESSION);
-//									else
-										resForm = getDBM(subContext).select(subContext, resTable, id); // CONTEXT_SESSION
+									resForm = getDBM(subContext).select(subContext, resTable, id); // CONTEXT_SESSION
 									if (resForm==null)
 										continue;
 									// 20081111 zhouxw
@@ -1951,10 +1925,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 						} else {
 							DebugUtil.debug(">Mapping.findByPK: name=" + field.getName() + ",value=" + value + ",loadType="+loadType);
 							IDBRecord resForm = null;
-//							if ("app".equalsIgnoreCase(loadType))
-//								resForm = getDBM(subContext).select(subContext, resTable, value, IDBRecordCacheManager.APP_SESSION);
-//							else
-								resForm = getDBM(subContext).select(subContext, resTable, value); // CONTEXT_SESSION
+							resForm = getDBM(subContext).select(subContext, resTable, value); // CONTEXT_SESSION
 							if (resForm == null)
 								return;
 							resShowValue = (String)resForm.get(resDisplayName);

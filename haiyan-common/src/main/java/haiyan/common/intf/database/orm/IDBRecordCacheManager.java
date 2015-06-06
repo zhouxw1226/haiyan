@@ -12,7 +12,8 @@ package haiyan.common.intf.database.orm;
  *
  */
 public interface IDBRecordCacheManager {
-	
+
+	public static final short NO_SESSION = -1; // 无缓存
 	public static final short CONTEXT_SESSION = 0; // 默认缓存（Context.DBM缓存单例）
 	public static final short THREAD_SESSION = 1; // 一级缓存（ThreadLocal缓存单例）可以用ThreadLocal实现请参考UnitOfWork的实现
 	public static final short APP_SESSION = 2; // 二级缓存(App全局缓存单例)

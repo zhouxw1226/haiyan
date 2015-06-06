@@ -79,6 +79,7 @@ public class ConfigUtil {
     private static IExpUtil EXPUTIL = null;
     private static IDataCache DATACACHE = null;
     private static boolean ORMUSECACHE = false; // 是否启用ORM多级缓存
+    private static boolean ORMSMCC = false; // 是否启用ORM单版本并发控制
     private static synchronized void pInit() {
     	if (DATACACHE==null)
     		throw new Warning(SysCode.SysCodeMessage.ERROR_1001);
@@ -110,6 +111,12 @@ public class ConfigUtil {
 	}
 	public static boolean isORMUseCache() {
 		return ORMUSECACHE;
+	}
+	public static void setORMSMCC(boolean b) {
+		ORMSMCC = b;
+	}
+	public static boolean isORMSMCC() {
+		return ORMSMCC;
 	}
 //    public static void loadEnvironment() throws Throwable {
 //        loadProps();

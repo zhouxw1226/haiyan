@@ -47,12 +47,16 @@ public class MySqlPageFactory extends SQLWrapPageFactory {
 		int startRow = (currPage - 1) * count;
 		selectPS.setLong(index, startRow);
 		selectPS.setInt(index + 1, count);
+//		System.out.println(startRow);
+//		System.out.println(count);
 	}
 	@Override
 	public void setSelectPSByLimit(PreparedStatement selectPS, int index,
 			long startRow, int count) throws SQLException {
 		selectPS.setLong(index, startRow);
 		selectPS.setInt(index + 1, count);
+//		System.out.println(startRow);
+//		System.out.println(count);
 	}
 
 }
