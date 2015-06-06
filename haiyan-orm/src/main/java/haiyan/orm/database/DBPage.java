@@ -193,6 +193,12 @@ public class DBPage implements Serializable, IDBResultSet {
 		return this.records;
 	}
 	/**
+	 * @return int
+	 */
+	public int getRecordCount() {
+		return this.records!=null?this.records.size():0;
+	}
+	/**
 	 * @param data
 	 */
 	public void setRecords(List<IDBRecord> data) {

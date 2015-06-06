@@ -2,6 +2,7 @@ package haiyan.bill;
 
 import haiyan.bill.database.sql.DBBillManagerFactory;
 import haiyan.common.CloseUtil;
+import haiyan.common.DateUtil;
 import haiyan.common.cache.AppDataCache;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.database.IDBBill;
@@ -47,41 +48,59 @@ public class TestDBBill {
 			ConfigUtil.loadTableConfig(file, true);
 			file = new File(TestDBBill.class.getResource("SYSCACHE.xml").getPath());
 			ConfigUtil.loadTableConfig(file, true);
+			
 			file = new File(TestDBBill.class.getResource("TEST_DBM.xml").getPath());
 			ConfigUtil.loadTableConfig(file, true);
 			
-			file = new File(TestDBBill.class.getResource("SYSBILL.xml").getPath());
+			file = new File(TestDBBill.class.getResource("TEST_BILL.xml").getPath());
 			ConfigUtil.loadBillConfig(file, true);
 		}
-		IUser user = new AppUser();
-		user.setDSN("MYSQL");
-		IContext context = DBContextFactory.createDBContext(user);
+		IDBBillManager billMgr = null;
 		try {
-			IBillConfig billCfg = ConfigUtil.getBill("SYSBILL");
-			IDBBillManager billMgr = DBBillManagerFactory.createBillManager(context);
+			IUser user = new AppUser();
+			user.setDSN("MYSQL");
+			IContext context = DBContextFactory.createDBContext(user);
+			billMgr = DBBillManagerFactory.createBillManager(context);
+			IBillConfig billCfg = ConfigUtil.getBill("TEST_BILL");
 			IDBBill bill = billMgr.createBill(billCfg);
 			
 			billMgr.loadBill(bill);
+			System.out.println("-----------------");
+			System.out.println(bill.getResultSet(0).getRecordCount());
+			System.out.println(bill.getResultSet(1).getRecordCount());
+			System.out.println("ID1:"+bill.getValue("ID1"));
+			System.out.println("ID2:"+bill.getValue("ID2"));
+			System.out.println("CODE1:"+bill.getValue("CODE1"));
+			System.out.println("CODE2:"+bill.getValue("CODE2"));
+			System.out.println("NAME1:"+bill.getValue("NAME1"));
+			System.out.println("NAME2:"+bill.getValue("NAME2"));
 			bill.setValue("CODE1","code1");
 			bill.setValue("CODE2","code2");
 			bill.setValue("NAME1","name1");
 			bill.setValue("NAME2","name2");
+			System.out.println("-----------------");
+			System.out.println("ID1:"+bill.getValue("ID1"));
+			System.out.println("ID2:"+bill.getValue("ID2"));
 			System.out.println("CODE1:"+bill.getValue("CODE1"));
 			System.out.println("CODE2:"+bill.getValue("CODE2"));
 			System.out.println("NAME1:"+bill.getValue("NAME1"));
 			System.out.println("NAME2:"+bill.getValue("NAME2"));
 			
 			billMgr.rollback();
+			System.out.println("-----------------");
+			System.out.println("ID1:"+bill.getValue("ID1"));
+			System.out.println("ID2:"+bill.getValue("ID2"));
 			System.out.println("CODE1:"+bill.getValue("CODE1"));
 			System.out.println("CODE2:"+bill.getValue("CODE2"));
 			System.out.println("NAME1:"+bill.getValue("NAME1"));
 			System.out.println("NAME2:"+bill.getValue("NAME2"));
 			
 			billMgr.createBillID(bill);
-			bill.setValue("CODE1","code1");
-			bill.setValue("CODE2","code2");
+			bill.setValue("CODE1","code1-"+DateUtil.getLastTime());
+			bill.setValue("CODE2","code2-"+DateUtil.getLastTime());
 			bill.setValue("NAME1","name1");
 			bill.setValue("NAME2","name2");
+			System.out.println("-----------------");
 			System.out.println("ID1:"+bill.getValue("ID1"));
 			System.out.println("ID2:"+bill.getValue("ID2"));
 			System.out.println("CODE1:"+bill.getValue("CODE1"));
@@ -91,11 +110,11 @@ public class TestDBBill {
 			
 //			billMgr.deleteBill(bill);
 //			billMgr.rollback();
-//			billMgr.saveBill(bill);
+			billMgr.saveBill(bill);
 			billMgr.commit();
 			System.out.println("test end");
 		}finally{
-			CloseUtil.close(context);
+			CloseUtil.close(billMgr);
 		}
 	}
 }

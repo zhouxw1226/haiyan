@@ -162,24 +162,14 @@ class SQLRender implements ITableSQLRender {
 					throw new Warning("context.exp is null");
 				}
 				boolean needContent = true;
-//				if (isEmpty(parameter)) {
-//					throw new Warning("QuerySQL.parameter is null");
-//					if (!isEmpty(content)) {
-//						needContent = true;
-//					}
-//				} else {
-//					Object v = expUtil.evalExp(parameter);
-//					if (v instanceof Boolean) {
-//						if (v==Boolean.TRUE)
-//							needContent = true;
-//					}
-//				}
 				if (needContent && content!=null) {
-					String sql;
-					if (ExpUtil.isFormula(content.trim()))
-						sql = VarUtil.toString(expUtil.evalExp(content.trim().substring(1)));
+					String sql, sContent = content.trim();
+					if (ExpUtil.isFormula(sContent))
+						sql = VarUtil.toString(expUtil.evalExp(sContent.substring(1)));
+					else if (sContent.startsWith("{"))
+						sql = VarUtil.toString(expUtil.evalExp(sContent));
 					else
-						sql = content;
+						sql = sContent;
 					pTable.setPrimaryTableSQL(sql);
 				}
 			} else {
@@ -472,9 +462,11 @@ class SQLRender implements ITableSQLRender {
 			Table table, Field field, String fullFieldName) throws Throwable {
 		if (queryRecord == null)
 			return null;
-		Object lowerValue = CriticalItem.getItemValue(queryRecord, NamingUtil.getRegionFieldName(field.getName(), NamingUtil.REGION_START),
+		Object lowerValue = CriticalItem.getItemValue(queryRecord, 
+				NamingUtil.getRegionFieldName(field.getName(), NamingUtil.REGION_START),
 				table, field);
-		Object upperValue = CriticalItem.getItemValue(queryRecord, NamingUtil.getRegionFieldName(field.getName(), NamingUtil.REGION_END),
+		Object upperValue = CriticalItem.getItemValue(queryRecord, 
+				NamingUtil.getRegionFieldName(field.getName(), NamingUtil.REGION_END),
 				table, field);
 		// if (lowerValue == null && upperValue == null)
 		// return null;

@@ -1,7 +1,7 @@
 package test.cache;
 
 import static java.lang.Integer.valueOf;
-import haiyan.cache.RedisDataCacheRemote;
+import haiyan.cache.RedisBinaryDataCache;
 import haiyan.common.PropUtil;
 import haiyan.common.intf.cache.IDataCache;
 
@@ -29,7 +29,7 @@ public class TestRedisCache {
 //		dc.setServers(new String[]{"121.40.62.116:6379","121.40.106.146:6380","121.41.85.81:6380"});
 //		dc.initialize();
 
-		cache = new RedisDataCacheRemote();
+		cache = new RedisBinaryDataCache();
 		cache.setServers(PropUtil.getProperty("REDISCACHE.SERVERS").split(";"));
 		cache.initialize();
 		

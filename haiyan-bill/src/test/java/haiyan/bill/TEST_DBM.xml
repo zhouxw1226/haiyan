@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Haiyan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../haiyan.xsd">
+<Haiyan xsi:noNamespaceSchemaLocation="../haiyan-config.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<table name="TEST_DBM" description="DBM测试表单" >
 		<!-- colspan="4" -->
 		<id name="ID" description="数据行ID" javaType="string">
@@ -44,12 +44,14 @@
 		<!-- -->
 		<field name="ORGA_ID" description="1to1单选" displayOnly="false" javaType="string" lazyLoad="false">
 			<!-- one2oneField="ORGA_ID" one2oneTable="TEST_ONE2ONE" -->
-			<component type="combo" readOnly="false" displayReferenceField="NAME" referenceField="ID" referenceTable="SYSORGA" quickQueryConditionField="NAME" action="SetValue(OPER_IDS,{})+SetValue(__OPER_IDS__NAME,{})"/>
+			<component type="combo" readOnly="false" displayReferenceField="NAME" referenceField="ID" referenceTable="SYSORGA" quickQueryConditionField="NAME" 
+				action="SetValue(OPER_IDS,{})+SetValue(__OPER_IDS__NAME,{})"/>
 			<queryCondition type="equal"/>
 		</field>
 		<field name="OPER_IDS" description="1to1多选(被前者约束)" displayOnly="false" javaType="string" lazyLoad="true">
 			<!-- one2oneField="OPER_IDS" one2oneTable="TEST_ONE2ONE" -->
-			<component type="combo" readOnly="false" displayReferenceField="NAME" referenceField="ID" referenceTable="SYSOPERATOR" quickQueryConditionField="NAME" multipleSelect="true" restrictiveFields="ORGA_ID" conditionFields="ORGAID"/>
+			<component type="combo" readOnly="false" displayReferenceField="NAME" referenceField="ID" referenceTable="SYSOPERATOR" quickQueryConditionField="NAME" 
+				restrictiveFields="ORGA_ID" conditionFields="ORGAID" multipleSelect="true" />
 			<queryCondition type="equal"/>
 		</field>
 		<!-- -->
@@ -101,7 +103,8 @@
 		<queryFilter>
 			<pluggedFilter methodName="exp" parameter="
 			If(InRole(sp,wm),
-				{ and t_1.ID in (select ORDER_ID from V_WM_OUTPRE  where PRODUCTID in (select ID from T_WM_SDBPRODUCT where SUPPLIER='}&amp;GetUser(SUPPLIER)&amp;{' and WAREHOUSE='}&amp;GetUser(WAREHOUSEID)&amp;{')) },
+				{ and t_1.ID in (select ORDER_ID from V_WM_OUTPRE  where PRODUCTID in 
+					(select ID from T_WM_SDBPRODUCT where SUPPLIER='}&amp;GetUser(SUPPLIER)&amp;{' and WAREHOUSE='}&amp;GetUser(WAREHOUSEID)&amp;{')) },
 				{ and t_1.ID in (select ORDER_ID from V_WM_OUTPRE  where PRODUCTID in (select ID from T_WM_SDBPRODUCT where WAREHOUSE='}&amp;GetUser(WAREHOUSEID)&amp;{')) }
 			)"/>
 		</queryFilter>
@@ -114,10 +117,13 @@
 			create or replace view V_TEST_DBM as
 				(select * from TEST_DBM)
 		]]></pluginInterceptor>
-		<pluginInterceptor methodName="exp" pluginName="save" parameter="If(IsEmpty(Get(WFBILLID)),true,DBSQL({update SYSWFBILL set BILLID='}&amp;Get(ID)&amp;{' where ID='}&amp;Get(WFBILLID)&amp;{'}))" type="after"/>
-		<pluginInterceptor methodName="exp" pluginName="edit" parameter="if(inrole(admin),true,disbtns(testSQL))" type="before"/>
+		<pluginInterceptor methodName="exp" pluginName="save" 
+			parameter="If(IsEmpty(Get(WFBILLID)),true,DBSQL({update SYSWFBILL set BILLID='}&amp;Get(ID)&amp;{' where ID='}&amp;Get(WFBILLID)&amp;{'}))" type="after"/>
+		<pluginInterceptor methodName="exp" pluginName="edit" 
+			parameter="if(inrole(admin),true,disbtns(testSQL))" type="before"/>
 		<!-- -->
-		<pluginOperation name="testOne" oprName="查看一对一表单" hostPage="edit" tblevel="1" className="haiyan.plugin.BshPlugin" action="openWin({edit.do?__opr_data=TEST_ONE2ONE&amp;ID=}&amp;Get(ID))+break()"><![CDATA[
+		<pluginOperation name="testOne" oprName="查看一对一表单" hostPage="edit" tblevel="1" className="haiyan.plugin.BshPlugin" 
+			action="openWin({edit.do?__opr_data=TEST_ONE2ONE&amp;ID=}&amp;Get(ID))+break()"><![CDATA[
 		]]></pluginOperation>
 		<pluginOperation name="testSQL" oprName="调试SQL" hostPage="edit" tblevel="1" className="haiyan.plugin.BshPlugin"><![CDATA[
 		    context.getDBM().executeUpdate(form.get("TESTSQL"),null);

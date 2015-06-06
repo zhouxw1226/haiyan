@@ -15,14 +15,15 @@ public interface IDBBill extends Serializable {
 	
 	IDBResultSet[] getResultSets();
 	void setResultSets(IDBResultSet[] resultSets);
-	IDBResultSet getResultSet(int index);
-	void setResultSet(int index, IDBResultSet rst);
+	IDBResultSet getResultSet(int tableIndex);
+	void setResultSet(int tableIndex, IDBResultSet rst);
 	
 	IDBFilter[] getFilters();
 	void setFilters(IDBFilter[] filters);
-	IDBFilter getFilter(int index);
-	void setFilter(int index, IDBFilter filter);
+	IDBFilter getFilter(int tableIndex);
+	void setFilter(int tableIndex, IDBFilter filter);
 	
+	void setActiveRecord(int tableIndex, int rowIndex);
 	Object getValue(String name);
 	void setValue(String name, Object value);
 	Object getBillID();

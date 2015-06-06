@@ -1,7 +1,5 @@
 package haiyan.common.intf.database.bill;
 
-import java.math.BigDecimal;
-
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.database.IDBBill;
 import haiyan.common.intf.session.IDBSession;
@@ -15,10 +13,10 @@ import haiyan.common.intf.session.IDBSession;
 public interface IDBBillManager extends IDBSession {
 
 	IDBBill createBill(IBillConfig billConfig);
+	Object createBillID(IDBBill bill) throws Throwable;
 	void loadBill(IDBBill bill) throws Throwable;
-	BigDecimal createBillID(IDBBill bill) throws Throwable;
 	void saveBill(IDBBill bill) throws Throwable;
 	void deleteBill(IDBBill bill) throws Throwable;
-	void deleteBill(String billID) throws Throwable;
+	void deleteBill(IBillConfig billConfig, String billID) throws Throwable;
 
 }

@@ -76,12 +76,11 @@ public interface IDBRecord extends Serializable {
 	 * @return
 	 */
 	int getVersion();
-	
 	/**
 	 * @return JSONObject
 	 */
 	JSONObject toJSon();
-
+	// ----------------------------------------------------------------------- //
 	Set<String> oreignKeySet();
 	Set<String> insertedKeySet();
 	Set<String> updatedKeySet();
@@ -96,11 +95,12 @@ public interface IDBRecord extends Serializable {
 	Object get(String key);
     void setValues(String name, Object[] values);
     Object[] getValues(String name);
+	String getString(String name);
 	Date getDate(String key, String dateStyle);
 	int getInteger(String key);
     double getDouble(String key);
     BigDecimal getBigDecimal(String key);
     String getValuesString(String name, String split);
-    
+	// ----------------------------------------------------------------------- //
 
 }

@@ -23,7 +23,7 @@ import bsh.StringUtil;
  * @author zhouxw
  *
  */
-public class RedisDataCache extends EHDataCache {
+public class RedisDataCacheLocal extends EHDataCache {
 
 //	private Jedis defaultJedis;//非切片额客户端连接
     private JedisPool masterJedisPool;//非切片连接池
@@ -31,7 +31,7 @@ public class RedisDataCache extends EHDataCache {
     private BinaryJedisCommands jedisImplWriter;
     private BinaryJedisCommands jedisImplReader;
     private String[] servers = null;
-	public RedisDataCache() {
+	public RedisDataCacheLocal() {
 		super();
 	}
 	/**

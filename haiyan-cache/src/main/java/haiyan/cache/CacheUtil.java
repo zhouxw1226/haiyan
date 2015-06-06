@@ -30,7 +30,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class CacheUtil {
 	private static IDataCache CACHE;
-	public static final void setDataCache(IDataCache c) {
+	public static final void setDataCache(IDataCache c) { // IOC
 		CACHE = c;
 	}
 	public static final IDataCache getDataCache() {

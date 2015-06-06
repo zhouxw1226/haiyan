@@ -105,6 +105,11 @@ public class DBBill extends AbstractDBBill {
 	}
 	// -------------------------------------------------------------------------------- //
 	@Override
+	public void setActiveRecord(int tableIndex, int rowIndex) {
+		IDBResultSet rst = this.resultSets[tableIndex];
+		rst.setActiveRecord(rowIndex);
+	}
+	@Override
 	public Object getValue(String name) { // TODO 要做优化处理，将name和field做一个map索引
 		BillID[] billIDs = billConfig.getBillID();
 		for (BillID billID:billIDs) {

@@ -143,7 +143,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
             Object[] values = getParameterValues(keyName);
             if (values != null)
                 for (int i = 0; i < values.length; i++) {
-                    if (!StringUtil.isBlankOrNull(values[i])) {
+                    if (!StringUtil.isEmpty(values[i])) {
                         buf.append(values[i]);
                     }
                     buf.append(" ");
@@ -277,18 +277,12 @@ public abstract class AbstractDBRecord implements IDBRecord {
                 continue;
             Object[] values = getParameterValues(keyName);
             StringBuffer buf = new StringBuffer("");
-            // int count = 0;
             if (values != null)
                 for (int i = 0; i < values.length; i++) {
-                    // DebugUtil.debug(values[i].getBytes().length);
-                    if (!StringUtil.isBlankOrNull(values[i])) {
-                        // if (values[i].getBytes().length <
-                        // DataConstant.MAXLENTH_LOG)
-                        // if (count > 0)
+                    if (!StringUtil.isEmpty(values[i])) {
                         if (buf.length() > 0)
                             buf.append(",");
                         buf.append(values[i]);
-                        // count++;
                     }
                 }
             tgtRecord.setParameter(keyName, buf.toString());
@@ -307,10 +301,8 @@ public abstract class AbstractDBRecord implements IDBRecord {
         boolean flag;
         ArrayList<String> list = new ArrayList<String>();
         for (int i = 0; i < fieldNames.length; i++) {
-            // Field field = ConfigUtil.getFieldByName(table, paras[i]);
             srcValue = this.getParameter(fieldNames[i]);
             nowValue = record.getParameter(fieldNames[i]);
-            // judge same value
             flag = sameValue(srcValue, nowValue);
             if (!flag) {
                 list.add(fieldNames[i]);
@@ -335,12 +327,10 @@ public abstract class AbstractDBRecord implements IDBRecord {
                 continue;
             if (field.isVisual())
                 continue;
-            if (!StringUtil.isBlankOrNull(field.getSubQuerySQL()))
+            if (!StringUtil.isEmpty(field.getSubQuerySQL()))
                 continue;
-            // Field field = ConfigUtil.getFieldByName(table, paras[i]);
             srcValue = this.getParameter(field.getName());
             nowValue = record.getParameter(field.getName());
-            // judge same value
             flag = sameValue(srcValue, nowValue);
             if (!flag) {
                 list.add(field.getName());
@@ -368,7 +358,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
                 continue;
             if (field.isVisual())
                 continue;
-            if (!StringUtil.isBlankOrNull(field.getSubQuerySQL()))
+            if (!StringUtil.isEmpty(field.getSubQuerySQL()))
                 continue;
             srcValue = this.getParameter(field.getName());
             nowValue = record.getParameter(field.getName());
@@ -387,7 +377,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
                             disNowValue = op.getDisplayName();
                     }
                 }
-                if (!StringUtil.isBlankOrNull(field.getReferenceTable())) {
+                if (!StringUtil.isEmpty(field.getReferenceTable())) {
                     disSrcValue = this.getParameter(NamingUtil.getDisplayFieldAlias(field));
                     disNowValue = record.getParameter(NamingUtil.getDisplayFieldAlias(field));
                     // list.add(fields[i].getName());
@@ -448,7 +438,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
     @Override
     public Date getDate(String name, String dateStyle) {
     	Object value = getParameter(name);
-        if (!StringUtil.isBlankOrNull(value)) {
+        if (!StringUtil.isEmpty(value)) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat(dateStyle);
                 return sdf.parse(VarUtil.toString(value));
@@ -458,6 +448,13 @@ public abstract class AbstractDBRecord implements IDBRecord {
             }
         }
         return new Date();
+    }
+    @Override
+    public String getString(String name) {
+        Object value = getParameter(name);
+        if (StringUtil.isEmpty(value))
+        	value = "";
+        return VarUtil.toString(value);
     }
     @Override
     public int getInteger(String name) {
@@ -470,7 +467,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
     @Override
     public BigDecimal getBigDecimal(String name) {
         Object value = getParameter(name);
-        if (StringUtil.isBlankOrNull(value))
+        if (StringUtil.isEmpty(value))
         	value = 0;
         return VarUtil.toBigDecimal(value);
     }
@@ -535,22 +532,22 @@ public abstract class AbstractDBRecord implements IDBRecord {
     @Override
 	public int getVersion() {
 		Object v = this.get(DataConstant.HYVERSION);
-		if (StringUtil.isBlankOrNull(v))
+		if (StringUtil.isEmpty(v))
 			v = "0";
 		return VarUtil.toInt(v);
 	}
     @Override
 	public void updateVersion() {
     	Object v = this.get(DataConstant.HYVERSION);
-		if (StringUtil.isBlankOrNull(v))
+		if (StringUtil.isEmpty(v))
 			v = "0";
 		int t = VarUtil.toInt(v) + 1;
 		this.set(DataConstant.HYVERSION, "" + t);
 	}
     private static boolean sameValue(Object v1, Object v2) {
-        if (!StringUtil.isBlankOrNull(v1) && StringUtil.isBlankOrNull(v2))
+        if (!StringUtil.isEmpty(v1) && StringUtil.isEmpty(v2))
             return false;
-        else if (StringUtil.isBlankOrNull(v1) && !StringUtil.isBlankOrNull(v2))
+        else if (StringUtil.isEmpty(v1) && !StringUtil.isEmpty(v2))
             return false;
         else if (v1.equals(v2))
         	return true;

@@ -49,8 +49,7 @@ class DBBillAutoNumber {
 	 * @return int
 	 * @throws Throwable
 	 */
-	static synchronized BigDecimal requestID(IContext context, Table table,
-			long lngNumber) throws Throwable {
+	static synchronized BigDecimal requestID(IContext context, Table table, long lngNumber) throws Throwable {
 		// '申请的个数不可以小于等于零
 		if (lngNumber <= 0) {
 			throw new Warning("申请的ID个数不能小于等于零.");
@@ -171,5 +170,173 @@ class DBBillAutoNumber {
 			CloseUtil.close(subContext);
 		}
 	}
-	
+
+	/**
+	 * 根据种子key，和请求数量lngNumber，计算出一个不重复的长度为6的字符串
+	 * 
+	 * @param context
+	 * @param table
+	 * @param lngNumber
+	 * @return
+	 * @throws Throwable
+	 */
+	static synchronized String requestShortID(IContext context, Table table, long lngNumber) throws Throwable { 
+		long id = requestID(context, table, lngNumber).longValue();
+		return shortUrl(id);
+	}
+	/**
+	 * 根据id，生成长度为6的字符串
+	 * @param id
+	 * @return
+	 */
+	static String shortUrl(long id) {
+		return shortUrl(id,6);
+	}
+	/**
+	 * 根据id，生成长度为length的字符串
+	 * @param id
+	 * @param length
+	 * @return
+	 */
+	static String shortUrl(long id,int length) {
+		StringBuffer buf = new StringBuffer();
+	    while (id > 0) {  
+	        int remainder = (int) (id % 62);
+	        buf.insert(0, int2Char(remainder));
+	        id = id / 62;  
+	    }
+	    for(int l=buf.length();l<length;l=buf.length()){
+	    	buf.insert(0, int2Char(0));
+	    }
+	    return buf.toString();
+	}
+	private static char int2Char(int i){
+		switch (i){
+		case 0:
+			return 'a';
+		case 1:
+			return 'b';
+		case 2:
+			return 'c';
+		case 3:
+			return 'd';
+		case 4:
+			return 'e';
+		case 5:
+			return 'f';
+		case 6:
+			return 'g';
+		case 7:
+			return 'h';
+		case 8:
+			return 'i';
+		case 9:
+			return 'j';
+		case 10:
+			return 'k';
+		case 11:
+			return 'l';
+		case 12:
+			return 'm';
+		case 13:
+			return 'n';
+		case 14:
+			return 'o';
+		case 15:
+			return 'p';
+		case 16:
+			return 'q';
+		case 17:
+			return 'r';
+		case 18:
+			return 's';
+		case 19:
+			return 't';
+		case 20:
+			return 'u';
+		case 21:
+			return 'v';
+		case 22:
+			return 'w';
+		case 23:
+			return 'x';
+		case 24:
+			return 'y';
+		case 25:
+			return 'z';
+		case 26:
+			return '0';
+		case 27:
+			return '1';
+		case 28:
+			return '2';
+		case 29:
+			return '3';
+		case 30:
+			return '4';
+		case 31:
+			return '5';
+		case 32:
+			return '6';
+		case 33:
+			return '7';
+		case 34:
+			return '8';
+		case 35:
+			return '9';
+		case 36:
+			return 'A';
+		case 37:
+			return 'B';
+		case 38:
+			return 'C';
+		case 39:
+			return 'D';
+		case 40:
+			return 'E';
+		case 41:
+			return 'F';
+		case 42:
+			return 'G';
+		case 43:
+			return 'H';
+		case 44:
+			return 'I';
+		case 45:
+			return 'J';
+		case 46:
+			return 'K';
+		case 47:
+			return 'L';
+		case 48:
+			return 'M';
+		case 49:
+			return 'N';
+		case 50:
+			return 'O';
+		case 51:
+			return 'P';
+		case 52:
+			return 'Q';
+		case 53:
+			return 'R';
+		case 54:
+			return 'S';
+		case 55:
+			return 'T';
+		case 56:
+			return 'U';
+		case 57:
+			return 'V';
+		case 58:
+			return 'W';
+		case 59:
+			return 'X';
+		case 60:
+			return 'Y';
+		case 61:
+			return 'Z';
+		}
+		return ' ';
+	}
 }

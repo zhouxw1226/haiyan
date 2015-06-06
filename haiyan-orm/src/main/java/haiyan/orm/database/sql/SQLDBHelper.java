@@ -93,37 +93,6 @@ public class SQLDBHelper {
 //		}
 //		return getDefaultDatabase();
 //	}
-//	static JSONArray getJSonArrayPre(String sql, 
-//			Object[] paras, IDB2JSon db2json, Connection conn) throws Throwable {
-//		if (db2json==null)
-//			throw new Warning("db2json lost");
-//		JSONArray result = new JSONArray();
-//		PreparedStatement st = null;
-//		ResultSet rs = null;
-//		try {
-//			DebugUtil.debug(">getResultStrArrayPre:" + sql);
-//			//
-//			st = conn.prepareStatement(sql);
-//			int length = paras.length;
-//			for (int i=0;i<length;i++) {
-//				st.setObject(i+1, paras[i]);
-//			}
-//			rs = st.getResultSet();
-//			while (rs.next()) {
-//				JSONObject obj = db2json.rs2json(rs);
-//				result.add(obj);
-//			}
-//			return result;
-//		}
-//		// catch (Throwable ex) {
-//		// DebugUtil.debug(">error.execute-sql:" + querySQL);
-//		// throw ex;
-//		// }
-//		finally {
-//			CloseUtil.close(rs);
-//			CloseUtil.close(st);
-//		}
-//	}
 	/**
 	 * @param sql
 	 * @param colNum

@@ -287,6 +287,13 @@ public class TestRecordTrancefer {
 	        return new Date();
 	    }
 	    @Override
+	    public String getString(String name) {
+	        Object value = getParameter(name);
+	        if (StringUtil.isEmpty(value))
+	        	value = "";
+	        return VarUtil.toString(value);
+	    }
+	    @Override
 	    public int getInteger(String name) {
 	        return getBigDecimal(name).intValue();
 	    }

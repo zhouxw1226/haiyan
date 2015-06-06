@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Haiyan xsi:noNamespaceSchemaLocation="../haiyan-config.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<bill name="SYSBILL" description="矩阵单据">
+	<bill name="TEST_BILL" description="矩阵单据">
 		<billTable name="SYS1" dbName="SYS" description="SYS" tableIndex="0" />
 		<billTable name="SYS2" dbName="TEST_DBM" description="TEST_DBM" tableIndex="1" />
 		<billID name="ID1" dbName="ID" description="ID" tableIndex="0"/>

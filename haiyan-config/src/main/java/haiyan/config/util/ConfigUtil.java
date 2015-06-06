@@ -747,6 +747,9 @@ public class ConfigUtil {
 //	        FileUtil.copy(srcDir, destDir);
 //	    }
     }
+	public static int getMainTableIndex(IBillConfig billCfg) {
+		return 0;
+	}
 	public static Table getMainTable(IBillConfig billCfg) {
 		Bill bill = (Bill)billCfg;
 		BillTable[] tables = bill.getBillTable();
