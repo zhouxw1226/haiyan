@@ -8,4 +8,6 @@ public interface IBillConfig {
 
 	IBillTable[] getBillTable();
 
+	IBillID getBillID(int tableIndex);
+
 }

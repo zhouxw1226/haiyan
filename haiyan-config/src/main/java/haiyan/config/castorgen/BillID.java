@@ -11,6 +11,8 @@ package haiyan.config.castorgen;
  //- Imported classes and packages -/
 //---------------------------------/
 
+import haiyan.common.intf.config.IBillID;
+
 import org.exolab.castor.xml.Marshaller;
 import org.exolab.castor.xml.Unmarshaller;
 
@@ -20,7 +22,7 @@ import org.exolab.castor.xml.Unmarshaller;
  * @version $Revision$ $Date$
  */
 public class BillID extends haiyan.config.castorgen.AbstractBillField 
-implements java.io.Serializable
+implements java.io.Serializable, IBillID
 {
 
 

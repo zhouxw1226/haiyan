@@ -30,22 +30,23 @@ public class TestDBBillLoad {
 	@Test
 	public void test1() throws Throwable {
 		TestLoadConfig.loadConfig();
-		IDBBillManager billMgr = null;
+		IDBBillManager bbm = null;
 		try {
 			IUser user = new AppUser();
 			user.setDSN("MYSQL");
 			IContext context = DBContextFactory.createDBContext(user);
-			billMgr = DBBillManagerFactory.createDBBillManager(context);
+			bbm = DBBillManagerFactory.createDBBillManager(context);
 			IBillConfig billCfg = ConfigUtil.getBill("TEST_BILL");
-			IDBBill bill = billMgr.createBill(billCfg);
 			
 			long time = System.currentTimeMillis();
-			billMgr.loadBill(bill);
+			IDBBill bill = bbm.createBill(billCfg, false);
+			bill.setBillID("1");
+			bbm.loadBill(bill);
 			System.out.println("-----------------");
 			bill.find(1, new IPredicate(){
 				@Override
 				public boolean evaluate(IDBRecord r) {
-					if (r.getString("NAME").equalsIgnoreCase("clear T_WM_IN")) {
+					if (r.getString("NAME").startsWith("name")) {
 						System.out.println("find:"+r);
 						return true;
 					}
@@ -57,7 +58,7 @@ public class TestDBBillLoad {
 			bill.filter(1, new IPredicate(){
 				@Override
 				public boolean evaluate(IDBRecord r) {
-					if (r.getString("NAME").startsWith("clear")) {
+					if (r.getString("NAME").startsWith("name")) {
 						System.out.println("filter:"+r);
 						return true;
 					}
@@ -65,30 +66,30 @@ public class TestDBBillLoad {
 				}
 			});
 			
-			ISQLDBFilter dbFilter = new SQLDBFilter(" and LENGTH(t_1.ID)>5 "){ };
-			IDBResultSet rst2 = bill.query(context, 1, dbFilter, 5, 1, true); // 1:firstPage
+			ISQLDBFilter dbFilter = new SQLDBFilter(" and LENGTH(t_1.ID)<7 "){ };
+			IDBResultSet rst2 = bill.query(context, 1, dbFilter, 3, 1, true); // 3:rowPageCount, 1:firstPage
 			System.out.println("-----------------");
 			System.out.println("rst2:"+rst2.getRecordCount());
 			System.out.println("rst2:"+rst2.getTotalRecordCount());
 			System.out.println("rst2:"+rst2.getActiveRecord());
 			
-			IDBResultSet rst4 = bill.queryNext(context, 1, dbFilter, 5, true);
+			IDBResultSet rst4 = bill.queryNext(context, 1, dbFilter, -1, true);
 			System.out.println("-----------------");
 			System.out.println("rst4:"+rst4.getRecordCount());
 			System.out.println("rst4:"+rst4.getTotalRecordCount());
 			System.out.println("rst4:"+rst4.getActiveRecord());
 			
-			IDBResultSet rst3 = bill.queryPrev(context, 1, dbFilter, 5, true);
+			IDBResultSet rst3 = bill.queryPrev(context, 1, dbFilter, -1, true);
 			System.out.println("-----------------");
 			System.out.println("rst3:"+rst3.getRecordCount());
 			System.out.println("rst3:"+rst3.getTotalRecordCount());
 			System.out.println("rst3:"+rst3.getActiveRecord());
 //			IDBResultSet rst5 = bill.sort(1, new ISort());
 
-			billMgr.commit();
+//			bbm.commit();
 			System.out.println("test end:"+(System.currentTimeMillis()-time)+"ms");
 		}finally{
-			CloseUtil.close(billMgr);
+			CloseUtil.close(bbm);
 		}
 	}
 }

@@ -232,6 +232,8 @@ public class DBBill extends AbstractDBBill {
 		IBillTable billTable = billConfig.getBillTable()[tableIndex];
 		Table table = ConfigUtil.getTable(billTable.getDbName());
 		int pageIndexNext = this.resultSets[tableIndex].getPageIndex()+1;
+		if (pageRowCount<=0)
+			pageRowCount = this.resultSets[tableIndex].getPageRowCount();
 		IDBResultSet rst = ((ITableDBManager)context.getDBM()).select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndexNext);
 		if (override)
 			this.resultSets[tableIndex]=rst;
@@ -247,6 +249,8 @@ public class DBBill extends AbstractDBBill {
 		IBillTable billTable = billConfig.getBillTable()[tableIndex];
 		Table table = ConfigUtil.getTable(billTable.getDbName());
 		int pageIndexPrev = this.resultSets[tableIndex].getPageIndex()-1;
+		if (pageRowCount<=0)
+			pageRowCount = this.resultSets[tableIndex].getPageRowCount();
 		IDBResultSet rst = ((ITableDBManager)context.getDBM()).select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndexPrev);
 		if (override)
 			this.resultSets[tableIndex]=rst;

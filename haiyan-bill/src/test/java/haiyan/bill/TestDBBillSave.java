@@ -27,16 +27,17 @@ public class TestDBBillSave {
 	@Test
 	public void test1() throws Throwable {
 		TestLoadConfig.loadConfig();
-		IDBBillManager billMgr = null;
+		IDBBillManager bbm = null;
 		try {
 			IUser user = new AppUser();
 			user.setDSN("MYSQL");
 			IContext context = DBContextFactory.createDBContext(user);
-			billMgr = DBBillManagerFactory.createDBBillManager(context);
+			bbm = DBBillManagerFactory.createDBBillManager(context);
 			IBillConfig billCfg = ConfigUtil.getBill("TEST_BILL");
-			IDBBill billOld = billMgr.createBill(billCfg);
 			
-			billMgr.loadBill(billOld);
+			IDBBill billOld = bbm.createBill(billCfg, false);
+			billOld.setBillID("1");
+			bbm.loadBill(billOld);
 			System.out.println("-----------------");
 			System.out.println(billOld.getResultSet(0).getRecordCount());
 			System.out.println(billOld.getResultSet(1).getRecordCount());
@@ -58,7 +59,7 @@ public class TestDBBillSave {
 			System.out.println("NAME1:"+billOld.getValue("NAME1"));
 			System.out.println("NAME2:"+billOld.getValue("NAME2"));
 			
-			billMgr.rollback();
+			bbm.rollback();
 			System.out.println("-----------------");
 			billOld.setValue("CODE1","code1-"+DateUtil.getLastTime());
 			billOld.setValue("CODE2","code2-"+DateUtil.getLastTime());
@@ -69,8 +70,8 @@ public class TestDBBillSave {
 			System.out.println("NAME1:"+billOld.getValue("NAME1"));
 			System.out.println("NAME2:"+billOld.getValue("NAME2"));
 			
-			IDBBill billNew = billMgr.createBill(billCfg);
-			billMgr.createBillID(billNew);
+			IDBBill billNew = bbm.createBill(billCfg);
+			//bbm.createBillID(billNew);
 			IDBRecord record1 = billNew.insertRowAfter(1, 0);
 			System.out.println("record1:"+record1);
 //
@@ -87,11 +88,12 @@ public class TestDBBillSave {
 //			
 //			billMgr.deleteBill(bill.getBillConfig(), bill.getBillID());
 //			billMgr.deleteBill(bill);
-//			
 //			billMgr.rollback();
-			billMgr.saveBill(billOld);
-			billMgr.saveBill(billNew);
-			billMgr.commit();
+			
+			bbm.openTransaction();
+			bbm.saveBill(billOld);
+			bbm.saveBill(billNew);
+			bbm.commit();
 			System.out.println("-----------------");
 			
 			billNew.setValue("CODE1","code1-"+DateUtil.getLastTime());
@@ -104,11 +106,14 @@ public class TestDBBillSave {
 			System.out.println("CODE2:"+billNew.getValue("CODE2"));
 			System.out.println("NAME1:"+billNew.getValue("NAME1"));
 			System.out.println("NAME2:"+billNew.getValue("NAME2"));
-			billMgr.saveBill(billNew);
-			billMgr.commit();
+			bbm.saveBill(billNew);
+			bbm.commit();
+			
+			bbm.closeTransaction();
+			
 			System.out.println("test end");
 		}finally{
-			CloseUtil.close(billMgr);
+			CloseUtil.close(bbm);
 		}
 	}
 }

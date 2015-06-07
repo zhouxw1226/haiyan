@@ -5,6 +5,7 @@ import haiyan.bill.database.DBBill;
 import haiyan.common.StringUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.config.IBillConfig;
+import haiyan.common.intf.config.IBillID;
 import haiyan.common.intf.config.IBillTable;
 import haiyan.common.intf.database.IDBBill;
 import haiyan.common.intf.database.IDBFilter;
@@ -14,13 +15,13 @@ import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.session.IContext;
 import haiyan.config.castorgen.Bill;
 import haiyan.config.castorgen.BillID;
-import haiyan.config.castorgen.BillTable;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.DBPage;
 import haiyan.orm.database.sql.DBBillAutoID;
+import haiyan.orm.database.sql.SQLDBFilter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -108,29 +109,37 @@ public class SQLDBBillManager implements IDBBillManager {
 		return bill.getBillID();
 	}
 	@Override
-	public IDBBill createBill(IBillConfig billConfig) throws Throwable {
+	public IDBBill createBill(IBillConfig billConfig, boolean createBillID) throws Throwable {
 		IDBBill bill = new DBBill(this.context.getUser(), billConfig);
-		this.createBillID(bill);
+		if (createBillID)
+			this.createBillID(bill);
 		if (!billList.contains(bill))
 			billList.add(bill);
 		return bill;
 	} 
 	@Override
+	public IDBBill createBill(IBillConfig billConfig) throws Throwable {
+		return createBill(billConfig, true);
+	} 
+	@Override
 	public void loadBill(IDBBill bill) throws Throwable {
 		IDBResultSet[] resultSets = bill.getResultSets();
+		if (resultSets==null)
+			throw new Warning("IDBResultSet lost when loadBill");
 		IDBFilter[] filters = bill.getDBFilters();
-		Bill billConfig = (Bill)bill.getBillConfig();
-		int mainTableIndex = ConfigUtil.getMainTableIndex(billConfig);
-		BillTable[] billTables = billConfig.getBillTable();
-		for (int i=0;i<billTables.length;i++) {
-			BillTable billTable = billTables[i];
+		IBillConfig billConfig = bill.getBillConfig();
+		IBillTable[] billTables = billConfig.getBillTable();
+		for (int tableIndex=0;tableIndex<billTables.length;tableIndex++) {
+			IBillTable billTable = billTables[tableIndex];
 			Table table = ConfigUtil.getTable(billTable.getDbName());
-			resultSets[i] = context.getDBM().select(context, table, filters[i], DBPage.MAXCOUNTPERQUERY, 1);
+			IDBFilter filter = filters[tableIndex];
+			if (filter==null&&!StringUtil.isEmpty(bill.getBillID()))
+				filter = new SQLDBFilter(" and t_1."+billConfig.getBillID(tableIndex).getDbName()+"=? ", new Object[]{bill.getBillID()});
+			resultSets[tableIndex] = context.getDBM().select(context, table, filter, DBPage.MAXCOUNTPERQUERY, 1);
 		}
-		BillID billID = billConfig.getBillID(mainTableIndex);
+		int mainTableIndex = ConfigUtil.getMainTableIndex(billConfig);
+		IBillID billID = billConfig.getBillID(mainTableIndex);
 		IDBResultSet mainResult = resultSets[mainTableIndex];
-//		if (mainResult.getRecordCount()>1)
-//			throw new Warning("发现多条主记录");
 		for (IDBRecord record:mainResult.getRecords()) {
 			bill.setBillID(record.get(billID.getDbName()));// 只用第一条记录的billid
 			break;
@@ -141,14 +150,14 @@ public class SQLDBBillManager implements IDBBillManager {
 	@Override
 	public void saveBill(IDBBill bill) throws Throwable {
 		IDBResultSet[] resultSets = bill.getResultSets();
-		Bill billConfig = (Bill)bill.getBillConfig();
-		BillTable[] billTables = billConfig.getBillTable();
 		if (resultSets==null)
 			throw new Warning("IDBResultSet lost when saveBill");
-		for (int i=0;i<resultSets.length;i++) {
-			IDBResultSet rst = resultSets[i];
-			BillTable billTable = billTables[i];
-			BillID billID = billConfig.getBillID(i);
+		IBillConfig billConfig = bill.getBillConfig();
+		IBillTable[] billTables = billConfig.getBillTable();
+		for (int tableIndex=0;tableIndex<resultSets.length;tableIndex++) {
+			IDBResultSet rst = resultSets[tableIndex];
+			IBillTable billTable = billTables[tableIndex];
+			IBillID billID = billConfig.getBillID(tableIndex);
 			Table table = ConfigUtil.getTable(billTable.getDbName());
 			List<String> ids = new ArrayList<String>();
 			for (IDBRecord record:rst.getRecords()) {

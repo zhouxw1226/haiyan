@@ -14,6 +14,7 @@ import haiyan.common.intf.session.IDBSession;
  */
 public interface IDBBillManager extends IDBSession {
 
+	IDBBill createBill(IBillConfig billConfig, boolean createBillID) throws Throwable;
 	IDBBill createBill(IBillConfig billConfig) throws Throwable;
 	Object createBillID(IDBBill bill) throws Throwable;
 	

@@ -74,7 +74,9 @@ public class DBPage implements Serializable, IDBResultSet {
 	}
 	@Override
 	public int getMaxPageCount() {
-		return (int)Math.round(Math.ceil(this.getTotalRecordCount()/this.getPageRowCount()));
+		long total = this.getTotalRecordCount();
+		long row = this.getPageRowCount();
+		return Math.round(total/row)+(total%row>0?1:0);
 	}
 	/**
 	 * 查询出来的总记录行数
