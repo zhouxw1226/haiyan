@@ -1,4 +1,4 @@
-package haiyan.config.intf.database;
+package haiyan.orm.intf.database;
 
 import haiyan.common.intf.database.IDBTemplate;
 import haiyan.config.castorgen.Field;

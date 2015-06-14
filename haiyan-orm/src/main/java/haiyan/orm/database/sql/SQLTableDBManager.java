@@ -10,12 +10,10 @@ import haiyan.common.config.DataConstant;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.IDBClear;
 import haiyan.common.intf.database.IDBFilter;
-import haiyan.common.intf.database.IDatabase;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBRecordCacheManager;
 import haiyan.common.intf.database.orm.IDBRecordCallBack;
 import haiyan.common.intf.database.orm.IDBResultSet;
-import haiyan.common.intf.database.sql.ISQLDBClear;
 import haiyan.common.intf.database.sql.ISQLDBListener;
 import haiyan.common.intf.database.sql.ISQLDBManager;
 import haiyan.common.intf.database.sql.ISQLDatabase;
@@ -27,22 +25,19 @@ import haiyan.config.castorgen.Id;
 import haiyan.config.castorgen.PluginInterceptor;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-import haiyan.config.intf.database.ITableDBManager;
-import haiyan.config.intf.database.orm.ITableRecordCacheManager;
-import haiyan.config.intf.database.sql.ITableSQLRender;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.config.util.NamingUtil;
 import haiyan.database.SQLDatabase;
-import haiyan.orm.database.DBContextFactory;
+import haiyan.orm.database.TableDBContextFactory;
 import haiyan.orm.database.DBRecord;
 import haiyan.orm.database.DBRecordCacheFactory;
-import haiyan.orm.database.TableDBContext;
-import haiyan.orm.database.TableDBManager;
-import haiyan.orm.database.TableDBTemplate;
+import haiyan.orm.database.MappingDBManager;
+import haiyan.orm.intf.database.ITableDBManager;
+import haiyan.orm.intf.database.orm.ITableRecordCacheManager;
+import haiyan.orm.intf.database.sql.ITableSQLRender;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.io.Serializable;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -53,113 +48,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManager {
+public abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableDBManager, ISQLDBManager {
 
 	protected static final int MAX_DEEP = 2;
-	protected transient volatile boolean autoCommit = true;
 	protected transient int deep = 0;
-	protected transient ISQLDBClear dbClear = new SQLDBClear();
-	protected transient ISQLDatabase database;
 	protected transient ITableSQLRender sqlRender;
-	protected transient Connection connection; 
-	/**
-	 * @param conn
-	 * @param notSameConn
-	 */
 	public SQLTableDBManager(ISQLDatabase db) {
-		this.database = db;
+		super(db);
 	}
-	@Override
-	public IDatabase getDatabase() {
-		return this.database;
-	}
-	@Override
-	public String getDSN() {
-		return database.getDSN();
-	}
-	@Override
-	public void setConnection(Connection conn) throws Throwable {
-		if (this.connection!=null)
-			throw new Warning("当前AppSession中已经存在Connection");
-		this.connection = conn;
-	}
-	/**
-	 * 普通的查询操作不要开启事务即使beginTransaction了，除非做过一次insert update delete 或者 executeUpdate
-	 * 
-	 * 这里只返回当前连接
-	 * 
-	 * @return Connection
-	 * @throws Throwable
-	 */
-	@Override
-	public Connection getConnection() throws Throwable {
-		if (this.connection == null) {
-			if (this.database == null)
-				throw new Warning("未知数据库类型");
-			this.connection = this.database.getConnection();
-		}
-		return this.connection;
-	}
-	/**
-	 * @return Connection
-	 * @throws Throwable
-	 */
-	@Override
-	public Connection getConnection(boolean openTrans) throws Throwable {
-		if (this.connection == null) {
-			if (this.database == null)
-				throw new Warning("未知数据库类型");
-			this.connection = this.database.getConnection();
-		}
-		if (openTrans && this.autoCommit == false) // 指定要开启事务,例如执行insert update delete 或者 executeUpdate
-			if (this.isAlive() && this.connection.getAutoCommit()) { // 连接允许开启事务
-				this.connection.setAutoCommit(false);
-			}
-		return this.connection;
-	}
-	/**
-	 * 设置事务开关
-	 * 
-	 * @throws Throwable
-	 */
-	@Override
-	public void setAutoCommit(boolean b) throws Throwable {
-		if (this.autoCommit==b)
-			return;
-		this.autoCommit = b; // 如果此时没有conn也可以作为后面创建conn的依据
-		if (this.isAlive() && !this.connection.getAutoCommit()) { // 此时conn可能没创建
-			this.connection.setAutoCommit(b);
-//			this.connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED)
-		}
-		DebugUtil.debug(">----< dbm.setAutoCommit:" + this.autoCommit);
-	}
-	/**
-	 * 强制开启事务
-	 * 
-	 * @throws Throwable
-	 */
-	@Override
-	public void openTransaction() throws Throwable {
-		this.setAutoCommit(false); // 如果此时没有conn也可以作为后面创建conn的依据
-	}
-	/**
-	 * 强制关闭事务
-	 * 
-	 * @throws Throwable
-	 */
-	@Override
-	public void closeTransaction() throws Throwable {
-		this.setAutoCommit(true); // 如果此时没有conn也可以作为后面创建conn的依据
-	}
-	@Override
-	public Boolean isAlive() {
-		try {
-			return this.connection != null && !this.connection.isClosed();
-		}catch(Throwable e){
-			throw Warning.wrapException(e);
-		}
-	}
-	private boolean commited = false;
 	@Override
 	public void commit(ITableDBContext context) throws Throwable {
 		this.commit();
@@ -1132,8 +1028,8 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 				form.updateVersion();
 				getSQLRender().insertPreparedStatement(context, table, form, ps, fields, newID);
 				ps.addBatch();
-				SQLDBMappingManager.setMappingTableValue(context, table, form, newID,
-						TableDBManager.SET_MAPPING_TABLE_WHEN_CREATE);
+				SQLMappingDBManager.setMappingTableValue(context, table, form, newID,
+						MappingDBManager.SET_MAPPING_TABLE_WHEN_CREATE);
 //				SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID,
 //						DBTableManager.SET_MAPPING_TABLE_WHEN_CREATE);
 				// 2006-12-06
@@ -1189,7 +1085,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			// ps.executeUpdate();
 			ps.execute();
 			// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + getSQLDBTemplate().getSQL());
-			SQLDBMappingManager.setMappingTableValue(context, table, record, newID, TableDBManager.SET_MAPPING_TABLE_WHEN_CREATE);
+			SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_CREATE);
 //			SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_CREATE);
 			// 2006-12-06
 			record.set(table.getId().getName(), newID);
@@ -1252,7 +1148,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 				record.updateVersion();
 				getSQLRender().updatePreparedStatementValue(context, table, record, ps, fields);
 				ps.addBatch();
-				SQLDBMappingManager.setMappingTableValue(context, table, record, newID, TableDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
+				SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 //				SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 				this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
 				this.changeUsedStatus(context, table, record);
@@ -1291,7 +1187,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 			ps = getSQLRender().getUpdatePreparedStatement(context, table, record);
 			// ps.executeUpdate();
 			ps.execute();
-			SQLDBMappingManager.setMappingTableValue(context, table, record, newID, TableDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
+			SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 //			SQLDBOne2OneManager.setOne2OneTableValue(context, table, record, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 			this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
 			this.changeUsedStatus(context, table, record);
@@ -1324,7 +1220,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 		try {
 			checkUsedStatus(context, table, ids);
 			for (int i = 0; i < ids.length; i++) {
-				SQLDBMappingManager.setMappingTableValue(context, table, null, ids[i], TableDBManager.SET_MAPPING_TABLE_WHEN_REMOVE);
+				SQLMappingDBManager.setMappingTableValue(context, table, null, ids[i], MappingDBManager.SET_MAPPING_TABLE_WHEN_REMOVE);
 //				SQLDBOne2OneManager.setOne2OneTableValue(context, table, null, ids[i], DBTableManager.SET_MAPPING_TABLE_WHEN_REMOVE);
 			}
 			ps = getSQLRender().getDeletePreparedStatement(context, table, ids);
@@ -1639,7 +1535,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 	 * <p/>
 	 * {@link #getPageRecordFactory(IContext, Table)}
 	 * <p/>
-	 * {@link haiyan.orm.database.TableDBTemplate}.getBaseSelectSQL(IContext, Table)
+	 * {@link haiyan.orm.database.sql.TableDBTemplate}.getBaseSelectSQL(IContext, Table)
 	 * {@link haiyan.orm.database.sql.SQLRender}.deal(Table, Object[])
 	 * <p/>
 	 * extends
@@ -1855,7 +1751,7 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 					ITableDBContext subContext = context;
 					try {
 						if (!StringUtil.isBlankOrNull(field.getDsn())) { // 分布式应用不用context的dbm
-							subContext = DBContextFactory.createDBContext((TableDBContext)context);
+							subContext = TableDBContextFactory.createDBContext((TableDBContext)context);
 							subContext.setAttribute(DataConstant.PARAM_DSN, field.getDsn());
 						}
 						String value = null;
@@ -1951,11 +1847,11 @@ public abstract class SQLTableDBManager implements ITableDBManager, ISQLDBManage
 					try {
 						if (!StringUtil.isBlankOrNull(field.getDsn())) {
 							// 分布式应用不用context的dbm
-							subContext = DBContextFactory.createDBContext((TableDBContext)context);
+							subContext = TableDBContextFactory.createDBContext((TableDBContext)context);
 							subContext.setAttribute(DataConstant.PARAM_DSN, field.getDsn());
 						}
 						String id = rs.getString(1);
-						SQLDBMappingManager.queryMappingTable(subContext, table, field, form, id);
+						SQLMappingDBManager.queryMappingTable(subContext, table, field, form, id);
 					} finally {
 						if (!StringUtil.isBlankOrNull(field.getDsn()))
 							subContext.close();

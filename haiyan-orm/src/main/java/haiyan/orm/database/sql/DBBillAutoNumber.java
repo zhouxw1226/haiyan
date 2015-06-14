@@ -5,13 +5,14 @@ import haiyan.common.Ref;
 import haiyan.common.StringUtil;
 import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;
+import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.session.IContext;
 import haiyan.config.castorgen.Id;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
-import haiyan.orm.database.DBContextFactory;
+import haiyan.orm.database.TableDBContextFactory;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -47,7 +48,7 @@ class DBBillAutoNumber {
 	 * @return int
 	 * @throws Throwable
 	 */
-	static synchronized BigDecimal requestID(IContext context, Table table, long lngNumber) throws Throwable {
+	static synchronized BigDecimal requestID(IContext context, ITableConfig table, long lngNumber) throws Throwable {
 		// '申请的个数不可以小于等于零
 		if (lngNumber <= 0) {
 			throw new Warning("申请的ID个数不能小于等于零.");
@@ -98,12 +99,12 @@ class DBBillAutoNumber {
 	 * @param lngREndNumber
 	 * @throws Throwable
 	 */
-	private static void dbGetNumber(IContext context, Table table,
+	private static void dbGetNumber(IContext context, ITableConfig table,
 			BigDecimal lngDBIDRequestNumber, Ref<BigDecimal> lngRBeginNumber,
 			Ref<BigDecimal> lngREndNumber) throws Throwable {
 		String strObjName = ConfigUtil.getRealTableName(table);
 		strObjName = strObjName.toUpperCase();
-		ITableDBContext subContext = DBContextFactory.createDBContext(context); // 开启一个独立事务
+		ITableDBContext subContext = TableDBContextFactory.createDBContext(context); // 开启一个独立事务
 		try {
 			String sSQL = "SELECT ID, VALUE, PROP1 FROM SYSCACHE WHERE K like ?";
 			// for update only for mysql
@@ -118,7 +119,7 @@ class DBBillAutoNumber {
 				lngIniStartNumber = BigDecimal.valueOf((long) 1);
 				lngIniEndNumber = BigDecimal.valueOf((long) 100);
 				lngIniWarnNumber = BigDecimal.valueOf((long) 90);
-				Id idFld = table.getId();
+				Id idFld = ((Table)table).getId();
 				if (idFld.getJavaType() != AbstractCommonFieldJavaTypeType.STRING) {
 					String sql = "select max(" + idFld.getName() + ") from " + strObjName;
 					Object[][] rsStr = subContext.getDBM().getResultArray(sql, 1, null);
@@ -179,7 +180,7 @@ class DBBillAutoNumber {
 	 * @return
 	 * @throws Throwable
 	 */
-	static synchronized String requestShortID(IContext context, Table table, long lngNumber) throws Throwable { 
+	static synchronized String requestShortID(IContext context, ITableConfig table, long lngNumber) throws Throwable { 
 		long id = requestID(context, table, lngNumber).longValue();
 		return shortUrl(id);
 	}

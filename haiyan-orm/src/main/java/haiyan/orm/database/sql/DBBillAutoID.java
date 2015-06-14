@@ -1,5 +1,6 @@
 package haiyan.orm.database.sql;
 
+import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.session.IContext;
 import haiyan.config.castorgen.Table;
 
@@ -47,7 +48,7 @@ public class DBBillAutoID {
 	 * @return
 	 * @throws Throwable
 	 */
-	public static String genShortID(IContext context, Table table, long range) throws Throwable { 
+	public static String genShortID(IContext context, ITableConfig table, long range) throws Throwable { 
 		return DBBillAutoNumber.requestShortID(context,table,range);
 	}
 	/**

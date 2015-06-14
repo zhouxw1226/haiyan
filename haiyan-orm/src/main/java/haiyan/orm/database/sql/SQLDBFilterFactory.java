@@ -9,7 +9,7 @@ import haiyan.common.intf.factory.IFactory;
 import haiyan.config.castorgen.PluggedFilter;
 import haiyan.config.castorgen.QueryFilter;
 import haiyan.config.castorgen.Table;
-import haiyan.config.intf.session.ITableDBContext;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.util.ArrayList;
 

@@ -27,13 +27,10 @@ import haiyan.config.castorgen.QuerySQL;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.config.castorgen.types.QueryConditionTypeType;
-import haiyan.config.intf.database.sql.ITableSQLRender;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.config.util.NamingUtil;
 import haiyan.exp.ExpUtil;
 import haiyan.orm.database.DBPage;
-import haiyan.orm.database.TableDBTemplate;
 import haiyan.orm.database.sql.page.GeneralDBPageFactory;
 import haiyan.orm.database.sql.page.SQLDBPageFactory;
 import haiyan.orm.database.sql.query.BetweenCriticalItem;
@@ -52,6 +49,8 @@ import haiyan.orm.database.sql.query.PrimaryTable;
 import haiyan.orm.database.sql.query.Query;
 import haiyan.orm.database.sql.query.RefLikeCriticalItem;
 import haiyan.orm.database.sql.query.UpperThanCriticalItem;
+import haiyan.orm.intf.database.sql.ITableSQLRender;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -445,7 +444,7 @@ class SQLRender implements ITableSQLRender {
 		if (!field.getMultipleSelect()) {
 			item = new InCriticalItem(fullFieldName, values, String.class);
 		} else {
-			String[] values2 = SQLDBMappingManager.getIDSFromMapping(context, table, field, values);
+			String[] values2 = SQLMappingDBManager.getIDSFromMapping(context, table, field, values);
 			item = new InCriticalItem(fullFieldName, values2, String.class);
 		}
 		return item;

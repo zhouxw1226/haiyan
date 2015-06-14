@@ -1,28 +1,24 @@
 package haiyan.bill.database;
 
 import static haiyan.common.SysCode.SysCodeNum.NOT_INIT_FILTERS;
+import haiyan.common.StringUtil;
 import haiyan.common.SysCode.SysCodeMessage;
 import haiyan.common.SysCode.SysCodeNum;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.config.IBillConfig;
-import haiyan.common.intf.config.IBillTable;
+import haiyan.common.intf.config.IBillIDConfig;
 import haiyan.common.intf.database.IDBFilter;
 import haiyan.common.intf.database.IPredicate;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBResultSet;
-import haiyan.common.intf.database.sql.ISQLDBFilter;
-import haiyan.common.intf.session.IContext;
 import haiyan.common.intf.session.IUser;
 import haiyan.config.castorgen.Bill;
 import haiyan.config.castorgen.BillField;
-import haiyan.config.castorgen.BillID;
-import haiyan.config.castorgen.Table;
-import haiyan.config.intf.database.ITableDBManager;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.DBPage;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * DB单据 Bean
@@ -33,7 +29,7 @@ import java.util.ArrayList;
 public class DBBill extends AbstractDBBill {
 
 	private static final long serialVersionUID = 1L;
-	private Bill billConfig;
+	private IBillConfig billConfig;
 	private IUser user;
 	private IDBResultSet[] resultSets;
 	private IDBFilter[] dbFilters;
@@ -41,7 +37,7 @@ public class DBBill extends AbstractDBBill {
 	private Object billID;
 	public DBBill(IUser user, IBillConfig billConfig) {
 		this.user = user;
-		this.billConfig = (Bill)billConfig;
+		this.billConfig = billConfig;
 		init();
 	}
 	private void init() {
@@ -119,8 +115,8 @@ public class DBBill extends AbstractDBBill {
 	}
 	@Override
 	public Object getValue(String name) { // TODO 要做优化处理，将name和field做一个map索引
-		BillID[] billIDs = billConfig.getBillID();
-		for (BillID billID:billIDs) {
+		IBillIDConfig[] billIDs = billConfig.getBillID();
+		for (IBillIDConfig billID:billIDs) {
 			if (name.equalsIgnoreCase(billID.getName())) {
 				int tableIndex = billID.getTableIndex();
 				if (this.resultSets==null)
@@ -153,8 +149,8 @@ public class DBBill extends AbstractDBBill {
 	}
 	@Override
 	public void setValue(String name, Object value) { // TODO 要做优化处理，将name和field做一个map索引
-		BillID[] billIDs = billConfig.getBillID();
-		for (BillID billID:billIDs) {
+		IBillIDConfig[] billIDs = billConfig.getBillID();
+		for (IBillIDConfig billID:billIDs) {
 			if (name.equalsIgnoreCase(billID.getName())) {
 				int tableIndex = billID.getTableIndex();
 				if (this.resultSets==null)
@@ -194,6 +190,20 @@ public class DBBill extends AbstractDBBill {
 	}
 	@Override
 	public void setBillID(Object billID) {
+		IDBResultSet[] resultSets = this.getResultSets();
+		IBillConfig billConfig = this.getBillConfig();
+		for (int tableIndex=0;tableIndex<resultSets.length;tableIndex++) {
+			IDBResultSet rst = resultSets[tableIndex];
+			Iterator<IDBRecord> iter = rst.getRecords().iterator(); 
+			while(iter.hasNext()) {
+				IDBRecord record = iter.next();
+				IBillIDConfig billIdConf = ConfigUtil.getBillIDConfig(billConfig, tableIndex);
+//				Object recordbillIDVal = record.get(billIdConf.getDbName());
+//				if (!StringUtil.isEmpty(recordbillIDVal) && !recordbillIDVal.equals(this.getBillID()))
+//					throw new Warning("BillID exists when createBillByID:"+this.getBillID());
+				record.set(billIdConf.getDbName(), billID); // 单据外键
+			}
+		}
 		this.billID = billID;
 	}
 	@Override
@@ -209,52 +219,6 @@ public class DBBill extends AbstractDBBill {
 		IDBResultSet rst = this.resultSets[tableIndex];
 		rst.filter(predicate);
 //		CollectionUtils.filter(rst.getRecords(), predicate);
-	}
-	@Override
-	public IDBResultSet query(IContext context, int tableIndex, 
-			ISQLDBFilter dbFilter, int pageRowCount, int pageIndex, boolean override) throws Throwable {
-		IBillConfig billConfig = this.getBillConfig();
-		IBillTable billTable = billConfig.getBillTable()[tableIndex];
-		Table table = ConfigUtil.getTable(billTable.getDbName());
-		IDBResultSet rst = ((ITableDBManager)context.getDBM()).select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndex);
-		if (override)
-			this.resultSets[tableIndex]=rst;
-		return rst;
-	}
-	@Override
-	public IDBResultSet queryNext(IContext context, int tableIndex,
-			ISQLDBFilter dbFilter, int pageRowCount, boolean override)
-			throws Throwable {
-		int maxPageCount = this.resultSets[tableIndex].getMaxPageCount();
-		if (this.resultSets[tableIndex].getPageIndex()==maxPageCount)
-			return null;
-		IBillConfig billConfig = this.getBillConfig();
-		IBillTable billTable = billConfig.getBillTable()[tableIndex];
-		Table table = ConfigUtil.getTable(billTable.getDbName());
-		int pageIndexNext = this.resultSets[tableIndex].getPageIndex()+1;
-		if (pageRowCount<=0)
-			pageRowCount = this.resultSets[tableIndex].getPageRowCount();
-		IDBResultSet rst = ((ITableDBManager)context.getDBM()).select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndexNext);
-		if (override)
-			this.resultSets[tableIndex]=rst;
-		return rst;
-	}
-	@Override
-	public IDBResultSet queryPrev(IContext context, int tableIndex,
-			ISQLDBFilter dbFilter, int pageRowCount, boolean override)
-			throws Throwable {
-		if (this.resultSets[tableIndex].getPageIndex()==1)
-			return null;
-		IBillConfig billConfig = this.getBillConfig();
-		IBillTable billTable = billConfig.getBillTable()[tableIndex];
-		Table table = ConfigUtil.getTable(billTable.getDbName());
-		int pageIndexPrev = this.resultSets[tableIndex].getPageIndex()-1;
-		if (pageRowCount<=0)
-			pageRowCount = this.resultSets[tableIndex].getPageRowCount();
-		IDBResultSet rst = ((ITableDBManager)context.getDBM()).select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndexPrev);
-		if (override)
-			this.resultSets[tableIndex]=rst;
-		return rst;
 	}
 	@Override
 	public IDBRecord insertRowBefore(int tableIndex, int rowIndex)

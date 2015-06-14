@@ -1,5 +1,7 @@
 package haiyan.common.intf.config;
 
+import haiyan.config.castorgen.BillField;
+
 public interface IBillConfig {
 
 	String getName();
@@ -8,6 +10,10 @@ public interface IBillConfig {
 
 	IBillTable[] getBillTable();
 
-	IBillID getBillID(int tableIndex);
+	IBillIDConfig[] getBillID();
+
+	int getBillTableCount();
+
+	BillField[] getBillField();
 
 }

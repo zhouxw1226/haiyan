@@ -13,6 +13,8 @@ import haiyan.common.config.PathUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.cache.IDataCache;
 import haiyan.common.intf.config.IBillConfig;
+import haiyan.common.intf.config.IBillIDConfig;
+import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.exp.IExpUtil;
 import haiyan.common.intf.session.IUser;
 import haiyan.config.castorgen.AbstractBillField;
@@ -249,10 +251,10 @@ public class ConfigUtil {
 	public final static String getDBName(AbstractBillField field) {
 		return StringUtil.isEmpty(field.getDbName())?field.getName():field.getDbName();
 	}
-	public final static String getDBName(Table table) {
+	public final static String getDBName(ITableConfig table) {
         return getRealTableName(table);
     }
-    public final static String getRealTableName(Table table) {
+    public final static String getRealTableName(ITableConfig table) {
         String tableName = table.getRealName();
         if (StringUtil.isBlankOrNull(tableName)
             || table.getName().equalsIgnoreCase(tableName))
@@ -757,7 +759,7 @@ public class ConfigUtil {
 	public static int getMainTableIndex(IBillConfig billCfg) {
 		return 0;
 	}
-	public static Table getMainTable(IBillConfig billCfg) {
+	public static ITableConfig getMainTable(IBillConfig billCfg) {
 		Bill bill = (Bill)billCfg;
 		BillTable[] tables = bill.getBillTable();
 		if (tables.length>0) {
@@ -769,14 +771,14 @@ public class ConfigUtil {
         public String field;
         public String linkTable;
     }
-    public final static ArrayList<LinkField> getLinkTable(Table table) {
+    public final static ArrayList<LinkField> getLinkTable(ITableConfig table) {
         String key = table.getName();
         ArrayList<LinkField> list = null;
         if (!LINKMAP.containsKey(key)) {
             synchronized (LINKMAP) {
                 if (!LINKMAP.containsKey(key)) {
                     list = new ArrayList<LinkField>();
-                    Field[] flds = table.getField();
+                    Field[] flds = ((Table)table).getField();
                     for (Field f : flds) {
                         String lt = f.getReferenceTable();
                         if (StringUtil.isEmpty(lt))
@@ -1815,4 +1817,13 @@ public class ConfigUtil {
 //		}
 //		return 0;
 //	}
+	public static IBillIDConfig getBillIDConfig(IBillConfig billConfig,
+			int tableIndex) {
+		IBillIDConfig[] billids = billConfig.getBillID();
+		for (IBillIDConfig billid:billids) {
+			if (billid.getTableIndex()==tableIndex)
+				return billid;
+		}
+		return null;
+	}
 }

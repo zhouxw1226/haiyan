@@ -1,9 +1,8 @@
 package haiyan.common.intf.session;
 
-import java.util.List;
-
-import haiyan.common.intf.database.IDBManager;
 import haiyan.common.intf.exp.IExpUtil;
+
+import java.util.List;
 
 /**
  * 抽象上下文接口
@@ -22,8 +21,10 @@ public interface IContext extends ISession {
 	void addException(Throwable e);
 	List<Throwable> getExceptions();
 	
-	void setDBM(IDBManager dbm);
-	IDBManager getDBM();
+//	void setDBM(ITableDBManager dbm);
+//	ITableDBManager getDBM();
+//	void setBBM(IBillDBManager bbm);
+//	IBillDBManager getBBM();
 	void setUser(IUser user);
 	IUser getUser();
 	void setDSN(String DSN);

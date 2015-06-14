@@ -1,13 +1,14 @@
-package haiyan.config.intf.database;
+package haiyan.orm.intf.database;
 
+import haiyan.common.intf.database.IDBClear;
 import haiyan.common.intf.database.IDBFilter;
-import haiyan.common.intf.database.IDBManager;
 import haiyan.common.intf.database.IDatabase;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBRecordCallBack;
 import haiyan.common.intf.database.orm.IDBResultSet;
+import haiyan.common.intf.database.sql.ISQLDBManager;
 import haiyan.config.castorgen.Table;
-import haiyan.config.intf.session.ITableDBContext;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.util.List;
 
@@ -19,7 +20,10 @@ import java.util.List;
  * @author ZhouXW
  *
  */
-public interface ITableDBManager extends IDBManager {
+public interface ITableDBManager extends ISQLDBManager {
+	IDBRecord createRecord();
+	IDBRecord createRecord(Class<?> clz) throws InstantiationException, IllegalAccessException;
+	IDBClear getClear();
 
 	boolean delete(ITableDBContext context, Table table, String[] ids) throws Throwable;
 	IDBRecord insert(ITableDBContext context, Table table, IDBRecord record) throws Throwable;

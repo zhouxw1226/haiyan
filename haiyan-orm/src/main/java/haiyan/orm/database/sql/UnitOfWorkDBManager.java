@@ -6,9 +6,9 @@ import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.database.sql.ISQLDatabase;
 import haiyan.config.castorgen.Table;
-import haiyan.config.intf.database.sql.ITableSQLRender;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
+import haiyan.orm.intf.database.sql.ITableSQLRender;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -15,7 +15,6 @@ import haiyan.config.castorgen.AbstractField;
 import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Table;
 import haiyan.config.util.ConfigUtil;
-import haiyan.orm.database.TableDBTemplate;
 import haiyan.orm.database.sql.query.LeftOuterJoinedTable;
 import haiyan.orm.database.sql.query.PrimaryTable;
 

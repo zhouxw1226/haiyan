@@ -14,9 +14,9 @@ import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Id;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-import haiyan.config.intf.database.sql.ITableSQLRender;
 import haiyan.config.util.ConfigUtil;
 import haiyan.exp.ExpUtil;
+import haiyan.orm.intf.database.sql.ITableSQLRender;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

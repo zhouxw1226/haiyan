@@ -1,13 +1,13 @@
 /*
  * Created on 2004-10-9
  */
-package haiyan.orm.database;
+package haiyan.orm.database.sql;
 
 import haiyan.common.StringUtil;
 import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Table;
-import haiyan.config.intf.database.ITableDBTemplate;
 import haiyan.config.util.ConfigUtil;
+import haiyan.orm.intf.database.ITableDBTemplate;
 
 /**
  * 平台的核心模板模式，SQL生成和对象关系元数据映射等等都是基于此模板模式

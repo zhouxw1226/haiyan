@@ -10,7 +10,7 @@ import haiyan.common.intf.database.sql.ISQLDatabase;
 import haiyan.config.castorgen.AbstractField;
 import haiyan.config.castorgen.Id;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-import haiyan.config.intf.database.sql.ITableSQLRender;
+import haiyan.orm.intf.database.sql.ITableSQLRender;
 
 import java.sql.SQLException;
 

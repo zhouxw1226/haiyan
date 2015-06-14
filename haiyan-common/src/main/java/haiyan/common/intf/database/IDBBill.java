@@ -3,8 +3,6 @@ package haiyan.common.intf.database;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBResultSet;
-import haiyan.common.intf.database.sql.ISQLDBFilter;
-import haiyan.common.intf.session.IContext;
 import haiyan.common.intf.session.IUser;
 
 import java.io.Serializable;
@@ -34,12 +32,6 @@ public interface IDBBill extends Serializable {
 	
 	IDBRecord find(int tableIndex, IPredicate predicate);
 	void filter(int tableIndex, IPredicate predicate);
-	IDBResultSet query(IContext context, int tableIndex, ISQLDBFilter dbFilter, 
-			int pageRowCount, int pageIndex, boolean override) throws Throwable;
-	IDBResultSet queryNext(IContext context, int tableIndex, ISQLDBFilter dbFilter,
-			int pageRowCount, boolean override) throws Throwable;
-	IDBResultSet queryPrev(IContext context, int tableIndex, ISQLDBFilter dbFilter,
-			int pageRowCount, boolean override) throws Throwable;
 
 	IDBRecord insertRowBefore(int tableIndex, int rowIndex) throws Throwable;
 	IDBRecord insertRowAfter(int tableIndex, int rowIndex) throws Throwable;

@@ -2,14 +2,15 @@ package haiyan.orm.database;
 
 import haiyan.common.PropUtil;
 import haiyan.common.StringUtil;
-import haiyan.common.intf.database.IDBManager;
 import haiyan.common.intf.exp.IExpUtil;
 import haiyan.common.intf.factory.IFactory;
 import haiyan.common.intf.session.IContext;
 import haiyan.common.intf.session.IUser;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.exp.ExpUtil;
-import haiyan.orm.database.sql.DBManagerFactory;
+import haiyan.orm.database.sql.TableDBContext;
+import haiyan.orm.database.sql.TableDBManagerFactory;
+import haiyan.orm.intf.database.ITableDBManager;
+import haiyan.orm.intf.session.ITableDBContext;
 
 /**
  * AppSession
@@ -17,13 +18,13 @@ import haiyan.orm.database.sql.DBManagerFactory;
  * @author ZhouXW
  *
  */
-public class DBContextFactory implements IFactory {
+public class TableDBContextFactory implements IFactory {
 
-	private DBContextFactory() { 
+	private TableDBContextFactory() { 
 	}
 	public static ITableDBContext createDBContext(String DSN) {
 		ITableDBContext context = new TableDBContext();
-		IDBManager dbm = DBManagerFactory.createDBManager(DSN);
+		ITableDBManager dbm = TableDBManagerFactory.createDBManager(DSN);
 		context.setDBM(dbm);
 		IExpUtil exp = new ExpUtil(context);
 		context.setExpUtil(exp);
@@ -33,11 +34,12 @@ public class DBContextFactory implements IFactory {
 		String DSN = PropUtil.getProperty("SERVER.DSN");
 		return createDBContext(DSN);
 	}
-	public static ITableDBContext createDBContext(IUser user, IDBManager dbm) {
+	// ----------------------------------------------------------------------------------- //
+	public static ITableDBContext createDBContext(IUser user, ITableDBManager dbm) {
 		ITableDBContext context = new TableDBContext();
 		context.setUser(user);
 		String DSN = StringUtil.isEmpty(user.getDSN())?PropUtil.getProperty("SERVER.DSN"):user.getDSN();
-		dbm = dbm==null?DBManagerFactory.createDBManager(DSN):dbm;
+		dbm = dbm==null?TableDBManagerFactory.createDBManager(DSN):dbm;
 		context.setDBM(dbm);
 		IExpUtil exp = new ExpUtil(context);
 		context.setExpUtil(exp);
@@ -46,12 +48,13 @@ public class DBContextFactory implements IFactory {
 	public static ITableDBContext createDBContext(IUser user) {
 		return createDBContext(user, null);
 	}
-	public static ITableDBContext createDBContext(IContext parent, IDBManager dbm) {
+	// ----------------------------------------------------------------------------------- //
+	public static ITableDBContext createDBContext(IContext parent, ITableDBManager dbm) {
 		TableDBContext context = new TableDBContext(parent);
 		if (parent!=null)
 			context.setUser(parent.getUser());
 		String DSN = StringUtil.isEmpty(context.getDSN())?PropUtil.getProperty("SERVER.DSN"):context.getDSN();
-		dbm = dbm==null?DBManagerFactory.createDBManager(DSN):dbm;
+		dbm = dbm==null?TableDBManagerFactory.createDBManager(DSN):dbm;
 		context.setDBM(dbm);
 		IExpUtil exp = new ExpUtil(context);
 		context.setExpUtil(exp);

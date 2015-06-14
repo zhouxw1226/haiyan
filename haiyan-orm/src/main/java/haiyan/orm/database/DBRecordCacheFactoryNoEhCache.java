@@ -5,9 +5,9 @@ import haiyan.common.config.DataConstant;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBRecordCacheManager;
 import haiyan.config.castorgen.Table;
-import haiyan.config.intf.database.orm.ITableRecordCacheManager;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
+import haiyan.orm.intf.database.orm.ITableRecordCacheManager;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.util.HashMap;
 import java.util.Iterator;

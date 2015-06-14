@@ -2,7 +2,6 @@ package haiyan.common.session;
 
 import haiyan.common.CloseUtil;
 import haiyan.common.StringUtil;
-import haiyan.common.intf.database.IDBManager;
 import haiyan.common.intf.exp.IExpUtil;
 import haiyan.common.intf.session.IAppContext;
 import haiyan.common.intf.session.IContext;
@@ -23,7 +22,7 @@ public class AppContext implements IAppContext {
 
 	public AppContext() { 
 	}
-	private Boolean alive;
+	protected Boolean alive;
 	@Override
 	public Boolean isAlive() {
 		return alive;
@@ -31,7 +30,7 @@ public class AppContext implements IAppContext {
 	public void setAlive(Boolean alive) {
 		this.alive = alive;
 	}
-	private IContext parent;
+	protected IContext parent;
 	public AppContext(IContext parent) { 
 		this.parent=parent;
 		if (parent!=null) {
@@ -39,7 +38,7 @@ public class AppContext implements IAppContext {
 			this.DSN=parent.getDSN();
 		}
 	}
-	private Map<String,Object> atts = new HashMap<String, Object>();
+	protected Map<String,Object> atts = new HashMap<String, Object>();
 	@Override
 	public Object removeAttribute(String key) {
 		return atts.remove(key);
@@ -75,17 +74,6 @@ public class AppContext implements IAppContext {
 	public List<Throwable> getExceptions() {
 		return exceptions;
 	}
-	private IDBManager dbm;
-	@Override
-	public void setDBM(IDBManager dbm) {
-		if (this.dbm!=null && this.dbm.isAlive())
-			CloseUtil.close(this.dbm);
-		this.dbm = dbm;
-	}
-	@Override
-	public IDBManager getDBM() {
-		return dbm;
-	}
 	private IExpUtil exp;
 	@Override
 	public void setExpUtil(IExpUtil exp) {
@@ -102,7 +90,11 @@ public class AppContext implements IAppContext {
 	}
 	@Override
 	public IUser getUser() {
-		return user;
+		if (this.user!=null)
+			return user;
+		if (this.parent!=null)
+			return this.parent.getUser();
+		return null;
 	}
 	private String DSN;
 	@Override
@@ -113,23 +105,33 @@ public class AppContext implements IAppContext {
 	public String getDSN() {
 		return !StringUtil.isBlankOrNull(this.DSN)?this.DSN:(user!=null?user.getDSN():null);
 	}
-//	@Override
-//	public Object getNextID(String tableName) throws Throwable {
-//		return UUID.randomUUID().toString();
-//	}
 	@Override
 	public void close() {
-		CloseUtil.close(this.dbm);
 		CloseUtil.close(this.exp);
 		this.atts.clear();
 		this.parent=null;
 		this.user = null;
-		this.dbm = null;
 		this.exp = null;
 	}
 	@Override
 	public void clear() {
-		if (this.dbm!=null)
-			this.dbm.clear();
 	}
+//	@Override
+//	public void setDBM(ITableDBManager dbm) {
+//		// TODO Auto-generated method stub
+//	}
+//	@Override
+//	public ITableDBManager getDBM() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//	@Override
+//	public void setBBM(IBillDBManager bbm) {
+//		// TODO Auto-generated method stub
+//	}
+//	@Override
+//	public IBillDBManager getBBM() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 }

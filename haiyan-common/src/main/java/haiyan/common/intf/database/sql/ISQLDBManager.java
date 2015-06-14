@@ -1,8 +1,10 @@
 package haiyan.common.intf.database.sql;
 
-import java.sql.Connection;
+import haiyan.common.intf.database.IDatabase;
+import haiyan.common.intf.session.IDBSession;
 
-import haiyan.common.intf.database.IDBManager;
+import java.sql.Connection;
+import java.sql.Savepoint;
 
 /**
  * 基于SQL数据库DB管理器
@@ -10,9 +12,11 @@ import haiyan.common.intf.database.IDBManager;
  * @author ZhouXW
  *
  */
-public interface ISQLDBManager extends IDBManager {
+public interface ISQLDBManager extends IDBSession {
 
 	void setConnection(Connection conn) throws Throwable;
 	Connection getConnection() throws Throwable;
 	Connection getConnection(boolean openTrans) throws Throwable;
+	IDatabase getDatabase();
+	Savepoint getSavepoint() throws Throwable;
 }

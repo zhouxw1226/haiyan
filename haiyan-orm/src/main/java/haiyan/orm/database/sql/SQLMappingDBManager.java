@@ -10,15 +10,15 @@ import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Table;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.config.util.NamingUtil;
-import haiyan.orm.database.TableDBManager;
+import haiyan.orm.database.MappingDBManager;
+import haiyan.orm.intf.session.ITableDBContext;
 
 /**
  * @author zhouxw
  */
-class SQLDBMappingManager extends TableDBManager {
+class SQLMappingDBManager extends MappingDBManager {
 
 	/** 
 	 * @param context

@@ -1,6 +1,6 @@
 package haiyan.exp;
 
-import haiyan.common.intf.database.IDBManager;
+
 
 /**
  * context wrapper
@@ -52,11 +52,17 @@ public interface IExpContext<T> extends java.io.Serializable {
 	 */
 	T getContext() throws Throwable;
 
-	/**
-	 * @return DBManager
-	 * @throws Throwable
-	 */
-	IDBManager getDBM() throws Throwable; 
+//	/**
+//	 * @return DBManager
+//	 * @throws Throwable
+//	 */
+//	ITableDBManager getDBM() throws Throwable; 
+//
+//	/**
+//	 * @return DBManager
+//	 * @throws Throwable
+//	 */
+//	IBillDBManager getBBM() throws Throwable; 
 
 	/**
 	 * @param key

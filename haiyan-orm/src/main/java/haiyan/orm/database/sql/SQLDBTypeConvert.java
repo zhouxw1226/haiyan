@@ -19,12 +19,12 @@ import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Option;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.config.util.NamingUtil;
 import haiyan.orm.database.DBPage;
 import haiyan.orm.database.sql.query.CriticalItem;
 import haiyan.orm.database.sql.query.InCriticalItem;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

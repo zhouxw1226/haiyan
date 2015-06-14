@@ -3,7 +3,6 @@ package haiyan.exp;
 import haiyan.common.CloseUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.StringUtil;
-import haiyan.common.intf.database.IDBManager;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.exp.IExpUtil;
@@ -321,12 +320,18 @@ public class ExpUtil implements IExpUtil {
 		public IContext getContext() throws Throwable {
 			return this.context;
 		}
-		@Override
-		public IDBManager getDBM() throws Throwable {
-			if (this.context==null)
-				return null;
-			return this.context.getDBM();
-		}
+//		@Override
+//		public ITableDBManager getDBM() throws Throwable {
+//			if (this.context==null)
+//				return null;
+//			return this.context.getDBM();
+//		}
+//		@Override
+//		public IBillDBManager getBBM() throws Throwable {
+//			if (this.context==null)
+//				return null;
+//			return this.context.getBBM();
+//		}
 		@Override
 		public void setParameter(String key, Object value) {
 			if (this.context==null)
