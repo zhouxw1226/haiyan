@@ -7,6 +7,7 @@ import haiyan.common.intf.session.IContext;
 import haiyan.common.session.AppContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.sql.DBBillAutoID;
+import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.session.ITableDBContext;
 
 import java.util.ArrayList;
@@ -87,6 +88,11 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	}
 	@Override
 	public void commit() throws Throwable {
+		for (ITableDBContext context:this.tableContexts) {
+			ITableDBManager dbm = context.getDBM();
+			if(dbm != null)
+				dbm.commit();
+		}
 		IBillDBManager bbm = this.getBBM();
 		if (bbm==null)
 			return;
@@ -94,6 +100,11 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	}
 	@Override
 	public void rollback() throws Throwable {
+		for (ITableDBContext context:this.tableContexts) {
+			ITableDBManager dbm = context.getDBM();
+			if(dbm != null)
+				dbm.rollback();
+		}
 		IBillDBManager bbm = this.getBBM();
 		if (bbm==null)
 			return;

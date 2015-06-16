@@ -83,6 +83,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			DebugUtil.debug(">----< dbm.commit.visualHash:" + this.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
+		this.commited = true;//事务是否结束
 //		// 清理缓存
 //		EventQueue.invokeLater(new Runnable() {
 //			public void run() {
@@ -125,6 +126,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			DebugUtil.debug(">----< dbm.rollback.visualHash:" + this.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
+		this.commited = true;//事务是否结束
 //		// 清理缓存 回滚不清理缓存
 //		EventQueue.invokeLater(new Runnable() {
 //			public void run() {

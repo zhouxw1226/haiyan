@@ -38,15 +38,16 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 	}
 	@Override
 	public void commit() throws Throwable {
-		if (this.connection!=null)
+		if (this.connection!=null && !this.connection.getAutoCommit())
 			this.connection.commit();
 		for (IDBBill bill:this.billList) {
 			bill.commit(); // 内存单据提交
 		}
+		this.commited = true;
 	}
 	@Override
 	public void rollback() throws Throwable {
-		if (this.savePoint!=null && this.connection!=null)
+		if (this.savePoint!=null && this.connection!=null && !this.connection.getAutoCommit())
 			this.connection.rollback(this.savePoint);
 		for (IDBBill bill:this.billList) {
 			bill.rollback(); // 内存单据回滚
@@ -137,7 +138,7 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 			IBillTable billTable = billTables[i];
 			int tableIndex = billTable.getTableIndex();
 			IDBResultSet rst = resultSets[tableIndex];
-			IBillIDConfig billID = ConfigUtil.getBillIDConfig(billConfig, tableIndex);
+//			IBillIDConfig billID = ConfigUtil.getBillIDConfig(billConfig, tableIndex);
 			Table table = ConfigUtil.getTable(billTable.getDbName());
 			List<String> ids = new ArrayList<String>();
 			for (IDBRecord record:rst.getRecords()) {
@@ -151,8 +152,12 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 			if (ids.size()>0) {
 				context.getDBM().delete(context, table, ids.toArray(new String[0]));
 			}
+			if(bill.getBillID() == null){
+				String newID = (String)context.getNextID(table);
+				bill.setBillID(newID);
+			}
 			for (IDBRecord record:rst.getRecords()) {
-				record.set(billID.getDbName(), bill.getBillID()); // 单据外键
+//				record.set(billID.getDbName(), bill.getBillID()); // 单据外键
 				if (record.getStatus()==IDBRecord.INSERT) {
 					context.getDBM().insert(context, table, record);
 				} else if (record.getStatus()==UPDATE) {
