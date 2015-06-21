@@ -343,7 +343,8 @@ class ReadEnv {
         		|| (OS.indexOf("windows 20") > -1)
                 || (OS.indexOf("windows xp") > -1)
                 || (OS.indexOf("windows 7") > -1)
-                || (OS.indexOf("windows vista") > -1)) {
+                || (OS.indexOf("windows vista") > -1)
+                || (OS.indexOf("windows 8.1") > -1)) {
             // thanks to JuanFran for the xp fix!
             p = r.exec("cmd.exe /c set");
         } else {

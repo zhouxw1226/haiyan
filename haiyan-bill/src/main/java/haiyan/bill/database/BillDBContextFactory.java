@@ -36,7 +36,7 @@ public class BillDBContextFactory {
 	// ----------------------------------------------------------------------------------- //
 	public static IBillDBContext createBillDBContext(IContext parent, IBillConfig billConfig, ITableDBManager[] dbms) {
 		IBillDBContext context = new BillDBContext(parent);
-		if(parent != null){
+		if(parent != null && parent.getUser() != null){
 			context.setUser(parent.getUser());
 		}else{
 			return createBillDBContext(billConfig);
