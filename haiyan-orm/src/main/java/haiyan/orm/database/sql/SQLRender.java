@@ -642,7 +642,7 @@ class SQLRender implements ITableSQLRender {
 	 * @return String
 	 * @throws Throwable
 	 */
-	protected String getUpdateSQL(Table table, Field[] validFields)
+	protected String getUpdateSQL(Table table, Field[] validFields,IDBFilter filter)
 			throws Throwable {
 		StringBuffer buf = new StringBuffer().append("update ").append(ConfigUtil.getRealTableName(table)).append(" set ");
 		for (int i = 0; i < validFields.length; i++) {
@@ -650,7 +650,10 @@ class SQLRender implements ITableSQLRender {
 				buf.append(",");
 			buf.append(getDBName(validFields[i])).append("=?");
 		}
-		buf.append(" where ").append(getDBName(table.getId())).append("=? ");
+		if(filter == null)
+			buf.append(" where ").append(getDBName(table.getId())).append("=? ");
+		else
+			buf.append(" where 1=1 ").append(filter.getFilter());
 		mainSQL = buf.toString();
 		DebugUtil.debug(">UpdateSQL=" + mainSQL);
 		return mainSQL;
@@ -771,7 +774,7 @@ class SQLRender implements ITableSQLRender {
 		return ps;
 	}
 	@Override
-	public void updatePreparedStatementValue(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields) throws Throwable {
+	public void updatePreparedStatementValue(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields,IDBFilter filter) throws Throwable {
 		int i;
 		Set<String> deletedKeySet = record.deletedKeySet();
 		StringBuffer ss = new StringBuffer();
@@ -796,18 +799,26 @@ class SQLRender implements ITableSQLRender {
 				ss.append("##update(" + fieldName + "):"+value+"\t");
 			}
 		}
-		ps.setString(i + 1, (String)record.get(table.getId().getName()));
+		if(filter == null)
+			ps.setString(i + 1, (String)record.get(table.getId().getName()));
+		else{
+			Object[] paras = filter.getParas();
+			for(int j=0;j<paras.length;j++){
+				Object obj = paras[j];
+				ps.setObject(i+j+1, obj);
+			}
+		}
 		ss.append("##update(" + table.getId().getName() + "):"+record.get(table.getId().getName())+"\t");
 		DebugUtil.debug(ss.toString());
 	}
 	@Override
-	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record) throws Throwable {
+	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record,IDBFilter filter) throws Throwable {
 		// 2007-01-09 zhouxw
 		Field[] fields = getUpdateValidField(context, table, record);
-		mainSQL = getUpdateSQL(table, fields);
+		mainSQL = getUpdateSQL(table, fields,filter);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
 		if (record!=null) {
-			this.updatePreparedStatementValue(context, table, record, ps, fields);
+			this.updatePreparedStatementValue(context, table, record, ps, fields,filter);
 		}
 		DebugUtil.debug("------update().end------");
 		return ps;
@@ -816,7 +827,7 @@ class SQLRender implements ITableSQLRender {
 	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table) throws Throwable {
 		// 2007-01-09 zhouxw
 		Field[] fields = getUpdateValidField(context, table);
-		mainSQL = getUpdateSQL(table, fields);
+		mainSQL = getUpdateSQL(table, fields,null);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
 		DebugUtil.debug("------update_().end------");
 		return ps;

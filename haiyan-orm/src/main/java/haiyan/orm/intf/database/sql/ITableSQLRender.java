@@ -27,11 +27,11 @@ public interface ITableSQLRender extends ISQLRender {
 	long countBy(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
 	long countBy(ITableDBContext context, Table table, IDBFilter filter) throws Throwable;
 	void insertPreparedStatement(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields, String newID) throws Throwable;
-	void updatePreparedStatementValue(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields) throws Throwable;
+	void updatePreparedStatementValue(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields,IDBFilter filter) throws Throwable;
 	PreparedStatement getDeletePreparedStatement(ITableDBContext context, Table table, String[] ids) throws Throwable;
 	PreparedStatement getSelectPreparedStatement(ITableDBContext context, Table table, String id) throws Throwable;
 	PreparedStatement getInsertPreparedStatement(ITableDBContext context, Table table, IDBRecord record, String newID)  throws Throwable;
-	PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
+	PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record,IDBFilter filter) throws Throwable;
 	PreparedStatement getInsertPreparedStatement(ITableDBContext context, Table table) throws Throwable; // batch
 	PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table) throws Throwable; // batch
 	Field[] getInsertValidField(ITableDBContext context, Table table) throws Throwable; // batch

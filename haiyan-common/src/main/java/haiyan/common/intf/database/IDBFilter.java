@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface IDBFilter {
 
-	List<Object> getParas();
+	Object[] getParas();
 	boolean filter(IDBRecord record);
 	String getFilter();
 	void setFilter(String sFilter);

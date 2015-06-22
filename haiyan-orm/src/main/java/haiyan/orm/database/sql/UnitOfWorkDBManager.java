@@ -66,7 +66,7 @@ public class UnitOfWorkDBManager extends SQLTableDBManager {
 		return record;
 	}
 	@Override
-	protected List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records, int... args) throws Throwable {
+	protected List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records, IDBFilter filter, int... args) throws Throwable {
 		String dbName = table.getName();
 		if (!UPDATES.containsKey(dbName))
 			UPDATES.putIfAbsent(dbName, new HashMap<String,IDBRecord>());
@@ -79,7 +79,7 @@ public class UnitOfWorkDBManager extends SQLTableDBManager {
 		return records;
 	}
 	@Override
-	protected IDBRecord update(ITableDBContext context, Table table, IDBRecord record, int... args) throws Throwable {
+	protected IDBRecord update(ITableDBContext context, Table table, IDBRecord record,IDBFilter filter, int... args) throws Throwable {
 		this.checkVersion(context, table, record);
 		record.updateVersion();
 		String dbName = table.getName();

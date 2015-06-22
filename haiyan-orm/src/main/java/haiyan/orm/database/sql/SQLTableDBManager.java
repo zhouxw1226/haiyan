@@ -1138,7 +1138,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	 * @return IRecord
 	 * @throws Throwable
 	 */
-	protected List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records, int... args) throws Throwable {
+	protected List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records, IDBFilter filter, int... args) throws Throwable {
 		for (IDBRecord record:records)
 			this.checkVersion(context, table, record);
 		PreparedStatement ps = null;
@@ -1148,7 +1148,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			for (IDBRecord record:records) {
 				String newID = (String)record.get(table.getId().getName());
 				record.updateVersion();
-				getSQLRender().updatePreparedStatementValue(context, table, record, ps, fields);
+				getSQLRender().updatePreparedStatementValue(context, table, record, ps, fields,filter);
 				ps.addBatch();
 				SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 //				SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
@@ -1160,7 +1160,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			if (isDBCorrect(ex)) {
 				this.tableErrHandle(getSQLRender().getSQL());
 				if (isDeep(args))
-					return update(context, table, records, getDeep(args));
+					return update(context, table, records,filter, getDeep(args));
 			}
 			throw ex;
 		} finally {
@@ -1170,7 +1170,11 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	}
 	@Override
 	public List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records) throws Throwable {
-		return update(context, table, records, null);
+		return update(context, table, records, null,null);
+	}
+	@Override
+	public List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records, IDBFilter filter) throws Throwable {
+		return update(context, table, records, filter,null);
 	}
 	/** 
 	 * @param context
@@ -1180,13 +1184,13 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	 * @return
 	 * @throws Throwable
 	 */
-	protected IDBRecord update(ITableDBContext context, Table table, IDBRecord record, int... args) throws Throwable {
+	protected IDBRecord update(ITableDBContext context, Table table, IDBRecord record,IDBFilter filter, int... args) throws Throwable {
 		this.checkVersion(context, table, record);
 		PreparedStatement ps = null;
 		try {
 			String newID = (String)record.get(table.getId().getName());
             record.updateVersion();
-			ps = getSQLRender().getUpdatePreparedStatement(context, table, record);
+			ps = getSQLRender().getUpdatePreparedStatement(context, table, record,filter);
 			// ps.executeUpdate();
 			ps.execute();
 			SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
@@ -1197,7 +1201,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			if (isDBCorrect(ex)) {
 				this.tableErrHandle(getSQLRender().getSQL());
 				if (isDeep(args))
-					return update(context, table, record, getDeep(args));
+					return update(context, table, record,filter, getDeep(args));
 			}
 			throw ex;
 		} finally {
@@ -1208,7 +1212,12 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	@Override
 	public IDBRecord update(ITableDBContext context, Table table, IDBRecord record)
 			throws Throwable {
-		return update(context, table, record, null);
+		return update(context, table, record, null, null);
+	}
+	@Override
+	public IDBRecord update(ITableDBContext context, Table table, IDBRecord record,IDBFilter filter)
+			throws Throwable {
+		return update(context, table, record, filter,null);
 	}
 	/**
 	 * @param table

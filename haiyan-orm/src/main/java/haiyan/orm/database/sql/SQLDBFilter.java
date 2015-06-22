@@ -48,8 +48,8 @@ public class SQLDBFilter implements ISQLDBFilter {
 		this.sqlFilter = sFilter;
 	}
 	@Override
-	public List<Object> getParas() {
-		return this.params;
+	public Object[] getParas() {
+		return this.values;
 	}
 	private static final String PA = "?";
 	private static final String PA_STR = PA; // "''?''";

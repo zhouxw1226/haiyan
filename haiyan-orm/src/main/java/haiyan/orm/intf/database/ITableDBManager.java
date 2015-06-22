@@ -29,7 +29,9 @@ public interface ITableDBManager extends ISQLDBManager {
 	IDBRecord insert(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
 	IDBRecord insertNoSyn(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
 	IDBRecord update(ITableDBContext context, Table table, IDBRecord record) throws Throwable;
+	IDBRecord update(ITableDBContext context, Table table, IDBRecord record, IDBFilter filter) throws Throwable;
 	List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records) throws Throwable;
+	List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records, IDBFilter filter) throws Throwable;
 	void commit(ITableDBContext context) throws Throwable; // 4 UnitOfWork
 	void rollback(ITableDBContext context) throws Throwable; // 4 UnitOfWork
 	
