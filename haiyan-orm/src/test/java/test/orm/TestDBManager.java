@@ -8,12 +8,12 @@ import haiyan.common.intf.database.orm.IDBRecordCallBack;
 import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.session.IUser;
 import haiyan.config.castorgen.Table;
-import haiyan.config.intf.database.ITableDBManager;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.exp.ExpUtil;
-import haiyan.orm.database.DBContextFactory;
-import haiyan.orm.database.sql.DBManagerFactory;
+import haiyan.orm.database.TableDBContextFactory;
+import haiyan.orm.database.sql.TableDBManagerFactory;
+import haiyan.orm.intf.database.ITableDBManager;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.io.File;
 import java.util.UUID;
@@ -60,7 +60,7 @@ public class TestDBManager {
 //		record = dbm.select(context, class, id);
 //		Table table = ConfigUtil.getTable(TEST_DBM.getClass());
 		IUser user = TestUser.createUser();
-		ITableDBContext context = DBContextFactory.createDBContext(user);
+		ITableDBContext context = TableDBContextFactory.createDBContext(user);
 		Table table = ConfigUtil.getTable("TEST_DBM");
 		try {
 //			{
@@ -208,7 +208,7 @@ public class TestDBManager {
 				};
 				dbm.loopBy(context, table, queryRow, callback);
 				//dbm.close();
-				ITableDBManager dbm2 = (ITableDBManager)DBManagerFactory.createDBManager("ORACLE");
+				ITableDBManager dbm2 = (ITableDBManager)TableDBManagerFactory.createDBManager("ORACLE");
 				context.setDBM(dbm2); // auto close dbm
 				dbm2.loopBy(context, table, queryRow, callback);
 				CloseUtil.close(dbm2);

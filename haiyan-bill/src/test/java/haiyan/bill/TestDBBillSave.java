@@ -1,17 +1,16 @@
 package haiyan.bill;
 
-import haiyan.bill.database.sql.DBBillManagerFactory;
+import haiyan.bill.database.BillDBContextFactory;
+import haiyan.bill.database.IBillDBManager;
+import haiyan.bill.database.sql.IBillDBContext;
 import haiyan.common.CloseUtil;
 import haiyan.common.DateUtil;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.database.IDBBill;
-import haiyan.common.intf.database.bill.IDBBillManager;
 import haiyan.common.intf.database.orm.IDBRecord;
-import haiyan.common.intf.session.IContext;
 import haiyan.common.intf.session.IUser;
 import haiyan.common.session.AppUser;
 import haiyan.config.util.ConfigUtil;
-import haiyan.orm.database.DBContextFactory;
 
 import org.junit.Test;
 
@@ -27,17 +26,17 @@ public class TestDBBillSave {
 	@Test
 	public void test1() throws Throwable {
 		TestLoadConfig.loadConfig();
-		IDBBillManager bbm = null;
+		IBillDBContext context = null;
 		try {
 			IUser user = new AppUser();
 			user.setDSN("MYSQL");
-			IContext context = DBContextFactory.createDBContext(user);
-			bbm = DBBillManagerFactory.createDBBillManager(context);
 			IBillConfig billCfg = ConfigUtil.getBill("TEST_BILL");
+			context = BillDBContextFactory.createDBContext(user, billCfg);
+			IBillDBManager bbm = context.getBBM();
 			
-			IDBBill billOld = bbm.createBill(billCfg, false);
+			IDBBill billOld = bbm.createBill(context, billCfg, false);
 			billOld.setBillID("1");
-			bbm.loadBill(billOld);
+			bbm.loadBill(context, billOld);
 			System.out.println("-----------------");
 			System.out.println(billOld.getResultSet(0).getRecordCount());
 			System.out.println(billOld.getResultSet(1).getRecordCount());
@@ -70,7 +69,7 @@ public class TestDBBillSave {
 			System.out.println("NAME1:"+billOld.getValue("NAME1"));
 			System.out.println("NAME2:"+billOld.getValue("NAME2"));
 			
-			IDBBill billNew = bbm.createBill(billCfg);
+			IDBBill billNew = bbm.createBill(context, billCfg);
 			//bbm.createBillID(billNew);
 			IDBRecord record1 = billNew.insertRowAfter(1, 0);
 			System.out.println("record1:"+record1);
@@ -91,8 +90,8 @@ public class TestDBBillSave {
 //			billMgr.rollback();
 			
 			bbm.openTransaction();
-			bbm.saveBill(billOld);
-			bbm.saveBill(billNew);
+			bbm.saveBill(context,billOld);
+			bbm.saveBill(context,billNew);
 			bbm.commit();
 			System.out.println("-----------------");
 			
@@ -106,14 +105,14 @@ public class TestDBBillSave {
 			System.out.println("CODE2:"+billNew.getValue("CODE2"));
 			System.out.println("NAME1:"+billNew.getValue("NAME1"));
 			System.out.println("NAME2:"+billNew.getValue("NAME2"));
-			bbm.saveBill(billNew);
+			bbm.saveBill(context,billNew);
 			bbm.commit();
 			
 			bbm.closeTransaction();
 			
 			System.out.println("test end");
 		}finally{
-			CloseUtil.close(bbm);
+			CloseUtil.close(context);
 		}
 	}
 }

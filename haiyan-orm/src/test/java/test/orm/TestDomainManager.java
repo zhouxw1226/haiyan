@@ -9,13 +9,13 @@ import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.database.sql.ISQLDatabase;
 import haiyan.common.intf.session.IUser;
 import haiyan.config.castorgen.Table;
-import haiyan.config.intf.database.ITableDBManager;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.exp.ExpUtil;
-import haiyan.orm.database.DBContextFactory;
-import haiyan.orm.database.sql.DBManagerFactory;
+import haiyan.orm.database.TableDBContextFactory;
+import haiyan.orm.database.sql.TableDBManagerFactory;
 import haiyan.orm.database.sql.UnitOfWorkDBManager;
+import haiyan.orm.intf.database.ITableDBManager;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.io.File;
 
@@ -59,9 +59,9 @@ public class TestDomainManager {
 //		record = dbm.select(context, class, id);
 //		Table table = ConfigUtil.getTable(TEST_DBM.getClass());
 		IUser user = TestUser.createUser();
-		ISQLDatabase db = DBManagerFactory.createDatabase(user.getDSN());
+		ISQLDatabase db = TableDBManagerFactory.createDatabase(user.getDSN());
 		ITableDBManager dbm = new UnitOfWorkDBManager(db);
-		ITableDBContext context = DBContextFactory.createDBContext(user);
+		ITableDBContext context = TableDBContextFactory.createDBContext(user);
 		context.setDBM(dbm);
 		Table table = ConfigUtil.getTable("TEST_DBM");
 		try {

@@ -116,14 +116,17 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 			CloseUtil.close(context);
 		}
 		this.tableContexts.clear();
-		
+
 		CloseUtil.close(this.bbm);
 		this.bbm = null;
-		
+
 		super.close();
 	}
 	@Override
 	public void clear() {
+		for (ITableDBContext context:this.tableContexts) {
+			context.clear();
+		}
 //		this.tableContexts.clear();
 		
 		if (this.bbm!=null)

@@ -36,13 +36,17 @@ public class DBPage implements Serializable, IDBResultSet {
 	public DBPage(List<IDBRecord> arrayList) {
 		this.records = arrayList;
 	}
-	public String getTableName() {
-		return tableName;
-	}
+	@Override
 	public void setTableName(String tableName) {
 		this.tableName = tableName;
 	}
+	@Override
+	public String getTableName() {
+		return tableName;
+	}
 	/**
+	 * 设置页码
+	 * 
 	 * @param pageIndex
 	 */
 	public void setPageIndex(int pageIndex) throws DBPageException {
@@ -53,30 +57,36 @@ public class DBPage implements Serializable, IDBResultSet {
 	 * 
 	 * @return int
 	 */
+	@Override
 	public int getPageIndex() {
 		return this.pageIndex;
-	}
-	/**
-	 * 最大每页行数
-	 * 
-	 * @return int
-	 */
-	public int getPageRowCount() {
-		return this.pageRowCount;
 	}
 	/**
 	 * 设置最大每页行数
 	 * 
 	 * @param count
 	 */
+	//@Override
 	public void setPageRowCount(int count) {
 		this.pageRowCount = count;
 	}
+	/**
+	 * 最大每页行数
+	 * 
+	 * @return int
+	 */
 	@Override
-	public int getMaxPageCount() {
-		long total = this.getTotalRecordCount();
-		long row = this.getPageRowCount();
-		return Math.round(total/row)+(total%row>0?1:0);
+	public int getPageRowCount() {
+		return this.pageRowCount;
+	}
+	/**
+	 * 总记录行数
+	 * 
+	 * @param i
+	 */
+	@Override
+	public void setTotalRecordCount(long i) {
+		this.totalRecordCount = i;
 	}
 	/**
 	 * 查询出来的总记录行数
@@ -88,29 +98,33 @@ public class DBPage implements Serializable, IDBResultSet {
 		return this.totalRecordCount; // db设置的值
 	}
 	/**
-	 * 总记录行数
+	 * 获取计算后的最大页数
 	 * 
-	 * @param i
+	 * @see haiyan.common.intf.database.orm.IDBResultSet#getMaxPageCount()
 	 */
-	public void setTotalRecordCount(long i) {
-		this.totalRecordCount = i;
-	}
-	/**
-	 * 查询出来的总页数
-	 * 
-	 * @return int
-	 */
-	public int getTotalPageCount() {
-		if (this.pageRowCount == 0) {
-			return 0;
-		}
-		int pageCount = (int)(this.getTotalRecordCount() / this.pageRowCount);
-		int temp = (int)(this.getTotalRecordCount() % this.pageRowCount);
-		if (temp > 0) {
-			pageCount += 1;
-		}
+	@Override
+	public int getMaxPageCount() {
+		long total = this.getTotalRecordCount();
+		long row = this.getPageRowCount();
+		int pageCount = Math.round(total/row)+(total%row>0?1:0);
 		return pageCount;
 	}
+//	/**
+//	 * 查询出来的总页数
+//	 * 
+//	 * @return int
+//	 */
+//	public int getTotalPageCount() {
+//		if (this.pageRowCount == 0) {
+//			return 0;
+//		}
+//		int pageCount = (int)(this.getTotalRecordCount() / this.pageRowCount);
+//		int temp = (int)(this.getTotalRecordCount() % this.pageRowCount);
+//		if (temp > 0) {
+//			pageCount += 1;
+//		}
+//		return pageCount;
+//	}
 	/**
 	 * 当前可访问有效数据的行数
 	 * 
@@ -125,6 +139,7 @@ public class DBPage implements Serializable, IDBResultSet {
 	 * @param index
 	 * @return IRecord
 	 */
+	@Override
 	public IDBRecord getRecord(int index) {
 		if (this.records.size() <= index)
 			return null;
@@ -133,12 +148,14 @@ public class DBPage implements Serializable, IDBResultSet {
 	/**
 	 * @return ArrayList
 	 */
+	@Override
 	public List<IDBRecord> getRecords() {
 		return this.records;
 	}
 	/**
 	 * @return int
 	 */
+	@Override
 	public int getRecordCount() {
 		return this.records!=null?this.records.size():0;
 	}
@@ -164,6 +181,7 @@ public class DBPage implements Serializable, IDBResultSet {
 	/**
 	 * @return String
 	 */
+	@Override
 	public String toString() {
 //		StringBuffer result = new StringBuffer("");
 //		Iterator<?> iter = this.getRecords().iterator();
@@ -177,6 +195,7 @@ public class DBPage implements Serializable, IDBResultSet {
 //		return result.toString();
 		return this.toJSon().toString();
 	}
+	@Override
 	public JSONArray toJSon() {
 		JSONArray list = new JSONArray();
 		Iterator<?> iter = this.getRecords().iterator();

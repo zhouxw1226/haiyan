@@ -1,11 +1,11 @@
 package haiyan.bill.database;
 
 import static haiyan.common.SysCode.SysCodeNum.NOT_INIT_FILTERS;
-import haiyan.common.StringUtil;
 import haiyan.common.SysCode.SysCodeMessage;
 import haiyan.common.SysCode.SysCodeNum;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.config.IBillConfig;
+import haiyan.common.intf.config.IBillField;
 import haiyan.common.intf.config.IBillIDConfig;
 import haiyan.common.intf.database.IDBFilter;
 import haiyan.common.intf.database.IPredicate;
@@ -13,7 +13,6 @@ import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.session.IUser;
 import haiyan.config.castorgen.Bill;
-import haiyan.config.castorgen.BillField;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.DBPage;
 
@@ -130,8 +129,8 @@ public class DBBill extends AbstractDBBill {
 				}
 			}
 		}
-		BillField[] billFields = billConfig.getBillField();
-		for (BillField billField:billFields) {
+		IBillField[] billFields = billConfig.getBillField();
+		for (IBillField billField:billFields) {
 			if (name.equalsIgnoreCase(billField.getName())) {
 				int tableIndex = billField.getTableIndex();
 				if (this.resultSets==null)
@@ -166,8 +165,8 @@ public class DBBill extends AbstractDBBill {
 				}
 			}
 		}
-		BillField[] billFields = billConfig.getBillField();
-		for (BillField billField:billFields) {
+		IBillField[] billFields = billConfig.getBillField();
+		for (IBillField billField:billFields) {
 			if (name.equalsIgnoreCase(billField.getName())) {
 				int tableIndex = billField.getTableIndex();
 				if (this.resultSets==null)

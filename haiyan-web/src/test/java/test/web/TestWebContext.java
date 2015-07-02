@@ -3,12 +3,12 @@ package test.web;
 import haiyan.cache.CacheUtil;
 import haiyan.cache.EHDataCache;
 import haiyan.common.CloseUtil;
-import haiyan.common.intf.database.IDBManager;
 import haiyan.common.intf.web.IWebContext;
-import haiyan.config.intf.session.ITableDBContext;
 import haiyan.config.util.ConfigUtil;
-import haiyan.orm.database.DBContextFactory;
-import haiyan.orm.database.sql.DBManagerFactory;
+import haiyan.orm.database.TableDBContextFactory;
+import haiyan.orm.database.sql.TableDBManagerFactory;
+import haiyan.orm.intf.database.ITableDBManager;
+import haiyan.orm.intf.session.ITableDBContext;
 import haiyan.web.session.WebContextFactory;
 
 import java.io.File;
@@ -45,7 +45,7 @@ public class TestWebContext {
 		
 		IWebContext wc = WebContextFactory.createDBContext(req, res);
 		wc.setDSN("MYSQL");
-		ITableDBContext dc = DBContextFactory.createDBContext(wc);
+		ITableDBContext dc = TableDBContextFactory.createDBContext(wc);
 		{
 			wc.setAttribute("WEB_ATTR", 12345);
 			System.out.println(dc.getAttribute("WEB_ATTR"));
@@ -55,8 +55,8 @@ public class TestWebContext {
 			wc.getWriter().write("2222222");
 		}
 		{
-			IDBManager dbm = DBManagerFactory.createDBManager("MYSQL");
-			wc.setDBM(dbm);
+			ITableDBManager dbm = TableDBManagerFactory.createDBManager("MYSQL");
+			//wc.setDBM(dbm);
 			dc.setDBM(dbm);
 		}
 		CloseUtil.close(dc);

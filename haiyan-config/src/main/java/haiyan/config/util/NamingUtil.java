@@ -57,11 +57,11 @@ public class NamingUtil {
 	/**
 	 * 
 	 */
-	private final static String ORDER_BY_FIELD_NAME = _PREFIX  + "OrderByField" + _DELIMITER + CONSTANT_POSTFIX;
+	public final static String ORDER_BY_FIELD_NAME = _PREFIX  + "OrderByField" + _DELIMITER + CONSTANT_POSTFIX;
 	/**
 	 * 
 	 */
-	private final static String ORDER_BY_METHOD_NAME = _PREFIX  + "OrderByMethod" + _DELIMITER + CONSTANT_POSTFIX;
+	public final static String ORDER_BY_METHOD_NAME = _PREFIX  + "OrderByMethod" + _DELIMITER + CONSTANT_POSTFIX;
 //	/**
 //	 * 
 //	 */

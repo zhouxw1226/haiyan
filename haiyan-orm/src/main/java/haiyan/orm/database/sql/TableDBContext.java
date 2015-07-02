@@ -21,25 +21,6 @@ public class TableDBContext extends AppContext implements ITableDBContext {
 	public TableDBContext(IContext parent) { 
 		super(parent);
 	}
-//	public Object getNextID(IBillConfig bill) throws Throwable {
-//		return DBBillAutoID.genShortID(this, ConfigUtil.getMainTable(bill), 100);
-////		return UUID.randomUUID().toString();
-//	}
-//	private IBillDBManager bbm;
-//	@Override
-//	public void setBBM(IBillDBManager bbm) {
-////		if (this.bbm!=null && this.bbm.isAlive())
-////			CloseUtil.close(this.bbm);
-//		this.bbm = bbm;
-//	}
-//	@Override
-//	public IBillDBManager getBBM() {
-//		if (this.bbm!=null)
-//			return this.bbm;
-//		if (this.parent!=null && this.parent instanceof IBillDBContext)
-//			return ((IBillDBContext)this.parent).getBBM();
-//		return null;
-//	}
 	public Object getNextID(ITableConfig table) throws Throwable {
 		return DBBillAutoID.genShortID(this, table, 100);
 //		return UUID.randomUUID().toString();

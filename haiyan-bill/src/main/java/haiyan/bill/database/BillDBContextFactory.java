@@ -4,9 +4,11 @@ import haiyan.bill.database.sql.BillDBContext;
 import haiyan.bill.database.sql.BillDBManagerFactory;
 import haiyan.bill.database.sql.IBillDBContext;
 import haiyan.common.PropUtil;
+import haiyan.common.exception.Warning;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.config.IBillTable;
 import haiyan.common.intf.session.IContext;
+import haiyan.common.intf.session.IUser;
 import haiyan.orm.database.TableDBContextFactory;
 import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.session.ITableDBContext;
@@ -14,7 +16,12 @@ import haiyan.orm.intf.session.ITableDBContext;
 public class BillDBContextFactory {
 
 	// ----------------------------------------------------------------------------------- //
-	public static IBillDBContext createBillDBContext(String DSN, IBillConfig billConfig) {
+	public static IBillDBContext createDBContext(IUser user, IBillConfig billConfig) {
+		if (user==null)
+			throw new Warning("user lost");
+		return createDBContext(user.getDSN(), billConfig);
+	}
+	public static IBillDBContext createDBContext(String DSN, IBillConfig billConfig) {
 		IBillDBContext context = new BillDBContext();
 		IBillDBManager bbm = BillDBManagerFactory.createDBManager(DSN);
 		context.setBBM(bbm);
@@ -29,17 +36,17 @@ public class BillDBContextFactory {
 		}
 		return context;
 	}
-	public static IBillDBContext createBillDBContext(IBillConfig billConfig) {
+	public static IBillDBContext createDBContext(IBillConfig billConfig) {
 		String DSN = PropUtil.getProperty("SERVER.DSN");
-		return createBillDBContext(DSN, billConfig);
+		return createDBContext(DSN, billConfig);
 	}
 	// ----------------------------------------------------------------------------------- //
-	public static IBillDBContext createBillDBContext(IContext parent, IBillConfig billConfig, ITableDBManager[] dbms) {
+	public static IBillDBContext createDBContext(IContext parent, IBillConfig billConfig, ITableDBManager[] dbms) {
 		IBillDBContext context = new BillDBContext(parent);
 		if(parent != null && parent.getUser() != null){
 			context.setUser(parent.getUser());
 		}else{
-			return createBillDBContext(billConfig);
+			return createDBContext(billConfig);
 		}
 		IBillDBManager bbm = BillDBManagerFactory.createDBManager(parent.getUser());
 		context.setBBM(bbm);
@@ -57,8 +64,8 @@ public class BillDBContextFactory {
 		}
 		return context;
 	}
-	public static IBillDBContext createBillDBContext(IContext parent, IBillConfig billConfig) {
-		return createBillDBContext(parent, billConfig, null);
+	public static IBillDBContext createDBContext(IContext parent, IBillConfig billConfig) {
+		return createDBContext(parent, billConfig, null);
 	}
 
 }

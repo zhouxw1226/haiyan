@@ -1,19 +1,19 @@
 package haiyan.bill;
 
-import haiyan.bill.database.sql.DBBillManagerFactory;
+import haiyan.bill.database.BillDBContextFactory;
+import haiyan.bill.database.IBillDBManager;
+import haiyan.bill.database.sql.BillDBManagerFactory;
+import haiyan.bill.database.sql.IBillDBContext;
 import haiyan.common.CloseUtil;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.database.IDBBill;
 import haiyan.common.intf.database.IPredicate;
-import haiyan.common.intf.database.bill.IDBBillManager;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.database.sql.ISQLDBFilter;
-import haiyan.common.intf.session.IContext;
 import haiyan.common.intf.session.IUser;
 import haiyan.common.session.AppUser;
 import haiyan.config.util.ConfigUtil;
-import haiyan.orm.database.DBContextFactory;
 import haiyan.orm.database.sql.SQLDBFilter;
 
 import org.junit.Test;
@@ -30,18 +30,18 @@ public class TestDBBillLoad {
 	@Test
 	public void test1() throws Throwable {
 		TestLoadConfig.loadConfig();
-		IDBBillManager bbm = null;
+		IBillDBContext context = null;
 		try {
 			IUser user = new AppUser();
 			user.setDSN("MYSQL");
-			IContext context = DBContextFactory.createDBContext(user);
-			bbm = DBBillManagerFactory.createDBBillManager(context);
 			IBillConfig billCfg = ConfigUtil.getBill("TEST_BILL");
+			context = BillDBContextFactory.createDBContext(user, billCfg);
+			IBillDBManager bbm = BillDBManagerFactory.createDBManager(user);
 			
 			long time = System.currentTimeMillis();
-			IDBBill bill = bbm.createBill(billCfg, false);
+			IDBBill bill = bbm.createBill(context, billCfg);
 			bill.setBillID("1");
-			bbm.loadBill(bill);
+			bbm.loadBill(context, bill);
 			System.out.println("-----------------");
 			bill.find(1, new IPredicate(){
 				@Override
@@ -67,19 +67,19 @@ public class TestDBBillLoad {
 			});
 			
 			ISQLDBFilter dbFilter = new SQLDBFilter(" and LENGTH(t_1.ID)<7 "){ };
-			IDBResultSet rst2 = bill.query(context, 1, dbFilter, 3, 1, true); // 3:rowPageCount, 1:firstPage
+			IDBResultSet rst2 = bbm.query(context, bill, 1, dbFilter, 3, 1, true); // 3:rowPageCount, 1:firstPage
 			System.out.println("-----------------");
 			System.out.println("rst2:"+rst2.getRecordCount());
 			System.out.println("rst2:"+rst2.getTotalRecordCount());
 			System.out.println("rst2:"+rst2.getActiveRecord());
 			
-			IDBResultSet rst4 = bill.queryNext(context, 1, dbFilter, -1, true);
+			IDBResultSet rst4 = bbm.queryNext(context, bill, 1, dbFilter, -1, true);
 			System.out.println("-----------------");
 			System.out.println("rst4:"+rst4.getRecordCount());
 			System.out.println("rst4:"+rst4.getTotalRecordCount());
 			System.out.println("rst4:"+rst4.getActiveRecord());
 			
-			IDBResultSet rst3 = bill.queryPrev(context, 1, dbFilter, -1, true);
+			IDBResultSet rst3 = bbm.queryPrev(context, bill, 1, dbFilter, -1, true);
 			System.out.println("-----------------");
 			System.out.println("rst3:"+rst3.getRecordCount());
 			System.out.println("rst3:"+rst3.getTotalRecordCount());
@@ -89,7 +89,7 @@ public class TestDBBillLoad {
 //			bbm.commit();
 			System.out.println("test end:"+(System.currentTimeMillis()-time)+"ms");
 		}finally{
-			CloseUtil.close(bbm);
+			CloseUtil.close(context);
 		}
 	}
 }
