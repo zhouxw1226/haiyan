@@ -23,7 +23,6 @@ public class TableDBContext extends AppContext implements ITableDBContext {
 	}
 	public Object getNextID(ITableConfig table) throws Throwable {
 		return DBBillAutoID.genShortID(this, table, 100);
-//		return UUID.randomUUID().toString();
 	}
 	private ITableDBManager dbm;
 	@Override

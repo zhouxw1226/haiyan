@@ -20,7 +20,7 @@ import haiyan.orm.intf.session.ITableDBContext;
  */
 public class TableDBContextFactory implements IFactory {
 
-	private TableDBContextFactory() { 
+	private TableDBContextFactory() {
 	}
 	public static ITableDBContext createDBContext(String DSN) {
 		ITableDBContext context = new TableDBContext();
@@ -53,7 +53,7 @@ public class TableDBContextFactory implements IFactory {
 		TableDBContext context = new TableDBContext(parent);
 		if (parent!=null)
 			context.setUser(parent.getUser());
-		String DSN = StringUtil.isEmpty(context.getDSN())?PropUtil.getProperty("SERVER.DSN"):context.getDSN();
+		String DSN = StringUtil.isEmpty(parent.getDSN())?PropUtil.getProperty("SERVER.DSN"):parent.getDSN();
 		dbm = dbm==null?TableDBManagerFactory.createDBManager(DSN):dbm;
 		context.setDBM(dbm);
 		IExpUtil exp = new ExpUtil(context);

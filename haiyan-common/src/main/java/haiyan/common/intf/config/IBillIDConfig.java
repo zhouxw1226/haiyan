@@ -2,8 +2,8 @@ package haiyan.common.intf.config;
 
 public interface IBillIDConfig {
 
-	String getDbName();
 	String getName();
+	String getDbName();
 	int getTableIndex();
 
 }

@@ -6,7 +6,7 @@ import haiyan.exp.ExpUtil;
 
 import java.io.File;
 
-public class TestLoadConfig {
+public class TestBillConfigLoad {
 
 	public static void loadConfig() throws Throwable {
 		{

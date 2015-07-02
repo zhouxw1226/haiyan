@@ -293,6 +293,8 @@ public class DBPage implements Serializable, IDBResultSet {
 			IDBRecord record=this.records.get(row);
 			if (record.getStatus()==IDBRecord.DELETE || record.getStatus()==IDBRecord.INSERT_DELETE) {
 				this.records.remove(row);
+			} else if (record.getStatus()==IDBRecord.INSERT) {
+				record.setStatus(IDBRecord.DEFAULT);
 			} else {
 				//commit.rollback(); // context->dbmanager->cachemanager中已经处理了
 			}
@@ -305,6 +307,8 @@ public class DBPage implements Serializable, IDBResultSet {
 			IDBRecord record=this.records.get(row);
 			if (record.getStatus()==IDBRecord.INSERT || record.getStatus()==IDBRecord.INSERT_DELETE) {
 				this.records.remove(row);
+			} else if (record.getStatus()==IDBRecord.UPDATE) {
+				record.setStatus(IDBRecord.DEFAULT);
 			} else {
 				//record.rollback(); // context->dbmanager->cachemanager中已经处理了
 			}

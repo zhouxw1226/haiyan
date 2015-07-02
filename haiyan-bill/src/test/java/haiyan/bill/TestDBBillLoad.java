@@ -2,7 +2,6 @@ package haiyan.bill;
 
 import haiyan.bill.database.BillDBContextFactory;
 import haiyan.bill.database.IBillDBManager;
-import haiyan.bill.database.sql.BillDBManagerFactory;
 import haiyan.bill.database.sql.IBillDBContext;
 import haiyan.common.CloseUtil;
 import haiyan.common.intf.config.IBillConfig;
@@ -29,15 +28,15 @@ public class TestDBBillLoad {
 	}
 	@Test
 	public void test1() throws Throwable {
-		TestLoadConfig.loadConfig();
+		TestBillConfigLoad.loadConfig();
 		IBillDBContext context = null;
 		try {
 			IUser user = new AppUser();
 			user.setDSN("MYSQL");
 			IBillConfig billCfg = ConfigUtil.getBill("TEST_BILL");
-			context = BillDBContextFactory.createDBContext(user, billCfg);
-			IBillDBManager bbm = BillDBManagerFactory.createDBManager(user);
-			
+			context = BillDBContextFactory.createDBContext(user);
+			IBillDBManager bbm = context.getBBM();
+
 			long time = System.currentTimeMillis();
 			IDBBill bill = bbm.createBill(context, billCfg);
 			bill.setBillID("1");
@@ -65,21 +64,24 @@ public class TestDBBillLoad {
 					return false;
 				}
 			});
-			
+
 			ISQLDBFilter dbFilter = new SQLDBFilter(" and LENGTH(t_1.ID)<7 "){ };
-			IDBResultSet rst2 = bbm.query(context, bill, 1, dbFilter, 3, 1, true); // 3:rowPageCount, 1:firstPage
+			IDBResultSet rst2 = bbm.query(context, bill, 
+				1, dbFilter, 3, 1, true); // 3:rowPageCount, 1:firstPage
 			System.out.println("-----------------");
 			System.out.println("rst2:"+rst2.getRecordCount());
 			System.out.println("rst2:"+rst2.getTotalRecordCount());
 			System.out.println("rst2:"+rst2.getActiveRecord());
-			
-			IDBResultSet rst4 = bbm.queryNext(context, bill, 1, dbFilter, -1, true);
+
+			IDBResultSet rst4 = bbm.queryNext(context, bill, 
+				1, dbFilter, -1, true);
 			System.out.println("-----------------");
 			System.out.println("rst4:"+rst4.getRecordCount());
 			System.out.println("rst4:"+rst4.getTotalRecordCount());
 			System.out.println("rst4:"+rst4.getActiveRecord());
-			
-			IDBResultSet rst3 = bbm.queryPrev(context, bill, 1, dbFilter, -1, true);
+
+			IDBResultSet rst3 = bbm.queryPrev(context, bill, 
+				1, dbFilter, -1, true);
 			System.out.println("-----------------");
 			System.out.println("rst3:"+rst3.getRecordCount());
 			System.out.println("rst3:"+rst3.getTotalRecordCount());
@@ -87,6 +89,7 @@ public class TestDBBillLoad {
 //			IDBResultSet rst5 = bill.sort(1, new ISort());
 
 //			bbm.commit();
+//			context.commit();
 			System.out.println("test end:"+(System.currentTimeMillis()-time)+"ms");
 		}finally{
 			CloseUtil.close(context);

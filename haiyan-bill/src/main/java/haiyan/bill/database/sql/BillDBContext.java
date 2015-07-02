@@ -2,6 +2,7 @@ package haiyan.bill.database.sql;
 
 import haiyan.bill.database.IBillDBManager;
 import haiyan.common.CloseUtil;
+import haiyan.common.exception.Warning;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.session.IContext;
 import haiyan.common.session.AppContext;
@@ -9,9 +10,6 @@ import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.sql.DBBillAutoID;
 import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.session.ITableDBContext;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * AppSession
@@ -27,18 +25,32 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	public BillDBContext(IContext parent) { 
 		super(parent);
 	}
-	private List<ITableDBContext> tableContexts = new ArrayList<ITableDBContext>();
+	private ITableDBContext tableContext = null;
 	@Override
-	public void setTableDBContext(int tableIndex, ITableDBContext context) {
-		if(tableContexts.size()>tableIndex)
-			tableContexts.set(tableIndex, context);
-		else
-			tableContexts.add(context);
+	public void setTableDBContext(ITableDBContext context) {
+//		if(tableContexts.size()>tableIndex)
+//			tableContexts.set(tableIndex, context);
+//		else
+//			tableContexts.add(context);
+		this.tableContext=context;
 	}
 	@Override
-	public ITableDBContext getTableDBContext(int tableIndex) {
-		return tableContexts.get(tableIndex);
+	public ITableDBContext getTableDBContext() {
+//		return tableContexts.get(tableIndex);
+		return this.tableContext;
 	}
+//	private List<ITableDBContext> tableContexts = new ArrayList<ITableDBContext>();
+//	@Override
+//	public void setTableDBContext(int tableIndex, ITableDBContext context) {
+//		if(tableContexts.size()>tableIndex)
+//			tableContexts.set(tableIndex, context);
+//		else
+//			tableContexts.add(context);
+//	}
+//	@Override
+//	public ITableDBContext getTableDBContext(int tableIndex) {
+//		return tableContexts.get(tableIndex);
+//	}
 	public Object getNextID(IBillConfig bill) throws Throwable {
 		return DBBillAutoID.genShortID(this, ConfigUtil.getMainTable(bill), 100);
 //		return UUID.randomUUID().toString();
@@ -46,6 +58,8 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	private IBillDBManager bbm;
 	@Override
 	public void setBBM(IBillDBManager bbm) {
+		if (this.bbm!=null)
+			throw new Warning("当前BillDBContext中已经存在BBM");
 //		if (this.bbm!=null && this.bbm.isAlive())
 //			CloseUtil.close(this.bbm);
 		this.bbm = bbm;
@@ -88,34 +102,44 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	}
 	@Override
 	public void commit() throws Throwable {
-		for (ITableDBContext context:this.tableContexts) {
+		IBillDBManager bbm = this.getBBM();
+		//for (ITableDBContext context:this.tableContexts) 
+		ITableDBContext context = this.getTableDBContext();
+		{
 			ITableDBManager dbm = context.getDBM();
+			if (bbm!=null)
+				dbm.setConnection(null); // 用bbm中的connection统一commit
 			if(dbm != null)
 				dbm.commit();
 		}
-		IBillDBManager bbm = this.getBBM();
 		if (bbm==null)
 			return;
 		bbm.commit();
 	}
 	@Override
 	public void rollback() throws Throwable {
-		for (ITableDBContext context:this.tableContexts) {
+		IBillDBManager bbm = this.getBBM();
+		//for (ITableDBContext context:this.tableContexts) 
+		ITableDBContext context = this.getTableDBContext();
+		{
 			ITableDBManager dbm = context.getDBM();
+			if (bbm!=null)
+				dbm.setConnection(null); // 用bbm中的connection统一rollback
 			if(dbm != null)
 				dbm.rollback();
 		}
-		IBillDBManager bbm = this.getBBM();
 		if (bbm==null)
 			return;
 		bbm.rollback();
 	} 
 	@Override
 	public void close() {
-		for (ITableDBContext context:this.tableContexts) {
+		//for (ITableDBContext context:this.tableContexts) 
+		ITableDBContext context = this.getTableDBContext();
+		{
 			CloseUtil.close(context);
 		}
-		this.tableContexts.clear();
+		//this.tableContexts.clear();
 
 		CloseUtil.close(this.bbm);
 		this.bbm = null;
@@ -124,7 +148,9 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	}
 	@Override
 	public void clear() {
-		for (ITableDBContext context:this.tableContexts) {
+		//for (ITableDBContext context:this.tableContexts) 
+		ITableDBContext context = this.getTableDBContext();
+		{
 			context.clear();
 		}
 //		this.tableContexts.clear();

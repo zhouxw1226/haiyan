@@ -11,6 +11,8 @@ public interface IBillDBContext extends IDBSession, IContext {
 	IBillDBManager getBBM(); // 获取Table数据表入口级别的管理器
 	Object getNextID(IBillConfig bill) throws Throwable;
 
-	ITableDBContext getTableDBContext(int tableIndex);
-	void setTableDBContext(int tableIndex, ITableDBContext context);
+	ITableDBContext getTableDBContext();
+	void setTableDBContext(ITableDBContext context);
+//	ITableDBContext getTableDBContext(int tableIndex);
+//	void setTableDBContext(int tableIndex, ITableDBContext context);
 }

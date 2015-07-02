@@ -25,13 +25,13 @@ public class TestDBBillSave {
 	}
 	@Test
 	public void test1() throws Throwable {
-		TestLoadConfig.loadConfig();
+		TestBillConfigLoad.loadConfig();
 		IBillDBContext context = null;
 		try {
 			IUser user = new AppUser();
 			user.setDSN("MYSQL");
 			IBillConfig billCfg = ConfigUtil.getBill("TEST_BILL");
-			context = BillDBContextFactory.createDBContext(user, billCfg);
+			context = BillDBContextFactory.createDBContext(user);
 			IBillDBManager bbm = context.getBBM();
 			
 			IDBBill billOld = bbm.createBill(context, billCfg, false);

@@ -24,6 +24,7 @@ import haiyan.orm.database.DBPage;
 import haiyan.orm.database.sql.AbstractSQLDBManager;
 import haiyan.orm.database.sql.DBBillAutoID;
 import haiyan.orm.database.sql.SQLDBFilter;
+import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.session.ITableDBContext;
 
 import java.math.BigDecimal;
@@ -52,6 +53,7 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 		for (IDBBill bill:this.billList) {
 			bill.rollback(); // 内存单据回滚
 		}
+		//this.commited = false;
 	}
 	@Override
 	public void clear() {
@@ -92,12 +94,23 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 	public IDBBill createBill(IBillDBContext context,IBillConfig billConfig) throws Throwable {
 		return createBill(context, billConfig, true);
 	} 
+	private ITableDBManager getDBManager(ITableDBContext context) throws Throwable {
+		Connection conn = this.getConnection();
+		ITableDBManager dbm = context.getDBM();
+		Connection old = dbm.getConnectionOnly();
+		if (old!=null) {
+			if (old!=conn)
+				throw new Warning("当前DBM中已经存在Connection");
+		}
+		else // 如果dbm里connection为空
+			dbm.setConnection(conn);
+		return dbm;
+	}
 	@Override
 	public void loadBill(IBillDBContext bContext, IDBBill bill) throws Throwable {
 		IDBResultSet[] resultSets = bill.getResultSets();
 		if (resultSets==null)
 			throw new Warning("IDBResultSet lost when loadBill");
-		Connection conn = this.getConnection();
 		IDBFilter[] filters = bill.getDBFilters();
 		IBillConfig billConfig = bill.getBillConfig();
 		IBillTable[] billTables = billConfig.getBillTable();
@@ -112,9 +125,9 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 			if(filter == null){//没有filter会查出所有的数据
 				throw new Warning("loadBill filter is null,please set filter or billid");
 			}
-			ITableDBContext context = bContext.getTableDBContext(tableIndex);
-			context.getDBM().setConnection(conn);
-			resultSets[tableIndex] = context.getDBM().select(context, table, filter, DBPage.MAXCOUNTPERQUERY, 1);
+			ITableDBContext context = bContext.getTableDBContext();//bContext.getTableDBContext(tableIndex);
+			ITableDBManager dbm = this.getDBManager(context);
+			resultSets[tableIndex] = dbm.select(context, table, filter, DBPage.MAXCOUNTPERQUERY, 1);
 		}
 		int mainTableIndex = ConfigUtil.getMainTableIndex(billConfig);
 		IBillIDConfig billID = ConfigUtil.getBillIDConfig(billConfig, mainTableIndex);
@@ -131,7 +144,6 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 		IDBResultSet[] resultSets = bill.getResultSets();
 		if (resultSets==null)
 			throw new Warning("IDBResultSet lost when saveBill");
-		Connection conn = this.getConnection();
 		IBillConfig billConfig = bill.getBillConfig();
 		IBillTable[] billTables = billConfig.getBillTable();
 		for (int i=0;i<resultSets.length;i++) {
@@ -147,10 +159,10 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 					ids.add(id);
 				}
 			}
-			ITableDBContext context = bContext.getTableDBContext(tableIndex);
-			context.getDBM().setConnection(conn);
+			ITableDBContext context = bContext.getTableDBContext();//bContext.getTableDBContext(tableIndex);
+			ITableDBManager dbm = this.getDBManager(context);
 			if (ids.size()>0) {
-				context.getDBM().delete(context, table, ids.toArray(new String[0]));
+				dbm.delete(context, table, ids.toArray(new String[0]));
 			}
 			if(bill.getBillID() == null){
 				String newID = (String)context.getNextID(table);
@@ -159,9 +171,9 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 			for (IDBRecord record:rst.getRecords()) {
 //				record.set(billID.getDbName(), bill.getBillID()); // 单据外键
 				if (record.getStatus()==IDBRecord.INSERT) {
-					context.getDBM().insert(context, table, record);
+					dbm.insert(context, table, record);
 				} else if (record.getStatus()==UPDATE) {
-					context.getDBM().update(context, table, record);
+					dbm.update(context, table, record);
 				}
 			}
 		}
@@ -188,10 +200,9 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 				}
 			}
 			if (ids.size()>0) {
-				Connection conn = this.getConnection();
-				ITableDBContext context = bContext.getTableDBContext(tableIndex);
-				context.getDBM().setConnection(conn);
-				context.getDBM().delete(context, table, ids.toArray(new String[0]));
+				ITableDBContext context = bContext.getTableDBContext();//bContext.getTableDBContext(tableIndex);
+				ITableDBManager dbm = this.getDBManager(context);
+				dbm.delete(context, table, ids.toArray(new String[0]));
 			}
 		}
 	}
@@ -202,25 +213,24 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 			throw new Warning("BillTable lost when deleteBill");
 		if (billID==null)
 			throw new Warning("BillID lost when deleteBill");
-		Connection conn = this.getConnection();
 		for (int i=0;i<billTables.length;i++) {
 			IBillTable billTable = billTables[i];
-			int tableIndex = billTable.getTableIndex();
+//			int tableIndex = billTable.getTableIndex();
 			Table table = ConfigUtil.getTable(billTable.getDbName());
-			ITableDBContext context = bContext.getTableDBContext(tableIndex);
-			context.getDBM().setConnection(conn);
-			context.getDBM().delete(context, table, new String[]{billID});
+			ITableDBContext context = bContext.getTableDBContext();//bContext.getTableDBContext(tableIndex);
+			ITableDBManager dbm = this.getDBManager(context);
+			dbm.delete(context, table, new String[]{billID});
 		}
 	}
 	@Override
-	public IDBResultSet query(IBillDBContext bContext, IDBBill bill, int tableIndex, ISQLDBFilter dbFilter, int pageRowCount, int pageIndex, boolean override) throws Throwable {
-		Connection conn = this.getConnection();
-		ITableDBContext context = bContext.getTableDBContext(tableIndex);
-		context.getDBM().setConnection(conn);
+	public IDBResultSet query(IBillDBContext bContext, IDBBill bill, int tableIndex, ISQLDBFilter dbFilter, 
+			int pageRowCount, int pageIndex, boolean override) throws Throwable {
+		ITableDBContext context = bContext.getTableDBContext();//bContext.getTableDBContext(tableIndex);
+		ITableDBManager dbm = this.getDBManager(context);
 		IBillConfig billConfig = bill.getBillConfig();
 		IBillTable billTable = billConfig.getBillTable()[tableIndex];
 		Table table = getTable(billTable.getDbName());
-		IDBResultSet rst = context.getDBM().select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndex);
+		IDBResultSet rst = dbm.select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndex);
 		if (override)
 			bill.setResultSet(tableIndex, rst);
 		return rst;
@@ -232,16 +242,15 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 		int maxPageCount = bill.getResultSet(tableIndex).getMaxPageCount();
 		if (pageIndex==maxPageCount)
 			return null;
-		Connection conn = this.getConnection();
-		ITableDBContext context = bContext.getTableDBContext(tableIndex);
-		context.getDBM().setConnection(conn);
+		ITableDBContext context = bContext.getTableDBContext();//bContext.getTableDBContext(tableIndex);
+		ITableDBManager dbm = this.getDBManager(context);
 		IBillConfig billConfig = bill.getBillConfig();
 		IBillTable billTable = billConfig.getBillTable()[tableIndex];
 		Table table = ConfigUtil.getTable(billTable.getDbName());
 		int pageIndexNext = bill.getResultSet(tableIndex).getPageIndex()+1;
 		if (pageRowCount<=0)
 			pageRowCount = bill.getResultSet(tableIndex).getPageRowCount();
-		IDBResultSet rst = context.getDBM().select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndexNext);
+		IDBResultSet rst = dbm.select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndexNext);
 		if (override)
 			bill.setResultSet(tableIndex, rst);
 		return rst;
@@ -252,16 +261,15 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 		int pageIndex = bill.getResultSet(tableIndex).getPageIndex();
 		if (pageIndex==1)
 			return null;
-		Connection conn = this.getConnection();
-		ITableDBContext context = bContext.getTableDBContext(tableIndex);
-		context.getDBM().setConnection(conn);
+		ITableDBContext context = bContext.getTableDBContext();//bContext.getTableDBContext(tableIndex);
+		ITableDBManager dbm = this.getDBManager(context);
 		IBillConfig billConfig = bill.getBillConfig();
 		IBillTable billTable = billConfig.getBillTable()[tableIndex];
 		Table table = ConfigUtil.getTable(billTable.getDbName());
 		int pageIndexPrev = bill.getResultSet(tableIndex).getPageIndex()-1;
 		if (pageRowCount<=0)
 			pageRowCount = bill.getResultSet(tableIndex).getPageRowCount();
-		IDBResultSet rst = context.getDBM().select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndexPrev);
+		IDBResultSet rst = dbm.select((ITableDBContext)context, table, dbFilter, pageRowCount, pageIndexPrev);
 		if (override)
 			bill.setResultSet(tableIndex, rst);
 		return rst;

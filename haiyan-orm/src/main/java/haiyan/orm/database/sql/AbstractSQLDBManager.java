@@ -30,11 +30,15 @@ public abstract class AbstractSQLDBManager implements ISQLDBManager {
 	}
 	@Override
 	public String getDSN() {
-		return database.getDSN();
+		return this.database.getDSN();
 	}
 	@Override
 	public Savepoint getSavepoint() {
 		return this.savePoint;
+	}
+	@Override
+	public Connection getConnectionOnly() {
+		return this.connection;
 	}
 	@Override
 	public void setConnection(Connection conn) throws Throwable {
@@ -121,7 +125,9 @@ public abstract class AbstractSQLDBManager implements ISQLDBManager {
 			throw Warning.wrapException(e);
 		}
 	}
+	@Override
 	public abstract void commit() throws Throwable;
+	@Override
 	public abstract void rollback() throws Throwable;
 
 }

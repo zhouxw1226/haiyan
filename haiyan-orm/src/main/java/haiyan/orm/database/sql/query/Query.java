@@ -117,12 +117,15 @@ public class Query {
 			CriticalItem item = (CriticalItem) validItems.get(i);
 			number = item.setValue(ps, number);
 		}
-		for (IDBFilter filter:this.filters)
+		for (IDBFilter filter:this.filters) {
+			if (filter==null||filter.getParas()==null)
+				continue;
 			for (Object o:filter.getParas()) {
 				DebugUtil.debug(">setFilterValue,"+number+":"+o);
 				CriticalItem.setDBValue(ps, number, o, o.getClass());
 				number++;
 			}
+		}
 		// SQL中?域的游标 (wrapSQL数据库方言用)
 		for (int i = 0; i < listeners.size(); i++) {
 			((QueryListener) listeners.get(i)).setSelectPS(ps, number);

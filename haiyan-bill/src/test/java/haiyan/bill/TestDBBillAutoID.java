@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 public class TestDBBillAutoID {
 
 	public static void main(String[] args) throws Throwable {
-		TestLoadConfig.loadConfig();
+		TestBillConfigLoad.loadConfig();
 		IUser user = new AppUser();
 		user.setDSN("MYSQL");
 		IContext context = TableDBContextFactory.createDBContext(user);

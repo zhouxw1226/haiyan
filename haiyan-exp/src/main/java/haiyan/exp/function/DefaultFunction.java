@@ -14,7 +14,17 @@ import haiyan.config.util.ConfigUtil;
  *
  */
 public class DefaultFunction {
- 
+
+	@IFunction(name="LowerCase")
+	public static Object lowerCase(IContext context, Table table, Object bean, Object[] paras) {
+		String s = (String)paras[0];
+		return s.toLowerCase();
+	}
+	@IFunction(name="UpperCase")
+	public static Object upperCase(IContext context, Table table, Object bean, Object[] paras) {
+		String s = (String)paras[0];
+		return s.toUpperCase();
+	}
 	@IFunction(name="SQLSafe")
 	public static Object sqlSafe(IContext context, Table table, Object bean, Object[] paras) {
 		String s = (String)paras[0];
@@ -33,6 +43,8 @@ public class DefaultFunction {
 		return true;
 	}
     /**
+     * 追加系统字段
+     * 
      * @param table
      * @throws Throwable
      */
@@ -47,9 +59,9 @@ public class DefaultFunction {
                     synchronized (table) {
                         if (f == null) {
                             f = new Field();
-//                            Component c = new Component();
-//                            c.setType(ComponentTypeType.HIDDEN);
-//                            f.setComponent(c);
+//                          Component c = new Component();
+//                          c.setType(ComponentTypeType.HIDDEN);
+//                          f.setComponent(c);
                             f.setName(k);
                             f.setJavaType(AbstractCommonFieldJavaTypeType.STRING);
                             f.setLength(100);

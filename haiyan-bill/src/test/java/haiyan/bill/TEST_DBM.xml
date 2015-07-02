@@ -20,14 +20,14 @@
 			<queryCondition type="blurMatching"/>
 		</field>
 		<field name="NAME" description="1to1名称" displayOnly="false" javaType="string" lazyLoad="false">
-			<!--  one2oneField="NAME" one2oneTable="TEST_ONE2ONE" -->
+			<!-- one2oneField="NAME" one2oneTable="TEST_ONE2ONE" -->
 			<component type="text" readOnly="false"/>
 			<queryCondition type="blurMatching"/>
 			<listColumn style="remoteSort:true;sortName:t_1.NAME"/>
 		</field>
 		<field name="MONEY" description="金额" displayOnly="false" javaType="bigDecimal" lazyLoad="false">
 			<component type="text" readOnly="false" colspan="3" minFractionDigit="2" maxFractionDigit="5"/>
-			<!--  validator="^-?\d+.\d{2}$" validatorText="“名称“ 必须为数字金额" -->
+			<!-- validator="^-?\d+.\d{2}$" validatorText="“名称“ 必须为数字金额" -->
 			<queryCondition type="equal"/>
 			<listColumn noedit="false" noquery="false"/>
 		</field>
@@ -124,6 +124,7 @@
 		<!-- -->
 		<pluginOperation name="testOne" oprName="查看一对一表单" hostPage="edit" tblevel="1" className="haiyan.plugin.BshPlugin" 
 			action="openWin({edit.do?__opr_data=TEST_ONE2ONE&amp;ID=}&amp;Get(ID))+break()"><![CDATA[
+			context.getDBM().executeUpdate({update SYS set ID=1 where ID=1},null);
 		]]></pluginOperation>
 		<pluginOperation name="testSQL" oprName="调试SQL" hostPage="edit" tblevel="1" className="haiyan.plugin.BshPlugin"><![CDATA[
 		    context.getDBM().executeUpdate(form.get("TESTSQL"),null);

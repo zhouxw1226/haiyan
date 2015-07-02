@@ -36,7 +36,7 @@ public abstract class AbstractDBManagerFactory implements IFactory {
 			dbType = dataSource.getDbType();
 		} 
 		if (database==null)
-	        throw new Warning(SysCode.SysCodeNum.NO_MATCHEDDSN,SysCode.SysCodeMessage.NO_MATCHEDDSN);
+	        throw new Warning(SysCode.SysCodeNum.NO_MATCHEDDSN,SysCode.SysCodeMessage.NO_MATCHEDDSN+":"+DSN);
 		database.setDBType(dbType);
 		DATABASES.put(DSN, database);
 		return database;

@@ -14,6 +14,7 @@ import java.sql.Savepoint;
  */
 public interface ISQLDBManager extends IDBSession {
 
+	Connection getConnectionOnly();
 	void setConnection(Connection conn) throws Throwable;
 	Connection getConnection() throws Throwable;
 	Connection getConnection(boolean openTrans) throws Throwable;

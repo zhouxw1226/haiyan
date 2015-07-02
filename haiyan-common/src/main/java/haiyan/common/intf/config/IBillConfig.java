@@ -4,9 +4,9 @@ public interface IBillConfig {
 
 	String getName();
 	String getRealName();
-	IBillTable[] getBillTable();
-	IBillIDConfig[] getBillID();
 	int getBillTableCount();
+	IBillIDConfig[] getBillID();
+	IBillTable[] getBillTable();
 	IBillField[] getBillField();
 
 }
