@@ -60,6 +60,7 @@ public class TestDBBillSave {
 			
 			bbm.rollback();
 			System.out.println("-----------------");
+			
 			billOld.setValue("CODE1","code1-"+DateUtil.getLastTime());
 			billOld.setValue("CODE2","code2-"+DateUtil.getLastTime());
 			System.out.println("ID1:"+billOld.getValue("ID1"));
@@ -107,6 +108,7 @@ public class TestDBBillSave {
 			System.out.println("NAME2:"+billNew.getValue("NAME2"));
 			bbm.saveBill(context,billNew);
 			bbm.commit();
+			System.out.println("-----------------");
 			
 			bbm.closeTransaction();
 			

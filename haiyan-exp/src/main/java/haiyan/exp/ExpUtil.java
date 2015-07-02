@@ -197,13 +197,14 @@ public class ExpUtil implements IExpUtil {
 			exp = exp.substring(1);
 		if (exp.endsWith(";"))
 			exp = exp.substring(0, exp.length() - 1);
-		String[] exps = StringUtil.split(exp, ";");
-		Object[] vars = new Object[exps.length];
-		expContext.setInnerVars(vars);
-		for (int i = 0; i < exps.length; i++) {
-			vars[i] = ExpCore.getInstance().eval(expContext, exps[i]);
-		}
-		Object res = vars[vars.length - 1];
+		Object res = ExpCore.getInstance().eval(expContext, exp);
+//		String[] exps = StringUtil.split(exp, ";");
+//		Object[] vars = new Object[exps.length];
+//		expContext.setInnerVars(vars);
+//		for (int i = 0; i < exps.length; i++) {
+//			vars[i] = ExpCore.getInstance().eval(expContext, exps[i]);
+//		}
+//		Object res = vars[vars.length - 1];
 		DebugUtil.debug("**** Exp.end:\n\t" + exp);
 		// Arrays.dd();
 		// System.out.println("exp.dealed:" + res);
@@ -250,7 +251,7 @@ public class ExpUtil implements IExpUtil {
 		if (inited.get()==0) {
 			String[] classes = ConfigUtil.getFunctionScanClasses();
 			for (String className:classes) {
-				Class clz = Thread.currentThread().getContextClassLoader().loadClass(className);
+				Class clz = Thread.currentThread().getContextClassLoader().loadClass(className.trim());
 //				Annotation[] annos = clz.getDeclaredAnnotations();
 //				for (Annotation anno:annos) {
 //					System.out.println(anno);

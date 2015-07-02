@@ -20,6 +20,7 @@ public class TestExp {
 	}
 	@Test
 	public void test1() throws Throwable {
+//		TestBillConfigLoad.loadConfig();
 		{
 			ConfigUtil.setDataCache(new AppDataCache()); // 配置用缓存框架
 			ConfigUtil.setExpUtil(new ExpUtil()); // 全局用公式引擎
@@ -35,8 +36,8 @@ public class TestExp {
 		try {
 			IExpUtil exp = new ExpUtil(context);
 			context.setExpUtil(exp);
-			context.setAttribute("TTT", 123);
-			System.out.println(exp.evalExp("GetPara(TTT)+654"));
+			context.setAttribute("TTT", 123.45);
+			System.out.println(exp.evalExp("GetPara(TTT)+654.32"));
 		}finally{
 			CloseUtil.close(context);
 		}

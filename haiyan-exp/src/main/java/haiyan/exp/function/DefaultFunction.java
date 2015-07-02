@@ -1,5 +1,6 @@
 package haiyan.exp.function;
 
+import haiyan.common.InvokeUtil;
 import haiyan.common.StringUtil;
 import haiyan.common.config.DataConstant;
 import haiyan.common.intf.exp.IFunction;
@@ -14,7 +15,13 @@ import haiyan.config.util.ConfigUtil;
  *
  */
 public class DefaultFunction {
-
+	@IFunction(name="Invoke")
+	public static Object invoke(IContext context, Table table, Object bean, Object[] paras) throws Throwable {
+		String staticMethod = (String)paras[0];
+		String className = staticMethod.substring(0, staticMethod.lastIndexOf("."));
+		String staticMethodName = staticMethod.substring(staticMethod.lastIndexOf(".")+1);
+		return InvokeUtil.invoke(className, staticMethodName, new Class[] {IContext.class}, new Object[]{context});
+	}
 	@IFunction(name="LowerCase")
 	public static Object lowerCase(IContext context, Table table, Object bean, Object[] paras) {
 		String s = (String)paras[0];

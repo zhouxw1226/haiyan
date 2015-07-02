@@ -4,7 +4,15 @@ import haiyan.common.intf.ILogger;
 
 import java.lang.reflect.Method;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+ 
 public class DebugUtil {
+	public static Logger getLogger() {
+        Throwable t  = new Throwable();
+        StackTraceElement directCaller = t.getStackTrace()[1];
+        return LoggerFactory.getLogger(directCaller.getClassName());
+    }
 	public static ILogger logger = new ILogger() {
 		@Override
 		public void debug(Object info) {
@@ -42,7 +50,6 @@ public class DebugUtil {
 		connNum--;
 		debug(">------------------------------------------< connNum=" + connNum);
 	}
-
 	// /**
 	// *
 	// */
@@ -50,7 +57,6 @@ public class DebugUtil {
 	// if (logger != null)
 	// logger.debug("\n");
 	// }
-
 	/**
 	 * @param info
 	 */
@@ -59,7 +65,6 @@ public class DebugUtil {
 			// logger.error(info);
 			logger.debug(info); // haiyan.exe没有记录。。。
 	}
-
 	/**
 	 * @param info
 	 * @param ex
@@ -68,7 +73,6 @@ public class DebugUtil {
 		if (logger != null)
 			logger.error(info, ex);
 	}
-
 	/**
 	 * @param obj
 	 */
@@ -76,13 +80,10 @@ public class DebugUtil {
 		if (logger != null)
 			logger.error(info);
 	}
-
-
 	public static void warn(Object info) {
 		if (logger != null)
 			logger.warn(info);
 	}
-
 	/**
 	 * @param obj
 	 */
@@ -90,7 +91,6 @@ public class DebugUtil {
 		if (cond)
 			System.err.print("!!断言");
 	}
-
 	/**
 	 * @param obj
 	 * @return String
@@ -117,10 +117,10 @@ public class DebugUtil {
 		}
 		return result;
 	}
-
 	/**
 	 * @see java.lang.Object#toString()
 	 */
+	@Override
 	public String toString() {
 		return seePropertyValue(this.getClass());
 	}

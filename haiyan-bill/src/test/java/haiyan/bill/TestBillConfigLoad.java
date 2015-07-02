@@ -11,7 +11,7 @@ public class TestBillConfigLoad {
 	public static void loadConfig() throws Throwable {
 		{
 			ConfigUtil.setDataCache(new AppDataCache()); 
-			ConfigUtil.setDataCache(new AppDataCache());
+//			ConfigUtil.setDataCache(new AppDataCache());
 			ConfigUtil.setExpUtil(new ExpUtil()); // 全局用公式引擎
 			ConfigUtil.setORMUseCache(true); // 开启ORM多级缓存
 //			CacheUtil.setDataCache(new EHDataCache()); // 全局用缓存框架
