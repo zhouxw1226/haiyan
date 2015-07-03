@@ -38,7 +38,12 @@ public class TableDBContextFactory implements IFactory {
 	public static ITableDBContext createDBContext(IUser user, ITableDBManager dbm) {
 		ITableDBContext context = new TableDBContext();
 		context.setUser(user);
-		String DSN = StringUtil.isEmpty(user.getDSN())?PropUtil.getProperty("SERVER.DSN"):user.getDSN();
+		String DSN = null;
+		if(user != null){
+			DSN = StringUtil.isEmpty(user.getDSN())?PropUtil.getProperty("SERVER.DSN"):user.getDSN();
+		}else{
+			DSN = PropUtil.getProperty("SERVER.DSN");
+		}
 		dbm = dbm==null?TableDBManagerFactory.createDBManager(DSN):dbm;
 		context.setDBM(dbm);
 		IExpUtil exp = new ExpUtil(context);
@@ -51,9 +56,13 @@ public class TableDBContextFactory implements IFactory {
 	// ----------------------------------------------------------------------------------- //
 	public static ITableDBContext createDBContext(IContext parent, ITableDBManager dbm) {
 		TableDBContext context = new TableDBContext(parent);
-		if (parent!=null)
+		String DSN = null;
+		if (parent!=null){
 			context.setUser(parent.getUser());
-		String DSN = StringUtil.isEmpty(parent.getDSN())?PropUtil.getProperty("SERVER.DSN"):parent.getDSN();
+			DSN = StringUtil.isEmpty(parent.getDSN())?PropUtil.getProperty("SERVER.DSN"):parent.getDSN();
+		}else{
+			DSN = PropUtil.getProperty("SERVER.DSN");
+		}
 		dbm = dbm==null?TableDBManagerFactory.createDBManager(DSN):dbm;
 		context.setDBM(dbm);
 		IExpUtil exp = new ExpUtil(context);
