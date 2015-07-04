@@ -184,7 +184,6 @@ public class MySqlDBManager extends SQLTableDBManager {
         // gbk_chinese_ci
         // ENGINE=InnoDB DEFAULT CHARSET=gb2312
         sqls.addAll(sKeySQL);
-        sqls.add("ALTER TABLE `" + tableName + "` TYPE = InnoDB;");
         String[] strArray = (String[]) (sqls.toArray(new String[0]));
         return StringUtil.join(strArray, DataConstant.SQL_DIM, "");
     }
