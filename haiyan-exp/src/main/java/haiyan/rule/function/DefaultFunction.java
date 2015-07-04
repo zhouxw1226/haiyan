@@ -14,17 +14,18 @@ import net.sf.json.JSONObject;
  */
 public class DefaultFunction { 
 
-	@IFunction(name="UpdateRule")
+	private static final String LOOP = "__loop";
+	@IFunction(name="UpdateActivity")
 	public static Object updateRule(IContext context, Table table, Object bean, Object[] paras) throws Throwable {
 		IContext curContext = context;
 		if (curContext instanceof IRuleContext) {
 			curContext = ((IRuleContext)curContext).getParent();
 		}
-		Object oloop = curContext.getAttribute("__loop");
+		Object oloop = curContext.getAttribute(LOOP);
 		if (oloop==null) {
-			curContext.setAttribute("__loop", 1);
+			curContext.setAttribute(LOOP, 1);
 		} else {
-			curContext.setAttribute("__loop", VarUtil.toInt(oloop)+1);
+			curContext.setAttribute(LOOP, VarUtil.toInt(oloop)+1);
 		}
 		if (paras.length>0) {
 			boolean loop = VarUtil.toBool(paras[0]);
@@ -56,7 +57,7 @@ public class DefaultFunction {
 		if (curContext instanceof IRuleContext) {
 			curContext = ((IRuleContext)curContext).getParent();
 		}
-		Object oloop = curContext.getAttribute("__loop");
+		Object oloop = curContext.getAttribute(LOOP);
 		if (oloop==null) {
 			return true;
 		} else {

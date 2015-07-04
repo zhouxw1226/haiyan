@@ -8,7 +8,6 @@ import haiyan.common.intf.session.IContext;
 import haiyan.common.session.AppContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.sql.DBBillAutoID;
-import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.session.ITableDBContext;
 
 /**
@@ -104,14 +103,14 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	public void commit() throws Throwable {
 		IBillDBManager bbm = this.getBBM();
 		//for (ITableDBContext context:this.tableContexts) 
-		ITableDBContext context = this.getTableDBContext();
-		{
-			ITableDBManager dbm = context.getDBM();
-			if (bbm!=null)
-				dbm.setConnection(null); // 用bbm中的connection统一commit
-			if(dbm != null)
-				dbm.commit();
-		}
+//		ITableDBContext context = this.getTableDBContext();
+//		{
+////			ITableDBManager dbm = context.getDBM();
+////			if (bbm!=null)
+////				dbm.setConnection(null); // 用bbm中的connection统一commit
+////			if(dbm != null)
+////				dbm.commit();
+//		}
 		if (bbm==null)
 			return;
 		bbm.commit();
@@ -120,14 +119,14 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	public void rollback() throws Throwable {
 		IBillDBManager bbm = this.getBBM();
 		//for (ITableDBContext context:this.tableContexts) 
-		ITableDBContext context = this.getTableDBContext();
-		{
-			ITableDBManager dbm = context.getDBM();
-			if (bbm!=null)
-				dbm.setConnection(null); // 用bbm中的connection统一rollback
-			if(dbm != null)
-				dbm.rollback();
-		}
+//		ITableDBContext context = this.getTableDBContext();
+//		{
+////			ITableDBManager dbm = context.getDBM();
+////			if (bbm!=null)
+////				dbm.setConnection(null); // 用bbm中的connection统一rollback
+////			if(dbm != null)
+////				dbm.rollback();
+//		}
 		if (bbm==null)
 			return;
 		bbm.rollback();

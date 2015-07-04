@@ -13,20 +13,27 @@ import java.util.Date;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+/**
+ * @author ZhouXW
+ *
+ */
 public class ActivityContext extends AppContext implements IActivityContext {
 
+//	private static final String ACTIVITY = "__activity";
 	public ActivityContext() {
 		super();
 	}
 	public ActivityContext(IContext parent) {
 		super(parent);
 	}
+	private JSONObject activity;
 	@Override
 	public Object evalRule(JSONObject activity) throws Throwable {
 		IRuleContext context = null;
 		try {
 			context = new RuleContext(this);
-			this.setAttribute("__activity", activity);
+			this.activity = activity;
+			//this.setAttribute(ACTIVITY, activity);
 			IExpUtil expUtil = new ExpUtil(context);
 			context.setExpUtil(expUtil);
 			
@@ -45,7 +52,6 @@ public class ActivityContext extends AppContext implements IActivityContext {
 				JSONArray rules = activity.getJSONArray("rules");
 				for (int i=0;i<rules.size();i++) {
 					JSONObject rule = rules.getJSONObject(i);
-					context.setAttribute("__rule", rule);
 					context.evalRule(rule);
 				}
 				return true;
@@ -60,13 +66,16 @@ public class ActivityContext extends AppContext implements IActivityContext {
 	}
 	@Override
 	public JSONObject removeCurrentActivity() {
-		JSONObject json = (JSONObject)this.getAttribute("__activity");
-		this.removeAttribute("__activity");
-		return json;
+		this.activity = null;
+		return null;
+//		JSONObject json = (JSONObject)this.getAttribute(ACTIVITY);
+//		this.removeAttribute(ACTIVITY);
+//		return json;
 	}
 	@Override
 	public JSONObject getCurrentActivity() {
-		return (JSONObject)this.getAttribute("__activity");
+//		return (JSONObject)this.getAttribute(ACTIVITY);
+		return this.activity;
 	}
 
 }

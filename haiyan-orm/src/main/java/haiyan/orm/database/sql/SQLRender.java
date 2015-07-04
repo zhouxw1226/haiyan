@@ -881,7 +881,8 @@ class SQLRender implements ITableSQLRender {
 		String pTableAlias = pTable.getFirstTableAlias();
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
-		Query countQry = new Query("select count("+table.getId().getName()+") from "+pTable.getFormSQL(), sFilterC); // count不需要order
+		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
+		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from "+pTable.getFormSQL(), sFilterC); // count不需要order
 		dealExtFilter(context, table, countQry, filter);
 		// deal
 		mainSQL = countQry.getSQL(); // 4 log
@@ -908,7 +909,8 @@ class SQLRender implements ITableSQLRender {
 //		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
-		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
+		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
+		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
 		dealExtFilter(context, table, countQry, null);
 		mainSQL = countQry.getSQL(); // 4 log
 		// deal
@@ -935,7 +937,8 @@ class SQLRender implements ITableSQLRender {
 		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
-		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
+		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
+		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
 		dealExtFilter(context, table, countQry, filter);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, filter, true);
@@ -963,7 +966,8 @@ class SQLRender implements ITableSQLRender {
 		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
-		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
+		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
+		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
 		dealExtFilter(context, table, countQry, null);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, null, true);
@@ -998,7 +1002,8 @@ class SQLRender implements ITableSQLRender {
 ////			sCoundSQL = "select count("+table.getId().getName()+") from " + pTable.getFormSQL();
 ////		}
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
-		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
+		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
+		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
 		dealExtFilter(context, table, countQry, filter);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, filter, true);
@@ -1028,7 +1033,8 @@ class SQLRender implements ITableSQLRender {
 		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
-		Query countQry = new Query("select count("+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
+		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
+		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
 		dealExtFilter(context, table, countQry, null);
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, null, true);

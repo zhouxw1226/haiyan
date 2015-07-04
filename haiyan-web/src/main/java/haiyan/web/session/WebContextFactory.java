@@ -8,7 +8,7 @@ import javax.servlet.ServletResponse;
 
 
 /**
- * AppSession
+ * WebContextFactory
  * 
  * @author ZhouXW
  *

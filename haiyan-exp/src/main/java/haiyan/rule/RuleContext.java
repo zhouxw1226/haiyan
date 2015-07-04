@@ -6,8 +6,13 @@ import haiyan.common.intf.exp.IExpUtil;
 import haiyan.common.session.AppContext;
 import net.sf.json.JSONObject;
 
+/**
+ * @author ZhouXW
+ *
+ */
 public class RuleContext extends AppContext implements IRuleContext {
 
+	private static final String RULE = "__rule";
 	public RuleContext() {
 		super();
 	}
@@ -20,6 +25,7 @@ public class RuleContext extends AppContext implements IRuleContext {
 	}
 	@Override
 	public Object evalRule(JSONObject rule) throws Throwable {
+		this.setAttribute(RULE, rule);
 		IExpUtil expUtil = this.getExpUtil();
 		String codeRule = rule.getString("code");
 		DebugUtil.debug("规则编号：\n"+codeRule+"\n");
@@ -33,17 +39,17 @@ public class RuleContext extends AppContext implements IRuleContext {
 	}
 	@Override
 	public JSONObject removeCurrentActivity() {
-		JSONObject json = (JSONObject)this.getParent().getAttribute("__activity");
-		this.removeAttribute("__activity");
+		JSONObject json = this.getParent().getCurrentActivity();
+		this.getParent().removeCurrentActivity();
 		return json;
 	}
 	@Override
 	public JSONObject getCurrentActivity() {
-		return (JSONObject)this.getParent().getAttribute("__activity");
+		return this.getParent().getCurrentActivity();
 	}
 	@Override
 	public JSONObject getCurrentRule() {
-		return (JSONObject)this.getAttribute("__rule");
+		return (JSONObject)this.getAttribute(RULE);
 	}
 
 }

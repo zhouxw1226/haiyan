@@ -1,5 +1,6 @@
 package haiyan.common.exception;
 
+import haiyan.common.DebugUtil;
 import haiyan.common.SysCode;
 import haiyan.common.intf.session.IUser;
  
@@ -63,6 +64,7 @@ public class Warning extends HyException {
         super(SysCode.create(null, errorCode, source, null));
         this.errorCode = errorCode;
 //        this.source = source;
+        DebugUtil.error(debug);
     }
     /**
      * @param errCode

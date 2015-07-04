@@ -426,11 +426,18 @@
 					<xs:sequence>
 						<xs:element ref="queryCondition" minOccurs="0"
 							maxOccurs="1" />
-						<!-- <xs:element ref="component" minOccurs="0" maxOccurs="1" /> <xs:element 
-							ref="listColumn" minOccurs="0" maxOccurs="1" /> <xs:element name="entry" 
-							minOccurs="0" maxOccurs="unbounded"> <xs:complexType> <xs:sequence> <xs:element 
-							name="key" type="xs:string" /> <xs:element name="value" type="xs:string" 
-							/> </xs:sequence> </xs:complexType> </xs:element> -->
+						<!-- 
+						<xs:element ref="component" minOccurs="0" maxOccurs="1" /> 
+						<xs:element ref="listColumn" minOccurs="0" maxOccurs="1" /> 
+						<xs:element name="entry" minOccurs="0" maxOccurs="unbounded"> 
+							<xs:complexType> 
+								<xs:sequence> 
+									<xs:element name="key" type="xs:string" /> 
+									<xs:element name="value" type="xs:string" /> 
+								</xs:sequence> 
+							</xs:complexType> 
+						</xs:element> 
+						-->
 					</xs:sequence>
 					<!-- -->
 					<xs:attribute name="updateable" type="xs:boolean" use="optional"
@@ -456,8 +463,12 @@
 							<xs:documentation>loadType</xs:documentation>
 						</xs:annotation>
 					</xs:attribute>
-					<!-- <xs:attribute name="style" type="xs:string" use="optional"> <xs:annotation> 
-						<xs:documentation>fieldStyle</xs:documentation> </xs:annotation> </xs:attribute> -->
+					<!-- 
+					<xs:attribute name="style" type="xs:string" use="optional"> 
+					<xs:annotation> 
+						<xs:documentation>fieldStyle</xs:documentation> 
+					</xs:annotation> 
+					</xs:attribute> -->
 					<xs:attribute name="sumable" type="xs:boolean" use="optional"
 						default="false">
 						<xs:annotation>
@@ -735,6 +746,7 @@
 		</xs:annotation>
 		<xs:complexType>
 			<xs:sequence>
+				<!--
 				<xs:element name="diabledComponent" minOccurs="0"
 					maxOccurs="unbounded">
 					<xs:annotation>
@@ -774,6 +786,7 @@
 						</xs:attribute>
 					</xs:complexType>
 				</xs:element>
+				-->
 			</xs:sequence>
 			<xs:attribute name="name" type="xs:NMTOKENS" use="required">
 				<xs:annotation>
