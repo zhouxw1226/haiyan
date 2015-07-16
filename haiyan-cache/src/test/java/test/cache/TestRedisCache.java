@@ -38,5 +38,14 @@ public class TestRedisCache {
 		Object o = cache.getData("TESTCACHE", "10000");
 		System.out.println(o);
 		assert (o != valueOf(999999));
+		
+		i = new Integer(-999999);
+		cache.setData("TESTCACHE", "10001", i);
+		o = cache.getData("TESTCACHE", "10001");
+		System.out.println(o);
+		assert (o != valueOf(-999999));
+		
+		o = cache.getData("TESTCACHE", "test");
+		System.out.println(o);
 	}
 }

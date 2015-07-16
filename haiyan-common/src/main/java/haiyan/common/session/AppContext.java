@@ -22,14 +22,6 @@ public class AppContext implements IAppContext {
 
 	public AppContext() { 
 	}
-	protected Boolean alive;
-	@Override
-	public Boolean isAlive() {
-		return alive;
-	}
-	public void setAlive(Boolean alive) {
-		this.alive = alive;
-	}
 	protected IContext parent;
 	public AppContext(IContext parent) { 
 		this.parent=parent;
@@ -37,6 +29,14 @@ public class AppContext implements IAppContext {
 			this.user=parent.getUser();
 			this.DSN=parent.getDSN();
 		}
+	}
+	protected Boolean alive;
+	@Override
+	public Boolean isAlive() {
+		return alive;
+	}
+	public void setAlive(Boolean alive) {
+		this.alive = alive;
 	}
 	protected Map<String,Object> atts = new HashMap<String, Object>();
 	@Override
@@ -103,7 +103,13 @@ public class AppContext implements IAppContext {
 	}
 	@Override
 	public String getDSN() {
-		return !StringUtil.isBlankOrNull(this.DSN)?this.DSN:(user!=null?user.getDSN():null);
+		if (!StringUtil.isBlankOrNull(this.DSN))
+			return this.DSN;
+		if (this.user!=null)
+			return this.user.getDSN();
+		if (this.parent!=null)
+			return this.parent.getDSN();
+		return null;
 	}
 	@Override
 	public void close() {

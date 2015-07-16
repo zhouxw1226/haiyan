@@ -3,16 +3,9 @@ package haiyan.common;
 import haiyan.common.intf.ILogger;
 
 import java.lang.reflect.Method;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
  
 public class DebugUtil {
-	public static Logger getLogger() {
-        Throwable t  = new Throwable();
-        StackTraceElement directCaller = t.getStackTrace()[1];
-        return LoggerFactory.getLogger(directCaller.getClassName());
-    }
+	// 默认的logger实现
 	public static ILogger logger = new ILogger() {
 		@Override
 		public void debug(Object info) {
@@ -36,33 +29,19 @@ public class DebugUtil {
 		}
 	};
 	private static int connNum = 0;
-	/**
-	 * 
-	 */
 	public static synchronized void addConnNum() {
 		connNum++;
 		debug(">------------------------------------------< connNum=" + connNum);
 	}
-	/**
-	 * 
-	 */
 	public static synchronized void deleteConnNum() {
 		connNum--;
 		debug(">------------------------------------------< connNum=" + connNum);
 	}
-	// /**
-	// *
-	// */
-	// public static void debug() {
-	// if (logger != null)
-	// logger.debug("\n");
-	// }
 	/**
 	 * @param info
 	 */
 	public static void debug(Object info) {
 		if (logger != null)
-			// logger.error(info);
 			logger.debug(info); // haiyan.exe没有记录。。。
 	}
 	/**

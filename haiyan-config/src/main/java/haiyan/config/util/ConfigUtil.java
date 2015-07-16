@@ -131,6 +131,30 @@ public class ConfigUtil {
      * @return String
      * @throws Throwable
      */
+    public final static String getDefaultDSNOfSlaves() {
+		String DSN = PropUtil.getProperty("SERVER.DSN.Slaves");
+		return DSN;
+    }
+    /**
+     * @return String
+     * @throws Throwable
+     */
+    public final static String getDefaultDSNOfMaster() {
+		String DSN = PropUtil.getProperty("SERVER.DSN.Master");
+		return DSN;
+    }
+    /**
+     * @return String
+     * @throws Throwable
+     */
+    public final static String getDefaultDSN() {
+		String DSN = PropUtil.getProperty("SERVER.DSN");
+		return DSN;
+    }
+    /**
+     * @return String
+     * @throws Throwable
+     */
     public final static String getDefaultDBType() throws Throwable {
         JdbcURL jdbc = ROOT.getJdbcURL();
         if (jdbc != null)

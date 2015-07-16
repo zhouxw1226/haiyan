@@ -128,6 +128,7 @@ public class ZipUtilByApache extends ZipUtil {
 	 *            要打包的目录
 	 * @throws Throwable 
 	 */
+	@SuppressWarnings("unchecked")
 	public static void zipFileByApache(File outFile, String zipDir) throws Throwable {
 		ArchiveOutputStream out = null;
 		try {
@@ -138,8 +139,7 @@ public class ZipUtilByApache extends ZipUtil {
 			if (zipDir.charAt(zipDir.length() - 1) != '/') {
 				zipDir += '/';
 			}
-			Iterator<File> files = FileUtils.iterateFiles(new File(zipDir),
-					null, true);
+			Iterator<File> files = FileUtils.iterateFiles(new File(zipDir), null, true);
 			while (files.hasNext()) {
 				File file = files.next();
 				ZipArchiveEntry zipArchiveEntry = new ZipArchiveEntry(file,

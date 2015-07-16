@@ -26,6 +26,7 @@ public class User implements IUser, Serializable { // Externalizable
 	private String password;
 	private String deptID;
 	private String DSN;
+	private String mobile;
 	private String languageName;
 	private Boolean alive;
 	private IRole[] roles;
@@ -130,6 +131,16 @@ public class User implements IUser, Serializable { // Externalizable
 	@Override
 	public void setName(String name) {
 		this.name = name;
+	}
+	@GetMethod("mobile")
+	@Override
+	public String getMobile() {
+		return mobile;
+	}
+	@SetMethod("mobile")
+	@Override
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
 	}
 	@Override
 	public void setProperty(String key, Object value) {

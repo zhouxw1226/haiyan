@@ -55,7 +55,7 @@ public class TestDBBill {
 		try {
 			IBillConfig billCfg = ConfigUtil.getBill("SYSBILL");
 			context = BillDBContextFactory.createDBContext(user);
-			IBillDBManager billMgr = BillDBManagerFactory.createDBManager(user);
+			IBillDBManager billMgr = BillDBManagerFactory.createDBManager(user.getDSN());
 			IDBBill bill = billMgr.createBill(context, billCfg);
 			
 			billMgr.loadBill(context, bill);

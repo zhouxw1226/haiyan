@@ -62,14 +62,6 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	}
 	@Override
 	public void commit() throws Throwable {
-		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
-		try {
-			if (cacheMgr!=null)
-				cacheMgr.commit();
-		} finally {
-			if (cacheMgr!=null)
-				cacheMgr.clear();
-		}
 		if (this.isAlive()) {
 			if (!this.connection.getAutoCommit()) { // 事务不是自动提交
 				this.beforeCommit(); // for hsqldb
@@ -83,7 +75,17 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			DebugUtil.debug(">----< dbm.commit.visualHash:" + this.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
-		this.commited = true;//事务是否结束
+		// --------------------------------------------------------- //
+		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
+		try { // 内存记录提交
+			if (cacheMgr!=null) 
+				cacheMgr.commit();
+		} finally {
+			if (cacheMgr!=null)
+				cacheMgr.clear();
+		}
+		// --------------------------------------------------------- //
+		this.commited = true; // 事务是否结束
 //		// 清理缓存
 //		EventQueue.invokeLater(new Runnable() {
 //			public void run() {
@@ -105,14 +107,6 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	}
 	@Override
 	public void rollback() throws Throwable {
-		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
-		try {
-			if (cacheMgr!=null)
-				cacheMgr.rollback();
-		} finally {
-			if (cacheMgr!=null)
-				cacheMgr.clear();
-		}
 		if (this.isAlive()) {
 			if (!this.connection.getAutoCommit()) { // 事务不是自动提交
 				this.beforeRollback(); // for hsqldb
@@ -126,7 +120,17 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			DebugUtil.debug(">----< dbm.rollback.visualHash:" + this.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
-		this.commited = true;//事务是否结束
+		// --------------------------------------------------------- //
+		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
+		try { // 内存记录提交
+			if (cacheMgr!=null)
+				cacheMgr.rollback();
+		} finally {
+			if (cacheMgr!=null)
+				cacheMgr.clear();
+		}
+		// --------------------------------------------------------- //
+		this.commited = true; // 事务是否结束
 //		// 清理缓存 回滚不清理缓存
 //		EventQueue.invokeLater(new Runnable() {
 //			public void run() {
@@ -1184,7 +1188,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	 * @return
 	 * @throws Throwable
 	 */
-	protected IDBRecord update(ITableDBContext context, Table table, IDBRecord record,IDBFilter filter, int... args) throws Throwable {
+	protected IDBRecord update(ITableDBContext context, Table table, IDBRecord record, IDBFilter filter, int... args) throws Throwable {
 		this.checkVersion(context, table, record);
 		PreparedStatement ps = null;
 		try {
@@ -1215,9 +1219,9 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 		return update(context, table, record, null, null);
 	}
 	@Override
-	public IDBRecord update(ITableDBContext context, Table table, IDBRecord record,IDBFilter filter)
+	public IDBRecord update(ITableDBContext context, Table table, IDBRecord record, IDBFilter filter)
 			throws Throwable {
-		return update(context, table, record, filter,null);
+		return update(context, table, record, filter, null);
 	}
 	/**
 	 * @param table

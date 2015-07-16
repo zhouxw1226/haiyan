@@ -27,6 +27,8 @@ public interface IUser extends IUserSession, Serializable { // Externalizable
 	void setRoles(IRole[] roles);
 	String getDSN();
 	void setDSN(String DSN);
+	String getMobile();
+	void setMobile(String mobile);
 
 	String getLanguageName();
 	void setLanguageName(String languageName);

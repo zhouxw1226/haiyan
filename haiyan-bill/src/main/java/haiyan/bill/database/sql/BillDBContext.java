@@ -21,6 +21,10 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	public BillDBContext() { 
 		super();
 	}
+	public BillDBContext(String DSN) { 
+		super();
+		super.setDSN(DSN);
+	}
 	public BillDBContext(IContext parent) { 
 		super(parent);
 	}
@@ -101,8 +105,8 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	}
 	@Override
 	public void commit() throws Throwable {
-		IBillDBManager bbm = this.getBBM();
-		//for (ITableDBContext context:this.tableContexts) 
+//		IBillDBManager bbm = this.getBBM();
+//		//for (ITableDBContext context:this.tableContexts) 
 //		ITableDBContext context = this.getTableDBContext();
 //		{
 ////			ITableDBManager dbm = context.getDBM();
@@ -111,6 +115,7 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 ////			if(dbm != null)
 ////				dbm.commit();
 //		}
+		IBillDBManager bbm = this.getBBM();
 		if (bbm==null)
 			return;
 		bbm.commit();
@@ -139,10 +144,8 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 			CloseUtil.close(context);
 		}
 		//this.tableContexts.clear();
-
 		CloseUtil.close(this.bbm);
 		this.bbm = null;
-
 		super.close();
 	}
 	@Override
@@ -153,10 +156,8 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 			context.clear();
 		}
 //		this.tableContexts.clear();
-		
 		if (this.bbm!=null)
 			this.bbm.clear();
-		
 		super.clear();
 	}
 	

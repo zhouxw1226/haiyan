@@ -5,15 +5,11 @@ import haiyan.common.SysCode;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.sql.ISQLDatabase;
 import haiyan.common.intf.factory.IFactory;
-import haiyan.common.intf.session.IUser;
 import haiyan.orm.database.sql.AbstractDBManagerFactory;
 
 public class BillDBManagerFactory extends AbstractDBManagerFactory implements IFactory {
 
 	private BillDBManagerFactory() {
-	}
-	public static IBillDBManager createDBManager(IUser user)  {
-		return createDBManager(user.getDSN());
 	}
 	public static IBillDBManager createDBManager(String DSN)  {
 		try {

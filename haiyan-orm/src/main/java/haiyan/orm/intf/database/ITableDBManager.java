@@ -56,5 +56,4 @@ public interface ITableDBManager extends ISQLDBManager {
 	int executeUpdate(String SQL, Object[] paras) throws Throwable;
 	IDatabase getDatabase();
 	boolean isDBCorrect(Throwable ex);
-
 }

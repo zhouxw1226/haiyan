@@ -4,6 +4,7 @@ import static haiyan.common.intf.database.orm.IDBRecord.UPDATE;
 import static haiyan.config.util.ConfigUtil.getTable;
 import haiyan.bill.database.DBBill;
 import haiyan.bill.database.IBillDBManager;
+import haiyan.common.DebugUtil;
 import haiyan.common.StringUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.config.IBillConfig;
@@ -39,20 +40,48 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 	}
 	@Override
 	public void commit() throws Throwable {
-		if (this.connection!=null && !this.connection.getAutoCommit())
-			this.connection.commit();
+		if (this.isAlive()) {
+			if (!this.connection.getAutoCommit()) { // 事务不是自动提交
+				//this.beforeCommit(); // for hsqldb
+				this.connection.commit(); // 主动提交
+				this.connection.setAutoCommit(true); // 变回自动提交
+				this.autoCommit=true;
+			}
+			DebugUtil.debug(">----< bbm.commit.connHash:" + this.connection.hashCode()
+					+ "\tbbm.isAutoCommit:" + this.autoCommit);
+		} else {
+			DebugUtil.debug(">----< bbm.commit.visualHash:" + this.hashCode()
+					+ "\tbbm.isAutoCommit:" + this.autoCommit);
+		}
+		// --------------------------------------------------------- //
 		for (IDBBill bill:this.billList) {
 			bill.commit(); // 内存单据提交
+//			bill.clear();
 		}
-		this.commited = true;
+		// --------------------------------------------------------- //
+		this.commited = true; // 事务是否结束
 	}
 	@Override
 	public void rollback() throws Throwable {
-		if (this.savePoint!=null && this.connection!=null && !this.connection.getAutoCommit())
-			this.connection.rollback(this.savePoint);
+		if (this.isAlive()) {
+			if (this.savePoint!=null && !this.connection.getAutoCommit()) {
+				//this.beforeRollback(); // for hsqldb
+				this.connection.rollback(this.savePoint);
+				this.connection.setAutoCommit(true); // 变回自动提交
+				this.autoCommit=true;
+			}
+			DebugUtil.debug(">----< bbm.rollback.connHash:" + this.connection.hashCode()
+				+ "\tbbm.isAutoCommit:" + this.autoCommit);
+		} else {
+			DebugUtil.debug(">----< bbm.rollback.visualHash:" + this.hashCode()
+				+ "\tbbm.isAutoCommit:" + this.autoCommit);
+		}
+		// --------------------------------------------------------- //
 		for (IDBBill bill:this.billList) {
 			bill.rollback(); // 内存单据回滚
+//			bill.clear();
 		}
+		// --------------------------------------------------------- //
 		//this.commited = false;
 	}
 	@Override

@@ -293,7 +293,6 @@ public class DateUtil implements Serializable {
 	public DateUtil getRealMonthStart() throws Throwable {
 		return new DateUtil(m_year, m_month, 1, 0, 0, 0);
 	}
-
 	/**
 	 * @return DateUtil
 	 * @throws Throwable
@@ -335,7 +334,6 @@ public class DateUtil implements Serializable {
 	 * @return String
 	 */
 	public String getTimeString() {
-		//
 		String affHour = m_hour >= 10 ? String.valueOf(m_hour) : "0"
 				+ String.valueOf(m_hour);
 		String affMinute = m_minute >= 10 ? String.valueOf(m_minute) : "0"
@@ -357,7 +355,7 @@ public class DateUtil implements Serializable {
 		} else {
 			return m + 8;
 		}
-	}
+	}	
 	/**
 	 * @return DateUtil
 	 * @throws Throwable
@@ -400,7 +398,6 @@ public class DateUtil implements Serializable {
 	 * @param days
 	 */
 	public void advanceDays(int days) {
-		// //
 		fromJulian(toJulian() + days);
 	}
 	/**
@@ -630,7 +627,6 @@ public class DateUtil implements Serializable {
 			throw Warning.wrapException(ex);
 		}
 	}
-
 	/**
 	 * @param day
 	 * @return java.util.Date
@@ -647,7 +643,6 @@ public class DateUtil implements Serializable {
 		//
 		return gc.getTime();
 	}
-
 	/**
 	 * @param day
 	 * @return java.util.Date
@@ -664,7 +659,6 @@ public class DateUtil implements Serializable {
 		gc.set(GregorianCalendar.SECOND, 59);
 		return gc.getTime();
 	}
-
 	/**
 	 * @param day
 	 * @return java.util.Date
@@ -694,7 +688,6 @@ public class DateUtil implements Serializable {
 		}
 		return getFirstDayOfMonth(gc.getTime());
 	}
-
 	/**
 	 * @param day
 	 * @return java.util.Date
@@ -704,7 +697,6 @@ public class DateUtil implements Serializable {
 			day = new java.util.Date();
 		GregorianCalendar gc = new GregorianCalendar();
 		gc.setTime(day);
-
 		// Check in wich quarter we are....
 		int currentMonth = gc.get(GregorianCalendar.MONTH);
 		if (currentMonth <= GregorianCalendar.MARCH) // From January to March
@@ -717,13 +709,11 @@ public class DateUtil implements Serializable {
 		} else if (currentMonth <= GregorianCalendar.SEPTEMBER) // From July to
 		// September
 		{
-			gc.set(gc.get(GregorianCalendar.YEAR), GregorianCalendar.SEPTEMBER,
-					1);
+			gc.set(gc.get(GregorianCalendar.YEAR), GregorianCalendar.SEPTEMBER, 1);
 		} else // if (currentMonth <= GregorianCalendar.MARCH) // From Octoner
 		// to December
 		{
-			gc.set(gc.get(GregorianCalendar.YEAR), GregorianCalendar.DECEMBER,
-					1);
+			gc.set(gc.get(GregorianCalendar.YEAR), GregorianCalendar.DECEMBER, 1);
 		}
 		return getLastDayOfMonth(gc.getTime());
 	}
@@ -847,7 +837,6 @@ public class DateUtil implements Serializable {
 		if (date == null) {
 			return null;
 		}
-
 		if ((date instanceof java.util.Date)) {
 			return format((java.util.Date) date, dateStyle);
 		}
@@ -902,7 +891,6 @@ public class DateUtil implements Serializable {
 			return ftv.substring(5);
 		return ftv;
 	}
-
 	/**
 	 * @param date
 	 * @return 返回当时中国节日
@@ -913,7 +901,6 @@ public class DateUtil implements Serializable {
 			return ftv.substring(5);
 		return ftv;
 	}
-
 	/**
 	 * @param date
 	 * @param adDays
@@ -951,9 +938,7 @@ public class DateUtil implements Serializable {
 		// System.out.println(dateFtv(Calendar.getInstance(Locale.SIMPLIFIED_CHINESE).));
 	}
 }
-
 class ChinaDate {
-
 	final private static long[] lunarInfo = new long[] { 0x04bd8, 0x04ae0,
 			0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0,
 			0x055d2, 0x04ae0, 0x0a5b6, 0x0a4d0, 0x0d250, 0x1d255, 0x0b540,
@@ -977,38 +962,29 @@ class ChinaDate {
 			0x0a4d0, 0x1d0b6, 0x0d250, 0x0d520, 0x0dd45, 0x0b5a0, 0x056d0,
 			0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20,
 			0x0ada0 };
-
 	final private static int[] year20 = new int[] { 1, 4, 1, 2, 1, 2, 1, 1, 2,
 			1, 2, 1 };
-
 	final private static int[] year19 = new int[] { 0, 3, 0, 1, 0, 1, 0, 0, 1,
 			0, 1, 0 };
-
 	final private static int[] year2000 = new int[] { 0, 3, 1, 2, 1, 2, 1, 1,
 			2, 1, 2, 1 };
-
 	// //
 	private final static String[] nStr1 = new String[] { "", "正", "二", "三",
 			"四", "五", "六", "七", "八", "九", "十", "十一", "十二" };
-
 	// 天干
 	private final static String[] gan = new String[] { "甲", "乙", "丙", "丁", "戊",
 			"己", "庚", "辛", "壬", "癸" };
-
 	// 地支
 	private final static String[] zhi = new String[] { "子", "丑", "寅", "卯", "辰",
 			"巳", "午", "未", "申", "酉", "戌", "亥" };
-
 	// 属相
 	private final static String[] animals = new String[] { "鼠", "牛", "虎", "兔",
 			"龙", "蛇", "马", "羊", "猴", "鸡", "狗", "猪" };
-
 	// 分时
 	@SuppressWarnings("unused")
 	private final static String[] solarTerm = new String[] { "小寒", "大寒", "立春",
 			"雨水", "惊蛰", "春分", "清明", "谷雨", "立夏", "小满", "芒种", "夏至", "小暑", "大暑",
 			"立秋", "处暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪", "冬至" };
-
 	// 中国新节日
 	private final static String[] sFtv = new String[] { "0101*元旦", "0214 情人节",
 			"0308 妇女节", "0312 植树节", "0315 消费者权益日", "0401 愚人节", "0501 劳动节",
@@ -1016,14 +992,11 @@ class ChinaDate {
 			"0808 父亲节", "0909 毛泽东逝世纪念", "0910 教师节", "0928 孔子诞辰", "1001*国庆节",
 			"1006 老人节", "1024 联合国日", "1112 孙中山诞辰", "1220 澳门回归", "1225 圣诞节",
 			"1226 毛泽东诞辰" };
-
 	// 中国旧传统节日
 	private final static String[] lFtv = new String[] { "0101*农历春节",
 			"0115 元宵节", "0505 端午节", "0707 七夕情人节", "0815 中秋节", "0909 重阳节",
 			"1208 腊八节", "1224 小年", "0100*除夕" };
-
 	// private SimpleDateFormat sdf = new SimpleDateFormat("yyyy年M月d日 EEEEE");
-
 	/**
 	 * 传回农历 y年的总天数
 	 * 
@@ -1038,7 +1011,6 @@ class ChinaDate {
 		}
 		return (sum + leapDays(y));
 	}
-
 	/**
 	 * 传回农历 y年闰月的天数
 	 * 
@@ -1054,7 +1026,6 @@ class ChinaDate {
 		} else
 			return 0;
 	}
-
 	/**
 	 * 传回农历 y年闰哪个月 1-12 , 没闰传回 0
 	 * 
@@ -1064,7 +1035,6 @@ class ChinaDate {
 	final private static int leapMonth(int y) {
 		return (int) (lunarInfo[y - 1900] & 0xf);
 	}
-
 	/**
 	 * 传回农历 y年m月的总天数
 	 * 
@@ -1078,7 +1048,6 @@ class ChinaDate {
 		else
 			return 30;
 	}
-
 	/**
 	 * 传回农历 y年的生肖
 	 * 
@@ -1088,7 +1057,6 @@ class ChinaDate {
 	final static String animalsYear(int y) {
 		return animals[(y - 4) % 12];
 	}
-
 	/**
 	 * 传入 月日的offset 传回干支,0=甲子
 	 * 
@@ -1098,7 +1066,6 @@ class ChinaDate {
 	final private static String cyclicalm(int num) {
 		return (gan[num % 10] + zhi[num % 12]);
 	}
-
 	/**
 	 * 传入 offset 传回干支, 0=甲子
 	 * 
@@ -1109,7 +1076,6 @@ class ChinaDate {
 		int num = y - 1900 + 36;
 		return (cyclicalm(num));
 	}
-
 	/**
 	 * 传出农历.year0 .month1 .day2 .yearCyl3 .monCyl4 .dayCyl5 .isLeap6
 	 * 
@@ -1132,7 +1098,6 @@ class ChinaDate {
 			offset += year2000[m - 1];
 		nongDate[5] = offset + 40;
 		nongDate[4] = 14;
-
 		for (i = 1900; i < 2050 && offset > 0; i++) {
 			temp = lYearDays(i);
 			offset -= temp;
@@ -1147,7 +1112,6 @@ class ChinaDate {
 		nongDate[3] = i - 1864;
 		leap = leapMonth(i); // 闰哪个月
 		nongDate[6] = 0;
-
 		for (i = 1; i < 13 && offset > 0; i++) {
 			// 闰月
 			if (leap > 0 && i == (leap + 1) && nongDate[6] == 0) {
@@ -1157,7 +1121,6 @@ class ChinaDate {
 			} else {
 				temp = monthDays((int) nongDate[0], i);
 			}
-
 			// 解除闰月
 			if (nongDate[6] == 1 && i == (leap + 1))
 				nongDate[6] = 0;
@@ -1165,7 +1128,6 @@ class ChinaDate {
 			if (nongDate[6] == 0)
 				nongDate[4]++;
 		}
-
 		if (offset == 0 && leap > 0 && i == leap + 1) {
 			if (nongDate[6] == 1) {
 				nongDate[6] = 0;
@@ -1184,7 +1146,6 @@ class ChinaDate {
 		nongDate[2] = offset + 1;
 		return nongDate;
 	}
-
 	/**
 	 * 传出y年m月d日对应的农历.year0 .month1 .day2 .yearCyl3 .monCyl4 .dayCyl5 .isLeap6
 	 * 
@@ -1216,7 +1177,6 @@ class ChinaDate {
 		nongDate[3] = i - 1864;
 		leap = leapMonth(i); // 闰哪个月
 		nongDate[6] = 0;
-
 		for (i = 1; i < 13 && offset > 0; i++) {
 			// 闰月
 			if (leap > 0 && i == (leap + 1) && nongDate[6] == 0) {
@@ -1226,7 +1186,6 @@ class ChinaDate {
 			} else {
 				temp = monthDays((int) nongDate[0], i);
 			}
-
 			// 解除闰月
 			if (nongDate[6] == 1 && i == (leap + 1))
 				nongDate[6] = 0;
@@ -1234,7 +1193,6 @@ class ChinaDate {
 			if (nongDate[6] == 0)
 				nongDate[4]++;
 		}
-
 		if (offset == 0 && leap > 0 && i == leap + 1) {
 			if (nongDate[6] == 1) {
 				nongDate[6] = 0;
@@ -1253,7 +1211,6 @@ class ChinaDate {
 		nongDate[2] = offset + 1;
 		return nongDate;
 	}
-
 	/**
 	 * @param day
 	 * @return String
@@ -1307,7 +1264,6 @@ class ChinaDate {
 		}
 		return a;
 	}
-
 	final static String today() {
 		Calendar today = Calendar.getInstance(Locale.SIMPLIFIED_CHINESE);
 		int year = today.get(Calendar.YEAR);
@@ -1332,11 +1288,9 @@ class ChinaDate {
 			sToday = null;
 		}
 	}
-
 	final static String todayFtv() {
 		return dateFtv(new Date());
 	}
-
 	final static String dateFtv(Date tDate) {
 		String dateFtv = null;
 		// Calendar cal = new GregorianCalendar();
@@ -1370,7 +1324,6 @@ class ChinaDate {
 		}
 		return dateFtv;
 	}
-
 	/**
 	 * 农历日历工具使用演示
 	 * 
@@ -1380,8 +1333,8 @@ class ChinaDate {
 		System.out.println(today());
 	}
 
+	
 }
-
 // public static String dateFtv(Calendar cal) {
 // int year = cal.get(Calendar.YEAR);
 // int month = cal.get(Calendar.MONTH) + 1;
@@ -1402,7 +1355,6 @@ class ChinaDate {
 // }
 // return null;
 // }
-//
 // /**
 // * @param args
 // */
@@ -1411,17 +1363,14 @@ class ChinaDate {
 // //
 // SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 // // st.setNanos(1);
-// System.out.println(new java.sql.Timestamp(System
-// .currentTimeMillis()));
+// System.out.println(new java.sql.Timestamp(System.currentTimeMillis()));
 // System.out.println(new java.util.Date());
-// System.out.println(new java.sql.Timestamp(sdf.parse(getLastTime())
-// .getTime()));
+// System.out.println(new java.sql.Timestamp(sdf.parse(getLastTime()).getTime()));
 // System.out.println(sdf.format(new java.util.Date()));
 // } catch (ParseException e) {
 // e.printStackTrace();
 // }
 // }
-//
 // /**
 // * @param args
 // * @throws Throwable
@@ -1429,27 +1378,19 @@ class ChinaDate {
 // public final static void main(String[] args) throws Throwable {
 // // DebugUtil.debug(getLastTime("yyyy-MM-dd hh:mm:ss"));
 // // //DebugUtil.debug(getLastTime("yyyyMMdd hhmmss"));
-// //
 // // SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 // // String lastEditTime = sdf.parse(
-// // new java.sql.Timestamp(System.currentTimeMillis()).toString())
-// // .toString();
+// // new java.sql.Timestamp(System.currentTimeMillis()).toString()).toString();
 // // DebugUtil.debug(lastEditTime);
-// //
-// // lastEditTime = new java.sql.Timestamp(System.currentTimeMillis())
-// // .toString();
+// // lastEditTime = new java.sql.Timestamp(System.currentTimeMillis()).toString();
 // // DebugUtil.debug(lastEditTime);
-// //
-// // java.sql.Date date = new java.sql.Date(new java.sql.Timestamp(System
-// // .currentTimeMillis()).getTime());
+// // java.sql.Date date = new java.sql.Date(new java.sql.Timestamp(System.currentTimeMillis()).getTime());
 // // DebugUtil.debug(date.toString());
 // //
 // // DebugUtil.debug(sdf.parse("2006-09-01 11:30:00").getTime()
 // // - sdf.parse("2006-09-01 11:00:00").getTime());
 // DateUtil checkDate = new DateUtil(2006, 1, 1, 0, 0, 0);
 // DateUtil currDate = new DateUtil();
-// //DateUtil.
 // DebugUtil.debug(currDate.toJulian() - checkDate.toJulian());
 // DebugUtil.debug(checkDate.toJulian());
 // }
-//

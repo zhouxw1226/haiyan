@@ -37,7 +37,6 @@ public class PropUtil {
 			}
 			return lookup.get(key);
 		}
-		@SuppressWarnings("restriction")
 		public Enumeration<String> getKeys() {
 			ResourceBundle parent = this.parent;
 			return new sun.util.ResourceBundleEnumeration(lookup.keySet(),

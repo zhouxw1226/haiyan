@@ -13,10 +13,12 @@ import java.sql.Savepoint;
 public abstract class AbstractSQLDBManager implements ISQLDBManager {
 	protected transient volatile boolean autoCommit = true;
 	protected transient volatile boolean commited = false;
-	protected transient Connection connection; 
-	protected transient ISQLDatabase database;
 	protected transient ISQLDBClear dbClear = new SQLDBClear();
+	protected transient ISQLDatabase database;
+	protected transient Connection connection;
 	protected transient Savepoint savePoint = null;
+//	protected transient String masterDSNSuffix;
+//	protected transient String slaveDSNSuffix;
 	/**
 	 * @param conn
 	 * @param notSameConn
@@ -24,6 +26,22 @@ public abstract class AbstractSQLDBManager implements ISQLDBManager {
 	public AbstractSQLDBManager(ISQLDatabase db) {
 		this.database = db;
 	}
+//	@Override
+//	public String getMasterDSNSuffix() {
+//		return masterDSNSuffix;
+//	}
+//	@Override
+//	public void setMasterDSNSuffix(String masterDSNSuffix) {
+//		this.masterDSNSuffix = masterDSNSuffix;
+//	}
+//	@Override
+//	public String getSlaveDSNSuffix() {
+//		return slaveDSNSuffix;
+//	}
+//	@Override
+//	public void setSlaveDSNSuffix(String slaveDSNSuffix) {
+//		this.slaveDSNSuffix = slaveDSNSuffix;
+//	}
 	@Override
 	public IDatabase getDatabase() {
 		return this.database;

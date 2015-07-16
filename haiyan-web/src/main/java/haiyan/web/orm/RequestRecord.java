@@ -25,9 +25,14 @@ public class RequestRecord extends AbstractRequestRecord {
 			} 
 			if (StringUtil.isEmpty(v)) {
 				if (!field.isNullAllowed()) {
-					if(field.getJavaType() == AbstractCommonFieldJavaTypeType.INTEGER){//TODO 其他类型
+					if(field.getJavaType() == AbstractCommonFieldJavaTypeType.INTEGER){
 						v = Integer.valueOf(field.getDefaultValue());
-					}else{
+					}
+//					//TODO 其他类型
+//					else if(field.getJavaType() == AbstractCommonFieldJavaTypeType.BIGDECIMAL){
+//						v = new BigDecimal(field.getDefaultValue());
+//					}
+					else{
 						v = field.getDefaultValue();
 					}
 				}
@@ -35,7 +40,7 @@ public class RequestRecord extends AbstractRequestRecord {
 			if (!StringUtil.isEmpty(v)) {
 				v = transValueType(field, v);
 				String dbName = field.getName();
-				record.set(dbName, v);
+				record.set(dbName, v); // setValue and setUpdateStatus
 			} else if (!field.isNullAllowed()) {
 				//throw Warning("not allow empty value, field="+);
 			}

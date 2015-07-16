@@ -12,6 +12,7 @@ import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.TableDBContextFactory;
+import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.session.ITableDBContext;
 
 import java.math.BigDecimal;
@@ -106,9 +107,10 @@ class DBBillAutoNumber {
 		strObjName = strObjName.toUpperCase();
 		ITableDBContext subContext = TableDBContextFactory.createDBContext(context); // 开启一个独立事务
 		try {
+			ITableDBManager dbm = subContext.getDBM();
 			String sSQL = "SELECT ID, VALUE, PROP1 FROM SYSCACHE WHERE K like ?";
 			// for update only for mysql
-			Object[][] rstNumber1 = subContext.getDBM().getResultArray(sSQL, 3, new Object[]{strObjName});
+			Object[][] rstNumber1 = dbm.getResultArray(sSQL, 3, new Object[]{strObjName});
 			BigDecimal lngGetValue;
 			BigDecimal lngEndNumber;
 			BigDecimal lngIniStartNumber;
@@ -122,7 +124,7 @@ class DBBillAutoNumber {
 				Id idFld = ((Table)table).getId();
 				if (idFld.getJavaType() != AbstractCommonFieldJavaTypeType.STRING) {
 					String sql = "select max(" + idFld.getName() + ") from " + strObjName;
-					Object[][] rsStr = subContext.getDBM().getResultArray(sql, 1, null);
+					Object[][] rsStr = dbm.getResultArray(sql, 1, null);
 					if (rsStr != null && !StringUtil.isBlankOrNull(rsStr[0][0])) {
 						if (StringUtil.isNumeric(rsStr[0][0])) {
 							BigDecimal s = VarUtil.toBigDecimal(rsStr[0][0]);
@@ -136,7 +138,7 @@ class DBBillAutoNumber {
 				// lngIniEndNumber = BigDecimal.valueOf((long) 100);
 				// lngIniWarnNumber = BigDecimal.valueOf((long) 90);
 				sSQL = "insert into SYSCACHE(ID, K, VALUE, PROP1, PROP2) values (?,?,?,?,?)";
-				subContext.getDBM().executeUpdate(sSQL, new Object[]{ID, strObjName, lngIniStartNumber.add(lngDBIDRequestNumber), lngIniEndNumber, lngIniWarnNumber});
+				dbm.executeUpdate(sSQL, new Object[]{ID, strObjName, lngIniStartNumber.add(lngDBIDRequestNumber), lngIniEndNumber, lngIniWarnNumber});
 				lngGetValue = lngIniStartNumber;
 			} else {
 				String ID = VarUtil.toString(rstNumber1[0][0]);
@@ -153,11 +155,11 @@ class DBBillAutoNumber {
 					lngIniWarnNumber = lngIniEndNumber.add(SEEDWARN);
 					// rstNumber.Close
 					sSQL = "UPDATE SYSCACHE set K=?, VALUE=?, PROP1=?, PROP2=? where ID=? ";
-					subContext.getDBM().executeUpdate(sSQL, new Object[]{strObjName, lngIniStartNumber, lngIniEndNumber, lngIniWarnNumber, ID});
+					dbm.executeUpdate(sSQL, new Object[]{strObjName, lngIniStartNumber, lngIniEndNumber, lngIniWarnNumber, ID});
 					lngGetValue = lngIniStartNumber;
 				} else {
 					sSQL = "UPDATE SYSCACHE SET VALUE=(VALUE*1+" + lngDBIDRequestNumber + ") WHERE K=? ";
-					subContext.getDBM().executeUpdate(sSQL,new Object[]{strObjName});
+					dbm.executeUpdate(sSQL,new Object[]{strObjName});
 				}
 			}
 			lngRBeginNumber.setValue(lngGetValue);
@@ -177,7 +179,7 @@ class DBBillAutoNumber {
 	 * @param context
 	 * @param table
 	 * @param lngNumber
-	 * @return
+	 * @return String
 	 * @throws Throwable
 	 */
 	static synchronized String requestShortID(IContext context, ITableConfig table, long lngNumber) throws Throwable { 
@@ -187,7 +189,7 @@ class DBBillAutoNumber {
 	/**
 	 * 根据id，生成长度为6的字符串
 	 * @param id
-	 * @return
+	 * @return String
 	 */
 	static String shortUrl(long id) {
 		return shortUrl(id,6);
@@ -196,7 +198,7 @@ class DBBillAutoNumber {
 	 * 根据id，生成长度为length的字符串
 	 * @param id
 	 * @param length
-	 * @return
+	 * @return String
 	 */
 	static String shortUrl(long id,int length) {
 		StringBuffer buf = new StringBuffer();
