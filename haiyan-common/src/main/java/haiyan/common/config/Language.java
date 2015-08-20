@@ -54,7 +54,8 @@ public class Language {
 	 * @return
 	 */
 	public static Language getLanguage(IUser user) {
-        String value = PropUtil.getProperty(user==null||user.getLanguageName()==null?"LANGUAGE":user.getLanguageName());
+		String lang = user==null||user.getLanguageName()==null?"LANGUAGE":user.getLanguageName();
+        String value = PropUtil.getProperty(lang);
         if (StringUtil.isStrBlankOrNull(value)) {
             throw new Warning("Can't load language!");
         }

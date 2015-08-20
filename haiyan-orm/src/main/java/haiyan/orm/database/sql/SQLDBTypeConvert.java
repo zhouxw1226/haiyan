@@ -4,27 +4,6 @@
 package haiyan.orm.database.sql;
 
 import static haiyan.config.util.ConfigUtil.getDisplayRefFields;
-import haiyan.common.ByteUtil;
-import haiyan.common.CloseUtil;
-import haiyan.common.DebugUtil;
-import haiyan.common.StringUtil;
-import haiyan.common.VarUtil;
-import haiyan.common.exception.Warning;
-import haiyan.common.intf.database.IDBClear;
-import haiyan.common.intf.database.orm.IDBRecord;
-import haiyan.common.intf.database.orm.IDBResultSet;
-import haiyan.common.intf.database.sql.ISQLDBClear;
-import haiyan.config.castorgen.AbstractField;
-import haiyan.config.castorgen.Field;
-import haiyan.config.castorgen.Option;
-import haiyan.config.castorgen.Table;
-import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-import haiyan.config.util.ConfigUtil;
-import haiyan.config.util.NamingUtil;
-import haiyan.orm.database.DBPage;
-import haiyan.orm.database.sql.query.CriticalItem;
-import haiyan.orm.database.sql.query.InCriticalItem;
-import haiyan.orm.intf.session.ITableDBContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -46,6 +25,27 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 
+import haiyan.common.ByteUtil;
+import haiyan.common.CloseUtil;
+import haiyan.common.DebugUtil;
+import haiyan.common.StringUtil;
+import haiyan.common.VarUtil;
+import haiyan.common.exception.Warning;
+import haiyan.common.intf.database.IDBClear;
+import haiyan.common.intf.database.orm.IDBRecord;
+import haiyan.common.intf.database.orm.IDBResultSet;
+import haiyan.common.intf.database.sql.ISQLDBClear;
+import haiyan.config.castorgen.AbstractField;
+import haiyan.config.castorgen.Field;
+import haiyan.config.castorgen.Option;
+import haiyan.config.castorgen.Table;
+import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
+import haiyan.config.util.ConfigUtil;
+import haiyan.config.util.NamingUtil;
+import haiyan.orm.database.DBPage;
+import haiyan.orm.database.sql.query.CriticalItem;
+import haiyan.orm.database.sql.query.InCriticalItem;
+import haiyan.orm.intf.session.ITableDBContext;
 import oracle.sql.BLOB;
 
 /**
@@ -53,17 +53,8 @@ import oracle.sql.BLOB;
  */
 public class SQLDBTypeConvert {
 
-    /**
-	 * 
-	 */
     final static String DEFAULT_DATESTYLE = "yyyy-MM-dd";
-    /**
-	 * 
-	 */
     final static String DEFAULT_TIMESTAMPSTYLE = "yyyy-MM-dd HH:mm:ss";
-    /**
-	 * 
-	 */
     final static String DEFAULT_SYSDATESTYLE = "sysdate";
     /**
      * @param field
@@ -248,8 +239,7 @@ public class SQLDBTypeConvert {
                 	reader = rs.getCharacterStream(index);
                     result = ByteUtil.getString(reader);
                 } finally {
-                    if (reader != null)
-                    	reader.close();
+                	CloseUtil.close(reader);
                 }
                 value = (result == null) ? "" : result;
             } else if (type.equals(AbstractCommonFieldJavaTypeType.DBBLOB)) {
@@ -264,10 +254,10 @@ public class SQLDBTypeConvert {
                 }
                 value = (result == null) ? "" : result;
             } else if (type.equals(AbstractCommonFieldJavaTypeType.INTEGER)) {
-            	 value = rs.getInt(index);
-                 value = (value == null) ? 0 : value;
+            	value = rs.getInt(index);
+                value = (value == null) ? 0 : value;
             } else {
-                throw new Warning(context.getUser(), 100028, "unsupport_javatype", new String[] { type.toString() });
+                throw new Warning(100028, "unsupport_javatype", new String[] { type.toString() });
             }
             return  value;
         } catch (Throwable ex) {
@@ -322,7 +312,6 @@ public class SQLDBTypeConvert {
         // throw new Warning("" + result);
         return result;
     }
-
     /**
      * @param sDecimal
      * @param field
@@ -347,7 +336,6 @@ public class SQLDBTypeConvert {
         // return new BigDecimal(Types.NUMERIC);
         return null;
     }
-
     /**
      * @param context
      * @param form
@@ -419,7 +407,6 @@ public class SQLDBTypeConvert {
         form.set(field.getName(), formValue);
         return form;
     }
-
     /**
      * @param context
      * @param field
@@ -477,7 +464,7 @@ public class SQLDBTypeConvert {
         // DebugUtil.debug(">getOptionNameByValue.srcValue=" + srcValue);
         String[] values = StringUtil.split(srcValue, ",");
         if (optionMap == null) { // NOTICE 平台唯一的数据缓冲区
-            // TODO 要用EhCache
+            // TODO 要用Cache
             optionMap = new HashMap<String, String>();
         }
         String result = "";

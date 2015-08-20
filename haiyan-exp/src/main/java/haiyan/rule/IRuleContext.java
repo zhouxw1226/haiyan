@@ -4,9 +4,12 @@ import haiyan.common.intf.session.IContext;
 import net.sf.json.JSONObject;
 
 public interface IRuleContext extends IContext {
-	Object evalRule(JSONObject rule) throws Throwable;
-	JSONObject getCurrentRule();
-	JSONObject getCurrentActivity();
-	JSONObject removeCurrentActivity();
+	Object evaluate() throws Throwable;
 	IActivityContext getParent();
+	JSONObject getActivity();
+	void removeActivity();
+	void setActivity(JSONObject activity);
+	JSONObject getRule();
+	void removeRule();
+	void setRule(JSONObject rule);
 }

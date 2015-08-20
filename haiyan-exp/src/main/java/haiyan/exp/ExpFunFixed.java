@@ -13,7 +13,7 @@ class ExpFunFixed {
 	/**
      * 
      */
-	static Object eval(String f, Object[] paras) throws ParseException {
+	static Object eval(String f, Object[] paras) throws Throwable {
 		if ("Abs".equalsIgnoreCase(f) || "Char".equalsIgnoreCase(f)
 			|| "Int".equalsIgnoreCase(f) || "Dbl".equalsIgnoreCase(f)
 			|| "Double".equalsIgnoreCase(f) || "RmbDx".equalsIgnoreCase(f)
@@ -50,7 +50,7 @@ class ExpFunFixed {
 	 * @throws ParseException
 	 */
 	private static Object evalDouble(String f, Object[] paras)
-			throws ParseException {
+			throws Throwable {
 		if (paras.length != 1)
 			throw new ParseException(ParseException.Err_Paras_Number);
 		if (StringUtil.isEmpty(paras[0]))
@@ -79,7 +79,7 @@ class ExpFunFixed {
 	 * @return String
 	 * @throws ParseException
 	 */
-	private static String charFun(Double d) throws ParseException {
+	private static String charFun(Double d) throws Throwable {
 		// System.out.println("#EvalFunFixed.charFun.value=" + d);
 		// int i = d.intValue();
 		// if (i < 0 || i > (2 << 16 - 1))
@@ -94,7 +94,7 @@ class ExpFunFixed {
 	 * @return double
 	 * @throws ParseException
 	 */
-	private static double code(Object[] paras) throws ParseException {
+	private static double code(Object[] paras) throws Throwable {
 		if (paras.length != 1)
 			throw new ParseException(ParseException.Err_Paras_Number);
 		String p = ExpTypeConvert.getString(paras[0]);
@@ -108,7 +108,7 @@ class ExpFunFixed {
 	 * @return boolean
 	 * @throws ParseException
 	 */
-	private static boolean exact(Object[] paras) throws ParseException {
+	private static boolean exact(Object[] paras) throws Throwable {
 		if (paras.length != 2)
 			throw new ParseException(ParseException.Err_Paras_Number);
 		return ExpTypeConvert.getString(paras[0]).equals(ExpTypeConvert.getString(paras[1]));
@@ -120,7 +120,7 @@ class ExpFunFixed {
 	 * @return double
 	 * @throws ParseException
 	 */
-	private static double find(String f, Object[] paras) throws ParseException {
+	private static double find(String f, Object[] paras) throws Throwable {
 		if (paras.length < 2 || paras.length > 3)
 			throw new ParseException(ParseException.Err_Para_Type);
 		String s1 = ExpTypeConvert.getString(paras[0]);
@@ -147,7 +147,7 @@ class ExpFunFixed {
 	 * @throws ParseException
 	 */
 	private static String leftOrRight(String f, Object[] paras)
-			throws ParseException {
+			throws Throwable {
 		if (paras.length != 2)
 			throw new ParseException(ParseException.Err_Para_Type);
 		String s = ExpTypeConvert.getString(paras[0]);
@@ -174,7 +174,7 @@ class ExpFunFixed {
 	 * @return double
 	 * @throws ParseException
 	 */
-	private static double len(String f, Object[] paras) throws ParseException {
+	private static double len(String f, Object[] paras) throws Throwable {
 		if (paras.length != 1)
 			throw new ParseException(ParseException.Err_Para_Type);
 		String s = ExpTypeConvert.getString(paras[0]);
@@ -192,7 +192,7 @@ class ExpFunFixed {
 	 * @return String
 	 * @throws ParseException
 	 */
-	private static String mid(String f, Object[] paras) throws ParseException {
+	private static String mid(String f, Object[] paras) throws Throwable {
 		if (paras.length != 3)
 			throw new ParseException(ParseException.Err_Para_Type);
 		String s = ExpTypeConvert.getString(paras[0]);
@@ -224,7 +224,7 @@ class ExpFunFixed {
 	 * @throws ParseException
 	 */
 	private static double roundOrTrunc(String f, Object[] paras)
-			throws ParseException {
+			throws Throwable {
 		if ((paras.length == 0) || (paras.length > 2))
 			throw new ParseException(ParseException.Err_Paras_Number);
 		if (!ExpTypeConvert.isDouble(paras[0]))
@@ -255,7 +255,7 @@ class ExpFunFixed {
 	 * @return double
 	 * @throws ParseException
 	 */
-	private static double mod(Object[] paras) throws ParseException {
+	private static double mod(Object[] paras) throws Throwable {
 		if (paras.length != 2)
 			throw new ParseException(ParseException.Err_Paras_Number);
 		if (!ExpTypeConvert.isDouble(paras[0]) || !ExpTypeConvert.isDouble(paras[1]))
@@ -268,7 +268,7 @@ class ExpFunFixed {
 	 * @return boolean
 	 * @throws ParseException
 	 */
-	private static boolean not(Object[] paras) throws ParseException {
+	private static boolean not(Object[] paras) throws Throwable {
 		if (paras.length != 1)
 			throw new ParseException(ParseException.Err_Paras_Number);
 		return !ExpTypeConvert.getBoolean(paras[0]);

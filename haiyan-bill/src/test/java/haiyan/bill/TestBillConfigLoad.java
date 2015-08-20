@@ -24,15 +24,13 @@ public class TestBillConfigLoad {
 			file = new File(System.getProperty("user.dir")
 					+File.separator+"WEB-INF"+File.separator+"haiyan-config.xml");
 			ConfigUtil.loadRootConfig(file);
-			file = new File(TestDBBillLoad.class.getResource("SYS.xml").getPath());
+			file = new File(TestBillConfigLoad.class.getResource("SYS.xml").getPath());
 			ConfigUtil.loadTableConfig(file, true);
-			file = new File(TestDBBillLoad.class.getResource("SYSCACHE.xml").getPath());
+			file = new File(TestBillConfigLoad.class.getResource("SYSCACHE.xml").getPath());
 			ConfigUtil.loadTableConfig(file, true);
-			
-			file = new File(TestDBBillLoad.class.getResource("TEST_DBM.xml").getPath());
+			file = new File(TestBillConfigLoad.class.getResource("TEST_DBM.xml").getPath());
 			ConfigUtil.loadTableConfig(file, true);
-			
-			file = new File(TestDBBillLoad.class.getResource("TEST_BILL.xml").getPath());
+			file = new File(TestBillConfigLoad.class.getResource("TEST_BILL.xml").getPath());
 			ConfigUtil.loadBillConfig(file, true);
 		}
 	}

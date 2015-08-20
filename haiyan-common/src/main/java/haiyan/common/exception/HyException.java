@@ -18,7 +18,6 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 import bsh.TargetError;
- 
 
 /**
  * @author zhouxw
@@ -66,15 +65,6 @@ public abstract class HyException extends RuntimeException {
     }
     private void setMessage(String s) {
         this.detailMessage = s;
-//        if (Math.random()*10>5) {
-//            String productKey;
-//            try {
-//                productKey = new String(Check.getSequence());
-//                this.desc+="(@copyright 本产品授权 "+productKey+" 使用)";
-//            } catch (Throwable e) {
-//                DebugUtil.error(e);
-//            }
-//        }
     }
 //    @Override
 //    public void printStackTrace(java.io.PrintStream ps) {
@@ -83,7 +73,6 @@ public abstract class HyException extends RuntimeException {
 //        else
 //            super.printStackTrace(ps);
 //    }
-//
 //    @Override
 //    public void printStackTrace(java.io.PrintWriter ps) {
 //        if (this.target != null)
@@ -91,7 +80,6 @@ public abstract class HyException extends RuntimeException {
 //        else
 //            super.printStackTrace(ps);
 //    }
-//
 //    @Override
 //    public void printStackTrace() {
 //        printStackTrace(System.err);

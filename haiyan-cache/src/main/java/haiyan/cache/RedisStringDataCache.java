@@ -1,7 +1,6 @@
 package haiyan.cache;
 
 import haiyan.common.DebugUtil;
-import haiyan.common.exception.Warning;
 import haiyan.common.intf.session.IUser;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCommands;
@@ -14,33 +13,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  *
  */
 public class RedisStringDataCache extends AbstractRedisDataCache {
-
-    protected JedisCommands getJedisWriter() {
-    	try {
-    		return masterJedisPool.getResource();
-    	}catch(Throwable e){
-    		throw Warning.wrapException(e);
-    	}
-    }
-    protected JedisCommands getJedisReader() {
-    	try {
-    		if(servers.length==1) {
-    			return masterJedisPool.getResource();
-    		}
-    		return shardedJedisPool.getResource();
-    	}catch(Throwable e){
-    		throw Warning.wrapException(e);
-    	}
-    }
-	/** 归还jedis对象 */
-	public void recycleJedisResource(JedisCommands jedis) {
-		if (jedis==null)
-			return;
-		if (jedis instanceof ShardedJedis)
-			shardedJedisPool.returnResource((ShardedJedis)jedis);
-		else
-			masterJedisPool.returnResource((Jedis)jedis);
-	}
     // --------------------- user cache --------------------- //
 	@Override
 	public IUser setUser(String sessionId, IUser user) {
@@ -59,9 +31,9 @@ public class RedisStringDataCache extends AbstractRedisDataCache {
 	public Object setData(String schema, Object key, Object ele) {
 		JedisCommands writer = null;
 		try {
-			writer = getJedisWriter();
+			writer = getJedisMaster();
 			String mk = getDataKey(schema, key);
-			writer.set(mk, (String)ele);
+			writer.set(mk, ele==null?"":ele.toString());
 			reconn = 0;
 			return ele;
 		} catch (JedisConnectionException e) {
@@ -72,7 +44,7 @@ public class RedisStringDataCache extends AbstractRedisDataCache {
 			}
 			reconn++;
 			this.initialize();
-			return setData(schema,key,ele);
+			return setData(schema,key,ele==null?"":ele.toString());
 		}finally{
 			recycleJedisResource(writer);
 		}
@@ -81,7 +53,9 @@ public class RedisStringDataCache extends AbstractRedisDataCache {
 	public Object getData(String schema, Object key) {
 		JedisCommands reader = null;
 		try {
-			reader = getJedisReader();
+			reader = getJedisSharded();
+			if (reader==null)
+				reader = getJedisMaster();
 			String mk = getDataKey(schema, key);
 			return reader.get(mk);
 		} catch (JedisConnectionException e) {
@@ -104,7 +78,7 @@ public class RedisStringDataCache extends AbstractRedisDataCache {
 	public Object deleteData(String schema, Object key) {
 		JedisCommands writer = null;
 		try {
-			writer = getJedisWriter();
+			writer = getJedisMaster();
 			Object o = this.getData(schema, key);
 			String mk = getDataKey(schema, key);
 			if (writer instanceof ShardedJedis) {

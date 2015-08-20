@@ -109,9 +109,11 @@ public abstract class SQLWrapPageFactory extends SQLDBPageFactory {
 		int recordCount = 0;
 		ResultSet countRS = null;
 		try {
-			countRS = countPS.executeQuery();
-			if (countRS != null && countRS.next()) {
-				recordCount = countRS.getInt(1);
+			if (countPS!=null) {
+				countRS = countPS.executeQuery();
+				if (countRS != null && countRS.next()) {
+					recordCount = countRS.getInt(1);
+				}
 			}
 		}
 		// catch (Throwable ex) {

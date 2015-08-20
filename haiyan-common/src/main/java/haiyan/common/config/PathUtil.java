@@ -352,10 +352,9 @@ class ReadEnv {
             p = r.exec("env");
         }
         InputStream in = null;
-        InputStreamReader is = null;
         try {
             in = p.getInputStream();
-            is = new InputStreamReader(in);
+            InputStreamReader is = new InputStreamReader(in);
             BufferedReader br = new BufferedReader(is);
             String line;
             while ((line = br.readLine()) != null) {

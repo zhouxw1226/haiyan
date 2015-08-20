@@ -23,9 +23,9 @@ public class DBPage implements Serializable, IDBResultSet {
 	//private static transient final String BLANK = "&nbsp;&nbsp;";
 	public static transient final String PAGE_NO_PARAM_NAME = DataConstant.PAGE_NO_PARAM_NAME;
 	public static transient final String MAX_COUNT_PER_PAGE_NAME = DataConstant.MAX_COUNT_PER_PAGE_NAME;
-	public static transient final int[] opts = { 5, 10, 50, 100, 500, 1000 };
-	public static transient int MAXCOUNTPERQUERY = 500;
-	public static transient int MAXNUMPERPAGE = 100;
+	public static transient final int[] opts = { 5, 10, 50, 100, 500, 1000 }; // 几种默认选择项
+	public static transient int MAXCOUNTPERQUERY = 500; // 每次查询最大行数
+	public static transient int MAXNUMPERPAGE = 100; // 默认每页行数
 	private int pageRowCount = MAXNUMPERPAGE;
 	private int pageIndex = 1;
 	private long totalRecordCount = 0;
@@ -100,31 +100,15 @@ public class DBPage implements Serializable, IDBResultSet {
 	/**
 	 * 获取计算后的最大页数
 	 * 
-	 * @see haiyan.common.intf.database.orm.IDBResultSet#getMaxPageCount()
+	 * @see haiyan.common.intf.database.orm.IDBResultSet#getTotalPageCount()
 	 */
 	@Override
-	public int getMaxPageCount() {
+	public int getTotalPageCount() {
 		long total = this.getTotalRecordCount();
 		long row = this.getPageRowCount();
 		int pageCount = Math.round(total/row)+(total%row>0?1:0);
 		return pageCount;
 	}
-//	/**
-//	 * 查询出来的总页数
-//	 * 
-//	 * @return int
-//	 */
-//	public int getTotalPageCount() {
-//		if (this.pageRowCount == 0) {
-//			return 0;
-//		}
-//		int pageCount = (int)(this.getTotalRecordCount() / this.pageRowCount);
-//		int temp = (int)(this.getTotalRecordCount() % this.pageRowCount);
-//		if (temp > 0) {
-//			pageCount += 1;
-//		}
-//		return pageCount;
-//	}
 	/**
 	 * 当前可访问有效数据的行数
 	 * 

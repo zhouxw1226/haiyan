@@ -2,6 +2,12 @@ package haiyan.bill.database.sql;
 
 import static haiyan.common.intf.database.orm.IDBRecord.UPDATE;
 import static haiyan.config.util.ConfigUtil.getTable;
+
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
 import haiyan.bill.database.DBBill;
 import haiyan.bill.database.IBillDBManager;
 import haiyan.common.DebugUtil;
@@ -21,17 +27,13 @@ import haiyan.config.castorgen.Bill;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.config.util.ConfigUtil;
+import haiyan.database.SQLDatabase;
 import haiyan.orm.database.DBPage;
 import haiyan.orm.database.sql.AbstractSQLDBManager;
 import haiyan.orm.database.sql.DBBillAutoID;
 import haiyan.orm.database.sql.SQLDBFilter;
 import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.session.ITableDBContext;
-
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBManager, ISQLDBManager {
 	private transient List<IDBBill> billList = new ArrayList<IDBBill>();
@@ -46,6 +48,7 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 				this.connection.commit(); // 主动提交
 				this.connection.setAutoCommit(true); // 变回自动提交
 				this.autoCommit=true;
+				this.afterCommit(); // for hsqldb
 			}
 			DebugUtil.debug(">----< bbm.commit.connHash:" + this.connection.hashCode()
 					+ "\tbbm.isAutoCommit:" + this.autoCommit);
@@ -64,11 +67,15 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 	@Override
 	public void rollback() throws Throwable {
 		if (this.isAlive()) {
-			if (this.savePoint!=null && !this.connection.getAutoCommit()) {
+			if (!this.connection.getAutoCommit()) {
 				//this.beforeRollback(); // for hsqldb
-				this.connection.rollback(this.savePoint);
+				if (this.getSavepoint()!=null)
+					this.connection.rollback(this.getSavepoint());
+				else
+					this.connection.rollback();
 				this.connection.setAutoCommit(true); // 变回自动提交
 				this.autoCommit=true;
+				this.afterRollback(); // for hsqldb
 			}
 			DebugUtil.debug(">----< bbm.rollback.connHash:" + this.connection.hashCode()
 				+ "\tbbm.isAutoCommit:" + this.autoCommit);
@@ -82,21 +89,51 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 //			bill.clear();
 		}
 		// --------------------------------------------------------- //
-		//this.commited = false;
-	}
-	@Override
-	public void clear() {
-		this.billList.clear();
+		this.commited = false;
 	}
 	@Override
 	public void close() {
-		this.billList.clear();
+		try {
+			if (!this.commited) {
+				this.rollback();
+			}
+			this.commited = false;
+		} catch (Throwable ignore) {
+			ignore.printStackTrace();
+		}
+		this.clear();
+		{ // close connection
+			int connHash = -1;
+			try {
+				if (this.isAlive()) {
+					connHash = this.connection.hashCode();
+					this.connection.close();
+				}
+				this.connection = null;
+			} catch (Throwable ignore) {
+				ignore.printStackTrace();
+			} finally {
+				if (connHash >= 0) {
+					SQLDatabase.connCount--;
+					DebugUtil.debug(">----< bbm.close.connHash:"+connHash
+							+"\tbbm.connCount:"+SQLDatabase.connCount+"\n");
+				}
+			}
+		}
+	}
+	@Override
+	public void clear() {
+		//try {
+			if (this.billList!=null)
+				this.billList.clear();
+		//} catch (Throwable ignore) {
+		//	ignore.printStackTrace();
+		//}
 	}
 	@Override
 	public Object createBillID(IBillDBContext context, IDBBill bill) throws Throwable {
 		if (!StringUtil.isEmpty(bill.getBillID()))
 			return bill.getBillID();
-		
 		Bill billConfig = (Bill)bill.getBillConfig();
 		Table mainTable = (Table)ConfigUtil.getMainTable(billConfig);
 		{
@@ -112,7 +149,7 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 	}
 	@Override
 	public IDBBill createBill(IBillDBContext context, IBillConfig billConfig, boolean createBillID) throws Throwable {
-		IDBBill bill = new DBBill(context.getUser(), billConfig);
+		IDBBill bill = new DBBill(billConfig);
 		if (createBillID)
 			this.createBillID(context, bill);
 		if (!billList.contains(bill))
@@ -268,7 +305,7 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 	public IDBResultSet queryNext(IBillDBContext bContext, IDBBill bill, int tableIndex, ISQLDBFilter dbFilter, int pageRowCount, boolean override)
 			throws Throwable {
 		int pageIndex = bill.getResultSet(tableIndex).getPageIndex();
-		int maxPageCount = bill.getResultSet(tableIndex).getMaxPageCount();
+		int maxPageCount = bill.getResultSet(tableIndex).getTotalPageCount();
 		if (pageIndex==maxPageCount)
 			return null;
 		ITableDBContext context = bContext.getTableDBContext();//bContext.getTableDBContext(tableIndex);

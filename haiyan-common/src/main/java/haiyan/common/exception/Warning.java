@@ -39,7 +39,6 @@ public class Warning extends HyException {
     public Warning(int errorCode, Throwable e) {
         super(SysCode.create(null, errorCode, e.getMessage(), null));
         this.errorCode = errorCode;
-//        this.exception = e;
     }
     /**
      * @param errCode
@@ -47,7 +46,6 @@ public class Warning extends HyException {
     public Warning(int errorCode, Throwable e, String[] paras) {
         super(SysCode.create(null, errorCode, e.getMessage(), paras));
         this.errorCode = errorCode;
-//        this.exception = e;
     }
     /**
      * @param errCode
@@ -55,7 +53,6 @@ public class Warning extends HyException {
     public Warning(int errorCode, String source) {
         super(SysCode.create(null, errorCode, source, null));
         this.errorCode = errorCode;
-//        this.source = source;
     }
     /**
      * @param errCode
@@ -63,7 +60,6 @@ public class Warning extends HyException {
     public Warning(int errorCode, String source, String debug) {
         super(SysCode.create(null, errorCode, source, null));
         this.errorCode = errorCode;
-//        this.source = source;
         DebugUtil.error(debug);
     }
     /**
@@ -72,7 +68,6 @@ public class Warning extends HyException {
     public Warning(int errorCode, String source, String[] paras) {
         super(SysCode.create(null, errorCode, source, paras));
         this.errorCode = errorCode;
-//        this.source = source;
     }
     /**
      * @param errCode
@@ -80,7 +75,6 @@ public class Warning extends HyException {
     public Warning(IUser user, int errorCode, String source, String[] paras) {
         super(SysCode.create(user, errorCode, source, paras));
         this.errorCode = errorCode;
-//        this.source = source;
     }
     /**
      * @param errCode
@@ -88,7 +82,6 @@ public class Warning extends HyException {
     public Warning(IUser user, int errorCode, String source) {
         super(SysCode.create(user, errorCode, source, null));
         this.errorCode = errorCode;
-//        this.source = source;
     }
     /**
      * @param desc

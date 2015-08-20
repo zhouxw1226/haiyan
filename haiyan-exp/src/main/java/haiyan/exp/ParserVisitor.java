@@ -3,16 +3,16 @@ package haiyan.exp;
 
 public interface ParserVisitor
 {
-  public Object visit(SimpleNode node, Object data) throws ParseException;
-  public Object visit(CTreeRoot node, Object data) throws ParseException;
-  public Object visit(CTreeBinOp node, Object data) throws ParseException;
-  public Object visit(CTreeFunShortCircuit node, Object data) throws ParseException;
-  public Object visit(CTreeFunFixed node, Object data) throws ParseException;
-  public Object visit(CTreeFunOp node, Object data) throws ParseException;
-  public Object visit(CTreeBoolConstrant node, Object data) throws ParseException;
-  public Object visit(CTreeNullConstrant node, Object data) throws ParseException;
-  public Object visit(CTreeVar node, Object data) throws ParseException;
-  public Object visit(CTreeNumConstrant node, Object data) throws ParseException;
-  public Object visit(CTreeStrConstant node, Object data) throws ParseException;
+  public Object visit(SimpleNode node, Object data) throws Throwable;
+  public Object visit(CTreeRoot node, Object data) throws Throwable;
+  public Object visit(CTreeBinOp node, Object data) throws Throwable;
+  public Object visit(CTreeFunShortCircuit node, Object data) throws Throwable;
+  public Object visit(CTreeFunFixed node, Object data) throws Throwable;
+  public Object visit(CTreeFunOp node, Object data) throws Throwable;
+  public Object visit(CTreeBoolConstrant node, Object data) throws Throwable;
+  public Object visit(CTreeNullConstrant node, Object data) throws Throwable;
+  public Object visit(CTreeVar node, Object data) throws Throwable;
+  public Object visit(CTreeNumConstrant node, Object data) throws Throwable;
+  public Object visit(CTreeStrConstant node, Object data) throws Throwable;
 }
 /* JavaCC - OriginalChecksum=a7c2c7054c931172d6ba06af8eda8191 (do not edit this line) */

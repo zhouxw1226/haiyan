@@ -44,7 +44,7 @@ public class User implements IUser, Serializable { // Externalizable
 //	@Override
 //	public void readExternal(ObjectInput in) throws IOException,
 //			ClassNotFoundException {
-//		// TODO Auto-generated method stub
+//		
 //	}
 	//@Table("SYSOPERATOR")
 	public User() {
@@ -186,5 +186,8 @@ public class User implements IUser, Serializable { // Externalizable
 	@Override
 	public void close() throws IOException {
 	}
-
+	@Override
+	public String toString() {
+		return "["+this.getId()+","+this.getCode()+","+this.getProperties()+"]";
+	}
 }

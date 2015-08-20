@@ -8,11 +8,11 @@ public class PostfixVisitor implements ParserVisitor {
 
 	private Boolean bFirstPara = true;
 
-	public Object visit(SimpleNode node, Object data) throws ParseException {
+	public Object visit(SimpleNode node, Object data) throws Throwable {
 		return null;
 	}
 
-	public Object visit(CTreeRoot node, Object data) throws ParseException {
+	public Object visit(CTreeRoot node, Object data) throws Throwable {
 		// StringBuffer sb = (StringBuffer) data;
 		// sb.append("(");
 		bFirstPara = true;
@@ -22,7 +22,7 @@ public class PostfixVisitor implements ParserVisitor {
 		return data;
 	}
 
-	public Object visit(CTreeBinOp node, Object data) throws ParseException {
+	public Object visit(CTreeBinOp node, Object data) throws Throwable {
 		StringBuffer sb = (StringBuffer) data;
 		if (!bFirstPara)
 			sb.append(",");
@@ -36,7 +36,7 @@ public class PostfixVisitor implements ParserVisitor {
 	}
 
 	public Object visit(CTreeBoolConstrant node, Object data)
-			throws ParseException {
+			throws Throwable {
 		StringBuffer sb = (StringBuffer) data;
 		if (!bFirstPara)
 			sb.append(",");
@@ -47,7 +47,7 @@ public class PostfixVisitor implements ParserVisitor {
 	}
 
 	public Object visit(CTreeNullConstrant node, Object data)
-			throws ParseException {
+			throws Throwable {
 		StringBuffer sb = (StringBuffer) data;
 		if (!bFirstPara)
 			sb.append(",");
@@ -56,7 +56,7 @@ public class PostfixVisitor implements ParserVisitor {
 		return data;
 	}
 
-	public Object visit(CTreeVar node, Object data) throws ParseException {
+	public Object visit(CTreeVar node, Object data) throws Throwable {
 		StringBuffer sb = (StringBuffer) data;
 		if (!bFirstPara)
 			sb.append(",");
@@ -67,7 +67,7 @@ public class PostfixVisitor implements ParserVisitor {
 	}
 
 	public Object visit(CTreeNumConstrant node, Object data)
-			throws ParseException {
+			throws Throwable {
 		StringBuffer sb = (StringBuffer) data;
 		if (!bFirstPara)
 			sb.append(",");
@@ -77,7 +77,7 @@ public class PostfixVisitor implements ParserVisitor {
 		return data;
 	}
 
-	public Object visit(CTreeStrConstant node, Object data) throws ParseException {
+	public Object visit(CTreeStrConstant node, Object data) throws Throwable {
 		StringBuffer sb = (StringBuffer) data;
 		if (!bFirstPara)
 			sb.append(",");
@@ -87,7 +87,7 @@ public class PostfixVisitor implements ParserVisitor {
 		return data;
 	}
 
-	public Object visit(CTreeFunOp node, Object data) throws ParseException {
+	public Object visit(CTreeFunOp node, Object data) throws Throwable {
 		StringBuffer sb = (StringBuffer) data;
 		if (!bFirstPara)
 			sb.append(",");
@@ -101,7 +101,7 @@ public class PostfixVisitor implements ParserVisitor {
 	}
 
 	public Object visit(CTreeFunShortCircuit node, Object data)
-			throws ParseException {
+			throws Throwable {
 		StringBuffer sb = (StringBuffer) data;
 		if (!bFirstPara)
 			sb.append(",");
@@ -115,7 +115,7 @@ public class PostfixVisitor implements ParserVisitor {
 		return data;
 	}
 
-	public Object visit(CTreeFunFixed node, Object data) throws ParseException {
+	public Object visit(CTreeFunFixed node, Object data) throws Throwable {
 		StringBuffer sb = (StringBuffer) data;
 		if (!bFirstPara)
 			sb.append(",");

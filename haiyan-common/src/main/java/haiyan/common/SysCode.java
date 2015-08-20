@@ -35,7 +35,7 @@ public class SysCode {
 	}
 	private int code = -1;
 	private String source = null;
-	private String detailMessage = null;
+//	private String detailMessage = null;
 	/**
 	 * @param code
 	 * @param source
@@ -45,7 +45,7 @@ public class SysCode {
 		super();
 		this.code = code;
 		this.source = source;
-		this.detailMessage = getConfigDes(user, source, null);
+		//this.detailMessage = getConfigDes(user, source, null);
 	}
 	/**
 	 * @param code
@@ -55,7 +55,9 @@ public class SysCode {
 		super();
 		this.code = code;
 		this.source = source;
-		this.detailMessage = getConfigDes(user, source, values);
+		if (values!=null && values.length>0)
+			this.source = getConfigDes(user, source, values);
+		//this.detailMessage = getConfigDes(user, source, values);
 	}
 	/**
 	 * @return int
@@ -71,7 +73,7 @@ public class SysCode {
 	}
 	@Override
 	public String toString() {
-		return this.detailMessage;
+		return this.source;
 	}
 	/**
 	 * @param user
@@ -104,11 +106,11 @@ public class SysCode {
 			} else {
 				configMessage = source;
 			}
-			this.detailMessage = configMessage;
+			this.source = configMessage;
 			return configMessage;
 		} catch (Throwable ignore) {
 			ignore.printStackTrace();
-			this.detailMessage = source;
+			//this.source = source;
 			return source;
 		}
 	}

@@ -799,9 +799,15 @@ class SQLRender implements ITableSQLRender {
 				ss.append("##update(" + fieldName + "):"+value+"\t");
 			}
 		}
-		if(filter == null)
-			ps.setString(i + 1, (String)record.get(table.getId().getName()));
-		else{
+		if(filter == null){
+			Object obj = record.get(table.getId().getName());
+			String newID = null;
+			if(!StringUtil.isBlankOrNull(obj)){
+				newID = obj.toString();
+			}
+			ps.setString(i + 1, newID);
+		
+		}else{
 			Object[] paras = filter.getParas();
 			for(int j=0;j<paras.length;j++){
 				Object obj = paras[j];
@@ -938,8 +944,11 @@ class SQLRender implements ITableSQLRender {
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
 		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
-		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
-		dealExtFilter(context, table, countQry, filter);
+		Query countQry = null;
+		if (!VarUtil.toBool(context.getAttribute(DataConstant.COUNT_IGNORE))) {
+			countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
+			dealExtFilter(context, table, countQry, filter);
+		}
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, filter, true);
 		Query selectQry = new Query(pTable.getSQL(), sFilter, orderByItems);
@@ -949,7 +958,7 @@ class SQLRender implements ITableSQLRender {
 		mainSQL = selectQry.getSQL(); // 4 log
 		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 		SQLDBPageFactory pf = getPageFactory(
-				countQry.build(getConnection(context)), //
+				countQry==null?null:countQry.build(getConnection(context)), //
 				selectQry.buildWithScrollCursor(getConnection(context)), //
 				factory);
 		DBPage pg = pf.getPage(count, 1);
@@ -967,8 +976,11 @@ class SQLRender implements ITableSQLRender {
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
 		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
-		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
-		dealExtFilter(context, table, countQry, null);
+		Query countQry = null;
+		if (!VarUtil.toBool(context.getAttribute(DataConstant.COUNT_IGNORE))) {
+			countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
+			dealExtFilter(context, table, countQry, null);
+		}
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, null, true);
 		Query selectQry = new Query(pTable.getSQL(), sFilter, criticalItems, orderByItems);
@@ -978,7 +990,7 @@ class SQLRender implements ITableSQLRender {
 		mainSQL = selectQry.getSQL(); // 4 log
 		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 		SQLDBPageFactory pf = getPageFactory(
-				countQry.build(getConnection(context)), //
+				countQry==null?null:countQry.build(getConnection(context)), //
 				selectQry.buildWithScrollCursor(getConnection(context)), //
 				factory);
 		DBPage pg = pf.getPage(count, 1);
@@ -1003,8 +1015,11 @@ class SQLRender implements ITableSQLRender {
 ////		}
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
 		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
-		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
-		dealExtFilter(context, table, countQry, filter);
+		Query countQry = null;
+		if (!VarUtil.toBool(context.getAttribute(DataConstant.COUNT_IGNORE))) {
+			countQry =  new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
+			dealExtFilter(context, table, countQry, filter);
+		}
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, filter, true);
 		Query selectQry = new Query(pTable.getSQL(), sFilter, orderByItems);
@@ -1014,7 +1029,7 @@ class SQLRender implements ITableSQLRender {
 		mainSQL = selectQry.getSQL(); // 4 log
 		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 		SQLDBPageFactory pf = getPageFactory( //
-				countQry.build(getConnection(context)), //
+				countQry==null?null:countQry.build(getConnection(context)), //
 				selectQry.buildWithScrollCursor(getConnection(context)), //
 				factory);
 		DBPage pg = pf.getPage(maxPageRecordCount, currPageNO);
@@ -1034,8 +1049,11 @@ class SQLRender implements ITableSQLRender {
 		// count
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
 		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
-		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
-		dealExtFilter(context, table, countQry, null);
+		Query countQry = null;
+		if (!VarUtil.toBool(context.getAttribute(DataConstant.COUNT_IGNORE))) {
+			countQry =  new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
+			dealExtFilter(context, table, countQry, null);
+		}
 		// main
 		String sFilter = calFilter(context, table, pTableAlias, null, true);
 		Query selectQry = new Query(pTable.getSQL(), sFilter, criticalItems, orderByItems);
@@ -1045,7 +1063,7 @@ class SQLRender implements ITableSQLRender {
 		mainSQL = selectQry.getSQL(); // 4 log
 		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 		SQLDBPageFactory pf = getPageFactory( // GeneralDBPageFactory.getPage
-				countQry.build(getConnection(context)), 
+				countQry==null?null:countQry.build(getConnection(context)), 
 				selectQry.buildWithScrollCursor(getConnection(context)), 
 				factory);
 		DBPage pg = pf.getPage(maxPageRecordCount, currPageNO);
@@ -1131,14 +1149,14 @@ class SQLRender implements ITableSQLRender {
 	 * @return Connection
 	 * @throws Throwable 
 	 */
-	private Connection getConnection(ITableDBContext context) throws Throwable {
+	protected Connection getConnection(ITableDBContext context) throws Throwable {
 		return ((SQLTableDBManager)context.getDBM()).getConnection();
 	}
 	/**
 	 * @return Connection
 	 * @throws Throwable 
 	 */
-	private Connection getConnection(ITableDBContext context, boolean openTrans) throws Throwable {
+	protected Connection getConnection(ITableDBContext context, boolean openTrans) throws Throwable {
 		return ((SQLTableDBManager)context.getDBM()).getConnection(openTrans);
 	}
 //  @Deprecated 

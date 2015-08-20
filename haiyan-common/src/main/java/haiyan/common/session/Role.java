@@ -5,6 +5,14 @@ import haiyan.common.intf.session.IRole;
 public class Role implements IRole {
 	private static final long serialVersionUID = 1L;
 	public Role() {
+		super();
+	} 
+	public Role(String id, String name, String code, String right) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.code = code;
+		this.right = right;
 	}
 	private String id;
 	private String name;

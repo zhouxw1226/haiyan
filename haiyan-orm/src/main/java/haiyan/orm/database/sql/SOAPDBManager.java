@@ -250,55 +250,55 @@
 //
 //	@Override
 //	public SQLTemplate getSQLRender() {
-//		// TODO Auto-generated method stub
+//		
 //		return null;
 //	}
 //
 //	@Override
 //	public String SQLDateTimeFromStr(String sCurTime) {
-//		// TODO Auto-generated method stub
+//		
 //		return null;
 //	}
 //
 //	@Override
 //	public String SQLCurrentTimeStamp(boolean stringType) {
-//		// TODO Auto-generated method stub
+//		
 //		return null;
 //	}
 //
 //	@Override
 //	public String getCreateTableSQL(Table oSerTable) {
-//		// TODO Auto-generated method stub
+//		
 //		return null;
 //	}
 //
 //	@Override
 //	public String genFieldSQL(AbstractField field) {
-//		// TODO Auto-generated method stub
+//		
 //		return null;
 //	}
 //
 //	@Override
 //	public String genTypeSQL(AbstractField field) {
-//		// TODO Auto-generated method stub
+//		
 //		return null;
 //	}
 //
 //	@Override
 //	public String genFieldName(AbstractField field) {
-//		// TODO Auto-generated method stub
+//		
 //		return null;
 //	}
 //
 //	@Override
 //	protected String getValidateTablesSQL(String tableNames) {
-//		// TODO Auto-generated method stub
+//		
 //		return null;
 //	}
 //
 //	@Override
 //	protected String getValidateTablesSQL(String[] tableNames) {
-//		// TODO Auto-generated method stub
+//		
 //		return null;
 //	}
 //

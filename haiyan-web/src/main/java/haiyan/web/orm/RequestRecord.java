@@ -1,14 +1,20 @@
 package haiyan.web.orm;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+
 import haiyan.common.StringUtil;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
+import net.sf.json.JSONObject;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
+/**
+ * JSON到DBRecord映射
+ * 
+ * Request.Parameters到DBRecord映射
+ */
 public class RequestRecord extends AbstractRequestRecord {
 
 	private static final long serialVersionUID = 1L;
@@ -16,10 +22,16 @@ public class RequestRecord extends AbstractRequestRecord {
 		super();
 		parseRequest(req, table, this);
 	}
+	public RequestRecord(JSONObject jsonClient, Table table) throws Throwable {
+		super();
+		parseRequest(jsonClient, table, this);
+	}
 	public static void parseRequest(ServletRequest req, Table table, IDBRecord record) throws Throwable {
 		for (Field field:table.getField()) {
 			Object v = null;
 			String uiName = field.getUiname();
+			if (StringUtil.isEmpty(uiName))
+				uiName = field.getName();
 			if (!StringUtil.isEmpty(uiName)) {
 				v = getClientValue(req, uiName);
 			} 

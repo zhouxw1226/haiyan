@@ -1,10 +1,13 @@
 package haiyan.common;
 
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import haiyan.common.annotation.GetMethod;
 import haiyan.common.annotation.SetMethod;
 import haiyan.common.intf.database.orm.IDBRecord;
-
-import java.lang.reflect.Method;
+import net.sf.json.JSONObject;
 
 /**
  * IDBRecord和普通的Bean互转的工具类，
@@ -34,15 +37,44 @@ public class RecordBeanTranceferUtil {
 	}
 	
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static Object record2Bean(IDBRecord record,Object obj) throws Throwable{
 		Method[] methods = obj.getClass().getMethods();
 		for(Method method : methods){
 			if(!method.isAnnotationPresent(SetMethod.class))
 				continue;
 			SetMethod setMethod = method.getAnnotation(SetMethod.class);
+			Class<?> firstClass = method.getParameterTypes()[0];
 			String key = setMethod.value().toUpperCase();
 			Object value = record.get(key);
 			try {
+				if (value!=null && value.getClass()!=firstClass) {
+					if (firstClass==java.math.BigDecimal.class) {
+						value = new java.math.BigDecimal(value.toString());
+					} else if (firstClass==java.util.Date.class) {
+						value = DateUtil.getDate(value.toString());
+					} else if (firstClass==java.lang.Integer.class) {
+						value = Integer.parseInt(value.toString());
+					} else if (firstClass==java.lang.Long.class) {
+						value = Long.parseLong(value.toString());
+					} else if (firstClass==java.lang.Double.class) {
+						value = Double.parseDouble(value.toString());
+					} else if (firstClass==java.lang.Float.class) {
+						value = Float.parseFloat(value.toString());
+					} else if (firstClass==java.lang.Boolean.class) {
+						value = Boolean.parseBoolean(value.toString());
+					} else if (firstClass==java.lang.Byte.class) {
+						value = Byte.parseByte(value.toString());
+					} else if (firstClass==java.util.Map.class) {
+						JSONObject json = JSONObject.fromObject(value);
+						Map<?, ?> map = new HashMap();
+						map.putAll(json);
+						value = map;
+//						value = Byte.parseByte(value.toString());
+					} else {
+						value = value.toString();
+					}
+				} 
 				method.invoke(obj,value);
 			} catch (Throwable e) {
 				DebugUtil.error("key:"+key+",value:"+value, e);

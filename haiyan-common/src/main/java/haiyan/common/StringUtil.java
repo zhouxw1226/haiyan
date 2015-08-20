@@ -404,25 +404,75 @@ public final class StringUtil {
 	public static String join(Object[] array, String delimiter) {
 		return toArrString(array, delimiter, "", false);
 	}
-	private static String toArrString(Object[] array, String delimiter, String label, boolean b) {
+	private static String toArrString(Object[] array, String delimiter, String label, boolean unSQLInj) {
 		int len = array.length;
 		if (len == 0)
 			return StringUtil.EMPTY_STRING;
 		if (delimiter == null)
 			delimiter = COMMA;
+		Object s;
 		HyStringBuffer buf = new HyStringBuffer(len * 12);
 		for (int i = 0; i < len - 1; i++) {
-			if (array[i] == null)
-				array[i] = "";
-			if (b)
-				array[i] = unSqlInjection(array[i].toString());
+			s = array[i];
+			if (s == null)
+				s = "";
+			if (unSQLInj)
+				s = unSqlInjection(s.toString());
 			buf.append(label + array[i] + label).append(delimiter);
 		}
-		if (array[len - 1] == null)
-			array[len - 1] = "";
-		if (b)
-			array[len - 1] = unSqlInjection(array[len - 1].toString());
-		return buf.append(label + array[len - 1] + label).toString();
+		{
+			s = array[len - 1];
+			if (s == null)
+				s = "";
+			if (unSQLInj)
+				s = unSqlInjection(s.toString());
+			buf.append(label + s + label);
+		}
+		return buf.toString();
+	}
+	/**
+	 * @param array
+	 * @param delimiter
+	 * @param label
+	 * @return
+	 */
+	public static String join(net.sf.json.JSONArray array, String delimiter) {
+		return toArrString(array, delimiter, true);
+	}
+	/**
+	 * @param array
+	 * @param delimiter
+	 * @param wrap
+	 * @return
+	 */
+	public static String join(net.sf.json.JSONArray array, String delimiter, boolean wrap) {
+		return toArrString(array, delimiter, wrap);
+	}
+	private static String toArrString(net.sf.json.JSONArray array, String delimiter, boolean wrap) {
+		int len = array.size();
+		if (len == 0)
+			return StringUtil.EMPTY_STRING;
+		if (delimiter == null)
+			delimiter = COMMA;
+		Object a;
+		HyStringBuffer buf = new HyStringBuffer(len * 12);
+		if (wrap)
+			buf.append(delimiter);
+		for (int i = 0; i < len - 1; i++) {
+			a = array.get(i);
+			if (a == null)
+				a = "";
+			buf.append(a).append(delimiter);
+		}
+		{
+			a = array.get(len-1);
+			if (a == null)
+				a = "";
+			buf.append(a);
+		}
+		if (wrap)
+			buf.append(delimiter);
+		return buf.toString();
 	}
 	/**
 	 * @param string
@@ -430,12 +480,10 @@ public final class StringUtil {
 	 * @param replacements
 	 * @return String[]
 	 */
-	public static String[] multiply(String string, Iterator<?> placeholders,
-			Iterator<?> replacements) {
+	public static String[] multiply(String string, Iterator<?> placeholders, Iterator<?> replacements) {
 		String[] result = new String[] { string };
 		while (placeholders.hasNext()) {
-			result = multiply(result, (String) placeholders.next(),
-					(String[]) replacements.next());
+			result = multiply(result, (String) placeholders.next(), (String[]) replacements.next());
 		}
 		return result;
 	}
@@ -474,7 +522,6 @@ public final class StringUtil {
 		return pairs;
 	}
 	/**
-	 * 
 	 * @param fileName
 	 * @return String
 	 */
@@ -516,20 +563,11 @@ public final class StringUtil {
 			return template;
 		} else {
 			return new HyStringBuffer(template.substring(0, loc))
-					.append(replacement)
-					.append(replaceAll(
-							template.substring(loc + placeholder.length()),
-							placeholder, replacement)).toString();
+				.append(replacement)
+				.append(replaceAll(
+					template.substring(loc + placeholder.length()),
+					placeholder, replacement)).toString();
 		}
-	}
-	/**
-	 * @param obj
-	 * @return boolean
-	 */
-	public static boolean isWebEmpty(Object obj) {
-		if (obj == null)
-			return true;
-		return isBlankOrNull(obj.toString()) || "undefined".equals(obj);
 	}
 	/**
 	 * @param obj
@@ -539,6 +577,15 @@ public final class StringUtil {
 		if (obj == null)
 			return true;
 		return isBlankOrNull(obj.toString());
+	}
+	public static boolean isWebEmpty(Object obj) {
+		return isEmpty(obj) || "undefined".equals(obj);
+	}
+	public static boolean isJSONEmpty(Object obj) {
+		return isEmpty(obj) || "{}".equals(obj);
+	}
+	public static boolean isJSONArrayEmpty(Object obj) {
+		return isEmpty(obj) || "[]".equals(obj);
 	}
 	/**
 	 * @param str

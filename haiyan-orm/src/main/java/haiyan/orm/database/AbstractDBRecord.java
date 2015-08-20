@@ -1,19 +1,12 @@
 package haiyan.orm.database;
 
-import haiyan.common.StringUtil;
-import haiyan.common.VarUtil;
-import haiyan.common.config.DataConstant;
-import haiyan.common.intf.database.orm.IDBRecord;
-import haiyan.config.castorgen.Field;
-import haiyan.config.castorgen.Option;
-import haiyan.config.castorgen.Table;
-import haiyan.config.util.NamingUtil;
-
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,6 +14,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import haiyan.common.DateUtil;
+import haiyan.common.StringUtil;
+import haiyan.common.VarUtil;
+import haiyan.common.config.DataConstant;
+import haiyan.common.intf.database.orm.IDBRecord;
+import haiyan.config.castorgen.Field;
+import haiyan.config.castorgen.Option;
+import haiyan.config.castorgen.Table;
+import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
+import haiyan.config.util.NamingUtil;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 @SuppressWarnings({"rawtypes","unchecked"})
 public abstract class AbstractDBRecord implements IDBRecord {
@@ -158,6 +162,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
 	/**
 	 * @return JSONObject
 	 */
+    @Override
 	public JSONObject toJSon() {
 		return toJSon(true, null);
 	}
@@ -165,8 +170,6 @@ public abstract class AbstractDBRecord implements IDBRecord {
      * @return JSONObject
      */
     public JSONObject toJSon(boolean showAll, ArrayList<String> ignore) {
-        // JSONObject json = JSONObject.fromObject(getDataMap());
-        // return JSONObject.fromObject(getDataMap());
         JSONObject obj = new JSONObject();
         Iterator<?> key = getDataMap().keySet().iterator();
         while (key.hasNext()) {
@@ -175,35 +178,45 @@ public abstract class AbstractDBRecord implements IDBRecord {
                 continue;
 			if (!showAll && ignore!=null && ignore.contains(keyName))
 				continue;
-            Object[] values = getParameterValues(keyName);
-            if (values != null && values.length != 0) {
-                String value = StringUtil.join(values, ",", "");
+			Object value = getParameter(keyName);
+			if(value!=null && value instanceof Object[])
+				obj.put(keyName, JSONArray.fromObject(value));
+            else 
                 obj.put(keyName, value);
-            } else
-                obj.put(keyName, "");
         }
         return obj;
     }
-	public void fromJSon(JSONObject json2) {
-		if (json2==null)
-			return;
+    @Override
+	public IDBRecord fromJSon(JSONObject json2) {
+    	return fromJSon(json2, false);
+    }
+    @Override
+	public IDBRecord fromJSon(JSONObject clientJSON, boolean ignoreJSON) {
+		if (clientJSON==null)
+			return this;
 		JSONObject json;
-		if (json2.containsKey("dataMap"))
-			json = json2.getJSONObject("dataMap");
+		if (clientJSON.containsKey("dataMap"))
+			json = clientJSON.getJSONObject("dataMap");
 		else
-			json = json2;
+			json = clientJSON;
 		String k; Object o;
-		Iterator iter = json.keys();
+		Iterator<String> iter = json.keys();
 		while(iter.hasNext()) {
-			k = iter.next().toString();
+			k = iter.next();
 			o = json.get(k);
+			if (o instanceof JSONObject || o instanceof JSONArray) {
+				if (ignoreJSON) { // nothing
+					continue;
+				}
+			}
+			setParameter(k.toUpperCase(), o==null?"":o);
 //			if (o instanceof net.sf.json.JSONObject) {
 //				this.fromJSon((net.sf.json.JSONObject)o);
 //				break;
 //			}
-//			System.out.println("------====="+o.getClass());
-			this.set(k, o==null?"":o.toString());
+//			setParameter(k.toUpperCase(), o==null?"":o.toString());
 		}
+		return this;
 	}
     /**
      * @param json
@@ -548,6 +561,7 @@ public abstract class AbstractDBRecord implements IDBRecord {
 		int t = VarUtil.toInt(v) + 1;
 		this.set(DataConstant.HYVERSION, "" + t);
 	}
+    // ================================================================================== //
     private static boolean sameValue(Object v1, Object v2) {
         if (!StringUtil.isEmpty(v1) && StringUtil.isEmpty(v2))
             return false;
@@ -579,5 +593,72 @@ public abstract class AbstractDBRecord implements IDBRecord {
 			map.put(name, record.get(name));
 		}
 		return map;
+	}
+	protected static Object transValueType(Field field, Object v) {
+		// TODO 转成各种数据类型
+		if (field.getJavaType()==AbstractCommonFieldJavaTypeType.BIGDECIMAL) {
+			v = VarUtil.toBigDecimal(v);
+		} else if (field.getJavaType()==AbstractCommonFieldJavaTypeType.DATE) {
+			if (StringUtil.isNumeric(v)) {
+				long time = VarUtil.toLong(v);
+				Calendar gcal = GregorianCalendar.getInstance();
+//				Calendar gcal = GregorianCalendar.getInstance(TimeZone.getTimeZone("UTC"));
+//				BaseCalendar gcal = CalendarSystem.getGregorianCalendar();
+//				gcal.getDisplayName(field, style, locale);
+//				gcal.getTime();
+				gcal.setTimeInMillis(time);
+				String style = field.getDataStyle();
+				if (StringUtil.isEmpty(style)) // 转换成UTC时间
+					style = "yyyy-MM-dd HH:mm:ss";
+				v = DateUtil.format(gcal.getTime(), style);
+			}
+		}
+		return v;
+	}
+	protected static Object getClientValue(JSONObject jsonClient, String key) throws Throwable {
+		Iterator<String> iter = jsonClient.keys();
+		while(iter.hasNext()) {
+			String _key = iter.next();
+			if (_key.equalsIgnoreCase(key)) { // 忽略大小写
+				Object v = jsonClient.has(_key)?jsonClient.get(_key):null;
+//				if (!StringUtil.isEmpty(v))
+//					v = java.net.URLDecoder.decode(v, "UTF-8");
+				return v;
+			}
+		}
+		return null;
+	}
+	public static void parseRequest(JSONObject jsonClient, Table table, IDBRecord record) throws Throwable {
+		for (Field field:table.getField()) {
+			Object v = null;
+			String uiName = field.getUiname();
+			if (StringUtil.isEmpty(uiName))
+				uiName = field.getName();
+			if (!StringUtil.isEmpty(uiName)) {
+				v = getClientValue(jsonClient, uiName);
+			} 
+			if (StringUtil.isEmpty(v)) {
+				String defVal = field.getDefaultValue();
+				if (!field.isNullAllowed() && !StringUtil.isEmpty(defVal)) {
+					if(field.getJavaType() == AbstractCommonFieldJavaTypeType.INTEGER){
+						v = Integer.valueOf(defVal);
+					}
+//					//TODO 其他类型
+//					else if(field.getJavaType() == AbstractCommonFieldJavaTypeType.BIGDECIMAL){
+//						v = new BigDecimal(defVal);
+//					}
+					else{
+						v = defVal;
+					}
+				}
+			}
+			if (!StringUtil.isEmpty(v)) {
+				v = transValueType(field, v);
+				String dbName = field.getName();
+				record.set(dbName, v); // setValue and setUpdateStatus
+			} else if (!field.isNullAllowed()) {
+				//throw Warning("not allow empty value, field="+);
+			}
+		}
 	}
 }

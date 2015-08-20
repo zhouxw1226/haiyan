@@ -1,16 +1,15 @@
 package haiyan.common.intf.database;
 
+import java.io.Serializable;
+
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBResultSet;
-import haiyan.common.intf.session.IUser;
-
-import java.io.Serializable;
 
 public interface IDBBill extends Serializable {
 
-	IUser getUser();
-	void setUser(IUser user);
+//	String getDSN();
+//	void setDSN(String DSN);
 	IBillConfig getBillConfig();
 	void setBillConfig(IBillConfig billConfig);
 	

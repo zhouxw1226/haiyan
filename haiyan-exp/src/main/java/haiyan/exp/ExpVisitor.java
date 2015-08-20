@@ -1,7 +1,5 @@
 package haiyan.exp;
 
-import haiyan.common.exception.Warning;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,21 +12,21 @@ class ExpVisitor implements ParserVisitor {
 		this.ExpContext = newExpContext;
 	}
 
-	public Object visit(SimpleNode node, Object data) throws ParseException {
+	public Object visit(SimpleNode node, Object data) throws Throwable {
 		throw new ParseException(ParseException.Err_Code);
 	}
 
-	public Object visit(CTreeRoot node, Object data) throws ParseException {
+	public Object visit(CTreeRoot node, Object data) throws Throwable {
 		return node.children[0].jjtAccept(this, data);
 	}
 
-	public Object visit(CTreeBinOp node, Object data) throws ParseException {
+	public Object visit(CTreeBinOp node, Object data) throws Throwable {
 		Object[] paras = getParas(node, data);
 		return ExpFunBin.eval(node.text, paras);
 	}
 
 	private Object[] getParas(SimpleNode node, Object data)
-			throws ParseException {
+			throws Throwable {
 		Object[] paras = new Object[node.jjtGetNumChildren()];
 		for (int i = 0; i < node.jjtGetNumChildren(); i++) {
 			paras[i] = node.children[i].jjtAccept(this, data);
@@ -37,18 +35,18 @@ class ExpVisitor implements ParserVisitor {
 	}
 
 	public Object visit(CTreeBoolConstrant node, Object data)
-			throws ParseException {
+			throws Throwable {
 		return node.getValue();
 	}
 
 	public Object visit(CTreeNullConstrant node, Object data)
-			throws ParseException {
+			throws Throwable {
 		return ExpCore.getNull();
 	}
 
 	@SuppressWarnings("unchecked")
-	public Object visit(CTreeVar node, Object data) throws ParseException {
-		try {
+	public Object visit(CTreeVar node, Object data) throws Throwable {
+//		try {
 			String sFormula = node.text;
 			// if (node.text.equalsIgnoreCase("CurValue")
 			// || node.text.equalsIgnoreCase("OldValue")) {
@@ -68,42 +66,42 @@ class ExpVisitor implements ParserVisitor {
 				paras[0] = node.text;
 				return funImpl.eval(ExpContext, sFormula, paras);
 			}
-		} catch (Throwable ex) {
-			throw Warning.getWarning(ex);
-		}
+//		} catch (Throwable ex) {
+//			throw Warning.getWarning(ex);
+//		}
 		return true;
 	}
 
 	@SuppressWarnings("unchecked")
-	public Object visit(CTreeFunOp node, Object data) throws ParseException {
-		try {
+	public Object visit(CTreeFunOp node, Object data) throws Throwable {
+//		try {
 			Object[] paras = getParas(node, data);
 			// IFunctionEval funImpl = ExpContext.getImplInstance(node.text);
 			IExpFunction funImpl = getImpInstance(node.text);
 			if (funImpl != null) {
 				return funImpl.eval(ExpContext, node.text, paras);
 			}
-		} catch (Throwable ex) {
-			throw Warning.getWarning(ex);
-		}
+//		} catch (Throwable ex) {
+//			throw Warning.getWarning(ex);
+//		}
 		return true;
 	}
 
 	public Object visit(CTreeNumConstrant node, Object data)
-			throws ParseException {
+			throws Throwable {
 		return node.getValue();
 	}
 
-	public Object visit(CTreeStrConstant node, Object data) throws ParseException {
+	public Object visit(CTreeStrConstant node, Object data) throws Throwable {
 		return node.getValue();
 	}
 
 	public Object visit(CTreeFunShortCircuit node, Object data)
-			throws ParseException {
+			throws Throwable {
 		return ExpFunShortCircuit.eval(node, this, data);
 	}
 
-	public Object visit(CTreeFunFixed node, Object data) throws ParseException {
+	public Object visit(CTreeFunFixed node, Object data) throws Throwable {
 		Object[] paras = getParas(node, data);
 		return ExpFunFixed.eval(node.text, paras);
 	}

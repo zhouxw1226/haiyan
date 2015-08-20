@@ -4,8 +4,6 @@
  */
 package haiyan.common;
 
-import haiyan.common.exception.Warning;
-
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -15,6 +13,8 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Vector;
+
+import haiyan.common.exception.Warning;
 
 /**
  * @author zhouxw
@@ -31,6 +31,8 @@ public class DateUtil implements Serializable {
 	private int m_hour;
 	private int m_minute;
 	private int m_second;
+	private static String isHolidays = PropUtil.getProperty("Holiday","holiday","");
+	private static String overtime = PropUtil.getProperty("Holiday","overtime","");
 	/**
 	 * 
 	 */
@@ -916,6 +918,28 @@ public class DateUtil implements Serializable {
 			return ftv.substring(5);
 		return ftv;
 	}
+	
+	
+	/**
+	 * 判断是否是法定节假日
+	 * @param sdate
+	 */
+	public static boolean isHoliday(Date sdate){ 
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(sdate);
+		boolean flag = false;//不是假日
+		SimpleDateFormat df = new SimpleDateFormat("MM-dd");
+		String date = df.format(sdate);
+		if (date.matches(isHolidays)) {
+			flag = true;//法定节假日
+		}else if (date.matches(overtime)) {
+			flag = false;//节假日前后加班日
+		}else if(cal.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY || cal.get(Calendar.DAY_OF_WEEK) == Calendar.SATURDAY){
+			flag = true;//周末不上班
+		}
+		return flag ;
+	}
+	
 	/**
 	 * 使用演示
 	 * 

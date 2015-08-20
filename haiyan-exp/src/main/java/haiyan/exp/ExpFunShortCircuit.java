@@ -9,7 +9,7 @@ class ExpFunShortCircuit {
 	}
 
 	static Object eval(SimpleNode node, ParserVisitor visitor, Object data)
-			throws ParseException {
+			throws Throwable {
 		String f = node.text;
 		if ("if".equalsIgnoreCase(f) || "case".equalsIgnoreCase(f) || "switch".equalsIgnoreCase(f)) {
 			return ifFun(node, visitor, data);
@@ -23,7 +23,7 @@ class ExpFunShortCircuit {
 
 	//
 	private static Object ifFun(SimpleNode node, ParserVisitor visitor,
-			Object data) throws ParseException {
+			Object data) throws Throwable {
 		// System.out.println("#node.jjtGetNumChildren()="
 		// + node.jjtGetNumChildren());
 		// if (node.jjtGetNumChildren() != 3)
@@ -56,7 +56,7 @@ class ExpFunShortCircuit {
 
 	//
 	private static boolean and(SimpleNode node, ParserVisitor visitor,
-			Object data) throws ParseException {
+			Object data) throws Throwable {
 		// if (node.jjtGetNumChildren() == 0)
 		// throw new ParseException(ParseException.Err_Paras_Number);
 		if (node.jjtGetNumChildren() == 0)
@@ -71,7 +71,7 @@ class ExpFunShortCircuit {
 
 	//
 	private static boolean or(SimpleNode node, ParserVisitor visitor,
-			Object data) throws ParseException {
+			Object data) throws Throwable {
 		// if (node.jjtGetNumChildren() == 0)
 		// throw new ParseException(ParseException.Err_Paras_Number);
 		if (node.jjtGetNumChildren() == 0)

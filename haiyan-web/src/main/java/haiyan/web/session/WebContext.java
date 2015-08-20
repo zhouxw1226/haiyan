@@ -1,15 +1,22 @@
 package haiyan.web.session;
 
-import haiyan.common.StringUtil;
-import haiyan.common.intf.web.IWebContext;
-import haiyan.common.session.AppContext;
-
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.net.URLDecoder;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+
+import haiyan.common.SecurityUtil;
+import haiyan.common.StringUtil;
+import haiyan.common.XmlUtil;
+import haiyan.common.intf.web.IWebContext;
+import haiyan.common.session.AppContext;
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class WebContext extends AppContext implements IWebContext {
 	private ServletRequest req;
@@ -69,5 +76,72 @@ public class WebContext extends AppContext implements IWebContext {
 		super.close();
 		req = null;
 		res = null;
+	}
+	@Override
+	public JSONArray getJSONArrayParameter(String key, String decode) throws Throwable {
+		return getJSONArrayParameter(key, decode, false);
+	}
+	@Override
+	public JSONObject getJSONParameter(String key, String decode) throws Throwable {
+		return getJSONParameter(key, decode, false);
+	}
+	@Override
+	public JSONArray getJSONArrayParameter(String key, String decode, boolean checkSign) throws Throwable {
+		String sData = req.getParameter(key);
+		if (sData==null)
+			return null;
+		if (!StringUtil.isEmpty(decode))
+			sData = URLDecoder.decode(sData, decode);
+		if (checkSign) {
+			SecurityUtil.checkSign(this, sData);
+		}
+		JSONArray jsonData = JSONArray.fromObject(sData);
+		return jsonData;
+	}
+	@Override
+	public JSONObject getJSONParameter(String key, String decode, boolean checkSign) throws Throwable {
+		String sData = req.getParameter(key);
+		if (sData==null)
+			return null;
+		if (!StringUtil.isEmpty(decode))
+			sData = URLDecoder.decode(sData, decode);
+		if (checkSign) {
+			SecurityUtil.checkSign(this, sData);
+		}
+		JSONObject jsonData = JSONObject.fromObject(sData);
+		return jsonData;
+	}
+	@Override
+	public JSONObject getJSONBody() throws Throwable {
+		BufferedReader reader = req.getReader(); 
+		StringBuilder sb = new StringBuilder();
+        String line = null;  
+        while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+        }
+        String datas = sb.toString();
+        return JSONObject.fromObject(datas);
+	}
+	@Override
+	public JSONArray getJSONArrayBody() throws Throwable {
+		BufferedReader reader = req.getReader(); 
+		StringBuilder sb = new StringBuilder();
+        String line = null;  
+        while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+        }
+        String datas = sb.toString();
+        return JSONArray.fromObject(datas);
+	}
+	@Override
+	public JSON getXML2JSONBody() throws Throwable {
+		BufferedReader reader = req.getReader(); 
+		StringBuilder sb = new StringBuilder();
+        String line = null;  
+        while ((line = reader.readLine()) != null) {  
+            sb.append(line);
+        }
+        String datas = sb.toString();
+        return XmlUtil.xmltoJson(datas);
 	}
 }

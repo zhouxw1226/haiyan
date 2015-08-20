@@ -1,56 +1,28 @@
 package haiyan.cache;
 
+import java.io.Serializable;
+
 import haiyan.common.ByteUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.session.IUser;
-
-import java.io.Serializable;
-
+import redis.clients.jedis.JedisCommands;
 import redis.clients.jedis.BinaryJedisCommands;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-
 
 /**
  * @author zhouxw
  *
  */
 public class RedisBinaryDataCache extends AbstractRedisDataCache {
-
-    protected BinaryJedisCommands getJedisWriter() {
-    	try {
-    		return masterJedisPool.getResource();
-    	}catch(Throwable e){
-    		throw Warning.wrapException(e);
-    	}
-    }
-    protected BinaryJedisCommands getJedisReader() {
-    	try {
-    		if(servers.length==1) {
-    			return masterJedisPool.getResource();
-    		}
-    		return shardedJedisPool.getResource();
-    	}catch(Throwable e){
-    		throw Warning.wrapException(e);
-    	}
-    }
-	/** 归还jedis对象 */
-	public void recycleJedisResource(BinaryJedisCommands jedis) {
-		if (jedis==null)
-			return;
-		if (jedis instanceof ShardedJedis)
-			shardedJedisPool.returnResource((ShardedJedis)jedis);
-		else
-			masterJedisPool.returnResource((Jedis)jedis);
-	}
 	@Override
 	public IUser setUser(String sessionId, IUser user) {
 		BinaryJedisCommands writer = null;
 		try {
-			writer = getJedisWriter();
+			writer = getJedisMaster();
 			if (user==null)
 				throw new Warning("user is null");
 			String key = getUserKey(sessionId);
@@ -71,14 +43,16 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisResource(writer);
+			recycleJedisResource((JedisCommands)writer);
 		}
 	}
 	@Override
 	public IUser getUser(String sessionId) {
 		BinaryJedisCommands reader = null;
 		try {
-			reader = getJedisReader();
+			reader = getJedisSharded();
+			if (reader==null)
+				reader = getJedisMaster();
 			IUser user = null; // super.getUser();
 			String key = getUserKey(sessionId);
 			Integer status = -1;
@@ -119,14 +93,14 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisResource(reader);
+			recycleJedisResource((JedisCommands)reader);
 		}
 	}
 	@Override
 	public boolean removeUser(String sessionId) {
 		BinaryJedisCommands writer = null;
 		try {
-			writer = getJedisWriter();
+			writer = getJedisMaster();
 			String key = getUserKey(sessionId);
 			if (writer instanceof ShardedJedis) {
 				((ShardedJedis)writer).del(key);
@@ -150,7 +124,7 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			DebugUtil.error(e);
 			return false;
 		}finally{
-			recycleJedisResource(writer);
+			recycleJedisResource((JedisCommands)writer);
 		}
 	}
     // --------------------- data cache --------------------- //
@@ -158,7 +132,7 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 	public Object setData(String schema, Object key, Object ele) {
 		BinaryJedisCommands writer = null;
 		try {
-			writer = getJedisWriter();
+			writer = getJedisMaster();
 			String mk = getDataKey(schema, key);
 			byte[] kBytes = mk.getBytes();
 			byte[] vBytes = ByteUtil.toBytes((Serializable)ele);
@@ -175,14 +149,16 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			this.initialize();
 			return setData(schema,key,ele);
 		}finally{
-			recycleJedisResource(writer);
+			recycleJedisResource((JedisCommands)writer);
 		}
 	}
 	@Override
 	public Object getData(String schema, Object key) {
 		BinaryJedisCommands reader = null;
 		try {
-			reader = getJedisReader();
+			reader = getJedisSharded();
+			if (reader==null)
+				reader = getJedisMaster();
 			String mk = getDataKey(schema, key);
 			byte[] bytes = reader.get(mk.getBytes());
 			if (bytes!=null) {
@@ -202,14 +178,14 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisResource(reader);
+			recycleJedisResource((JedisCommands)reader);
 		}
 	}
 	@Override
 	public Object deleteData(String schema, Object key) {
 		BinaryJedisCommands writer = null;
 		try {
-			writer = getJedisWriter();
+			writer = getJedisMaster();
 			Object o = this.getData(schema, key);
 			String mk = getDataKey(schema, key);
 			if (writer instanceof ShardedJedis) {
@@ -233,7 +209,7 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			DebugUtil.error(e);
 			return null;
 		}finally{
-			recycleJedisResource(writer);
+			recycleJedisResource((JedisCommands)writer);
 		}
     }
 	

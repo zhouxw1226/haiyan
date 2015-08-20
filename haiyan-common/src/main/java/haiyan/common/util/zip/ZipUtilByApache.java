@@ -62,9 +62,7 @@ public class ZipUtilByApache extends ZipUtil {
 		// } catch (IOException e) {
 		// System.err.println("文件写入发生错误");
 		// }
-		catch (Throwable e) {
-			throw e;
-		} finally{
+		finally{
 			CloseUtil.close(in);
 		}
 	}
@@ -112,9 +110,7 @@ public class ZipUtilByApache extends ZipUtil {
 		// } catch (IOException e) {
 		// System.err.println("文件写入发生错误");
 		// }
-		catch (Throwable e) {
-			throw e;
-		} finally{
+		finally{
 			CloseUtil.close(in);
 		}
 	}
@@ -128,7 +124,6 @@ public class ZipUtilByApache extends ZipUtil {
 	 *            要打包的目录
 	 * @throws Throwable 
 	 */
-	@SuppressWarnings("unchecked")
 	public static void zipFileByApache(File outFile, String zipDir) throws Throwable {
 		ArchiveOutputStream out = null;
 		try {
@@ -157,9 +152,7 @@ public class ZipUtilByApache extends ZipUtil {
 		// } catch (IOException e) {
 		// System.err.println("文件写入发生错误");
 		// }
-		catch (Throwable e) {
-			throw e;
-		} finally {
+		finally {
 			CloseUtil.close(out);
 		}
 	}

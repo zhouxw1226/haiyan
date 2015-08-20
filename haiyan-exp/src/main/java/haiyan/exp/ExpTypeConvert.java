@@ -156,7 +156,7 @@ public class ExpTypeConvert {
 	}
 
 	// cast to double
-	public static Double toDouble(Object o) throws ParseException {
+	public static Double toDouble(Object o) throws Throwable {
 		if (o == null)
 			return null;
 		if (o instanceof Double) {
@@ -190,7 +190,7 @@ public class ExpTypeConvert {
 	 * @return Boolean
 	 * @throws ParseException
 	 */
-	static Boolean getBoolean(Object v) throws ParseException {
+	static Boolean getBoolean(Object v) throws Throwable {
 		if (v == null) {
 			return true;
 		} else if (v instanceof ExpNull) {
@@ -215,7 +215,7 @@ public class ExpTypeConvert {
 	 * @return String
 	 * @throws ParseException
 	 */
-	static String getString(Object v) throws ParseException {
+	static String getString(Object v) throws Throwable {
 		if (v == null)
 			return "";
 		if (v instanceof ExpNull) {
@@ -249,7 +249,7 @@ public class ExpTypeConvert {
 	 * @return Double
 	 * @throws ParseException
 	 */
-	static Double getDouble(Object v) throws ParseException {
+	static Double getDouble(Object v) throws Throwable {
 		if (StringUtil.isEmpty(v))
 			return 0.0;
 		if (v instanceof ExpNull) {
@@ -308,7 +308,7 @@ public class ExpTypeConvert {
 	 * @return String
 	 * @throws ParseException
 	 */
-	public static String toRmb(double d) throws ParseException {
+	public static String toRmb(double d) throws Throwable {
 		if (d > 9999999999999.99 || d < -9999999999999.99) {
 			throw new ParseException(ParseException.Err_Para_Type);
 		}
@@ -454,8 +454,7 @@ class ChineseMoney {
 		strMoney = "236236.01";
 		// 读取
 		// System.out.println("输入货币(四舍五入):");
-		// BufferedReader cin = new BufferedReader(
-		// new InputStreamReader(System.in));
+		// BufferedReader cin = new BufferedReader(new InputStreamReader(System.in));
 		// strMoney = cin.readLine();
 		money = Double.parseDouble(strMoney);
 		strChineseMoney = ChineseMoney.getChineseMoney(money);

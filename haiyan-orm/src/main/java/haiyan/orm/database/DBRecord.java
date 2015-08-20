@@ -6,6 +6,8 @@ package haiyan.orm.database;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.json.JSONObject;
+
 /**
  * @author zhouxw
  */
@@ -15,6 +17,10 @@ public class DBRecord extends AbstractDBRecord {
     protected Map<String, Object> dataMap = new HashMap<String, Object>(10, 1); // AbstractDBRecord实现类的dataMap实现多样化
     public DBRecord() {
         super();
+    }
+    public DBRecord(JSONObject json) throws Throwable {
+        super();
+        this.fromJSon(json, true);
     }
     @Override
     public Map<String, Object> getDataMap() {

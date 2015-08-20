@@ -28,10 +28,10 @@ import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.config.util.ConfigUtil;
 import haiyan.config.util.NamingUtil;
 import haiyan.database.SQLDatabase;
-import haiyan.orm.database.TableDBContextFactory;
 import haiyan.orm.database.DBRecord;
 import haiyan.orm.database.DBRecordCacheFactory;
 import haiyan.orm.database.MappingDBManager;
+import haiyan.orm.database.TableDBContextFactory;
 import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.database.orm.ITableRecordCacheManager;
 import haiyan.orm.intf.database.sql.ITableSQLRender;
@@ -68,6 +68,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 				this.connection.commit(); // 主动提交
 				this.connection.setAutoCommit(true); // 变回自动提交
 				this.autoCommit=true;
+				this.afterCommit(); // for hsqldb
 			}
 			DebugUtil.debug(">----< dbm.commit.connHash:" + this.connection.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
@@ -80,7 +81,9 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 		try { // 内存记录提交
 			if (cacheMgr!=null) 
 				cacheMgr.commit();
-		} finally {
+		}catch(Throwable ex){
+			throw Warning.wrapException(ex);
+		}finally {
 			if (cacheMgr!=null)
 				cacheMgr.clear();
 		}
@@ -110,9 +113,13 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 		if (this.isAlive()) {
 			if (!this.connection.getAutoCommit()) { // 事务不是自动提交
 				this.beforeRollback(); // for hsqldb
-				this.connection.rollback(); // 主动回滚
+				if (this.getSavepoint()!=null)
+					this.connection.rollback(this.getSavepoint());
+				else
+					this.connection.rollback();
 				this.connection.setAutoCommit(true); // 变回自动提交
 				this.autoCommit=true;
+				this.afterRollback(); // for hsqldb
 			}
 			DebugUtil.debug(">----< dbm.rollback.connHash:" + this.connection.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
@@ -125,7 +132,9 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 		try { // 内存记录提交
 			if (cacheMgr!=null)
 				cacheMgr.rollback();
-		} finally {
+		}catch(Throwable ex){
+			throw Warning.wrapException(ex);
+		}finally {
 			if (cacheMgr!=null)
 				cacheMgr.clear();
 		}
@@ -179,8 +188,8 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	public void clear() {
 		//LOCAL.remove();
 		try {
-			if (cacheMgr!=null)
-				cacheMgr.clear();
+			if (this.cacheMgr!=null)
+				this.cacheMgr.clear();
 		} catch (Throwable ignore) {
 			ignore.printStackTrace();
 		}
@@ -733,7 +742,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 //							name += " ";
 //						name += node.get(names[j]);
 //					}
-//					// TODO 2008-02-05 zhouxw 显示的节点名
+//					// NOTICE 2008-02-05 zhouxw 显示的节点名
 //					node.setName("&nbsp;" + name);
 //				}
 //				public void dealNodeMx(MyXLoadTreeNode node) {
@@ -1085,7 +1094,11 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 		// DebugUtil.debug(">insertObj:" + form.toXML());
 		PreparedStatement ps = null;
 		try {
-			String newID = (String)record.get(table.getId().getName()); // context.getNextID(table);
+			Object obj = record.get(table.getId().getName());
+			String newID = null;
+			if(!StringUtil.isBlankOrNull(obj)){
+				newID = obj.toString();
+			}
 			record.updateVersion();
 			ps = getSQLRender().getInsertPreparedStatement(context, table, record, newID);
 			// ps.executeUpdate();
@@ -1150,7 +1163,11 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			ps = getSQLRender().getUpdatePreparedStatement(context, table);
 			Field[] fields = getSQLRender().getUpdateValidField(context, table);
 			for (IDBRecord record:records) {
-				String newID = (String)record.get(table.getId().getName());
+				Object obj = record.get(table.getId().getName());
+				String newID = null;
+				if(!StringUtil.isBlankOrNull(obj)){
+					newID = obj.toString();
+				}
 				record.updateVersion();
 				getSQLRender().updatePreparedStatementValue(context, table, record, ps, fields,filter);
 				ps.addBatch();
@@ -1192,7 +1209,11 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 		this.checkVersion(context, table, record);
 		PreparedStatement ps = null;
 		try {
-			String newID = (String)record.get(table.getId().getName());
+			Object obj = record.get(table.getId().getName());
+			String newID = null;
+			if(!StringUtil.isBlankOrNull(obj)){
+				newID = obj.toString();
+			}
             record.updateVersion();
 			ps = getSQLRender().getUpdatePreparedStatement(context, table, record,filter);
 			// ps.executeUpdate();
@@ -1337,9 +1358,10 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	 */
 	@Override
 	public IDBResultSet select(ITableDBContext context, Table table, String[] ids, int... args) throws Throwable {
-//		if (ids.length==1) {
-//			return this.selectById
-//		}
+		if (ids==null || ids.length==0) {
+			//return new DBPage(new ArrayList<IDBRecord>());
+			return null;
+		}
 		String placeholder = "";
 		for (int i=0;i<ids.length;i++) {
 			if (placeholder.length()>0)

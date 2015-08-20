@@ -12,6 +12,7 @@ import java.util.List;
  */
 public interface IContext extends ISession {
 
+	IContext getParent();
 	void setExpUtil(IExpUtil exp);
 	IExpUtil getExpUtil();
 	Object removeAttribute(String key);

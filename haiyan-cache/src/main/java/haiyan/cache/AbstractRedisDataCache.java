@@ -1,31 +1,35 @@
 package haiyan.cache;
 
-import haiyan.common.DebugUtil;
-import haiyan.common.PropUtil;
-import haiyan.common.VarUtil;
-import haiyan.common.intf.session.IUser;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import bsh.StringUtil;
+import haiyan.common.DebugUtil;
+import haiyan.common.PropUtil;
+import haiyan.common.VarUtil;
+import haiyan.common.exception.Warning;
+import haiyan.common.intf.session.IUser;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCommands;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
+import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
-import bsh.StringUtil;
-
+import redis.clients.util.Pool;
 
 /**
  * @author zhouxw
  *
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractRedisDataCache extends AbstractDataCache {
 
 //	protected Jedis defaultJedis;//非切片额客户端连接
-    protected JedisPool masterJedisPool;//非切片连接池
-    protected ShardedJedisPool shardedJedisPool;//切片连接池
+	protected redis.clients.util.Pool<Jedis> masterJedisPool;//非切片连接池
+    protected redis.clients.util.Pool<ShardedJedis> shardedJedisPool;//切片连接池
     protected String[] servers = null;
-    protected String password = PropUtil.getProperty(null,"REDISCACHE.PASSWORD",null);
+    protected String password = PropUtil.getProperty("REDISCACHE.PASSWORD",null);
 	public AbstractRedisDataCache() {
 		super();
 	}
@@ -92,23 +96,6 @@ public abstract class AbstractRedisDataCache extends AbstractDataCache {
 //    		jedisImplWriter = masterJedisPool.getResource();
     	}
     }
-//    protected JedisCommands getJedisWriter() {
-//    	try {
-//    		return masterJedisPool.getResource();
-//    	}catch(Throwable e){
-//    		throw Warning.wrapException(e);
-//    	}
-//    }
-//    protected JedisCommands getJedisReader() {
-//    	try {
-//    		if(servers.length==1) {
-//    			return masterJedisPool.getResource();
-//    		}
-//    		return shardedJedisPool.getResource();
-//    	}catch(Throwable e){
-//    		throw Warning.wrapException(e);
-//    	}
-//    }
     // --------------------- user cache --------------------- //
 	protected String getUserKey(String schema) {
     	return "Haiyan.USERS."+schema;
@@ -138,22 +125,74 @@ public abstract class AbstractRedisDataCache extends AbstractDataCache {
     // --------------------- local data cache --------------------- //
 	@Override
 	public Object setLocalData(String cacheID, Object key, Object ele) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	@Override
 	public Object getLocalData(String cacheID, Object key) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	@Override
 	public Object removeLocalData(String cacheID, Object key) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	@Override
 	public void clearData(String cacheID) {
-		// TODO Auto-generated method stub
+	}
+    // --------------------- resouce --------------------- //
+//  protected JedisCommands getJedisWriter() {
+//	try {
+//		return masterJedisPool.getResource();
+//	}catch(Throwable e){
+//		throw Warning.wrapException(e);
+//	}
+//}
+//protected JedisCommands getJedisReader() {
+//	try {
+//		if(servers.length==1) {
+//			return masterJedisPool.getResource();
+//		}
+//		return shardedJedisPool.getResource();
+//	}catch(Throwable e){
+//		throw Warning.wrapException(e);
+//	}
+//}
+    protected Jedis getJedisMaster() {
+    	return (Jedis)this.masterJedisPool.getResource();
+    }
+    protected ShardedJedis getJedisSharded() {
+    	if (this.shardedJedisPool==null)
+    		return null;
+    	return (ShardedJedis)this.shardedJedisPool.getResource();
+    }
+	public Pool getPool() {
+    	try {
+    		if(servers.length==1) {
+    			return this.masterJedisPool;
+    		}
+    		return this.shardedJedisPool;
+    	}catch(Throwable e){
+    		throw Warning.wrapException(e);
+    	}
+	}
+	protected Pool<Jedis> getPoolMaster() {
+		return this.masterJedisPool;
+	}
+	protected Pool<ShardedJedis> getPoolSharded() {
+		return this.shardedJedisPool;
+	}
+	public void cleanDB() {
+		Jedis jedis = getJedisMaster();
+		jedis.flushDB();
+	}
+	/** 归还jedis对象 */
+	protected void recycleJedisResource(JedisCommands jedis) {
+		if (jedis==null)
+			return;
+//		getPool().returnResource(jedis);
+		if (jedis instanceof ShardedJedis)
+			getPoolSharded().returnResource((ShardedJedis)jedis);
+		else
+			getPoolMaster().returnResource((Jedis)jedis);
 	}
 	
 }

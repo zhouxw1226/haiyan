@@ -22,7 +22,7 @@ class ExpFunBin {
 	 * @return 只有boolean, double, Null, String这四种类型的结果.
 	 * @throws ParseException
 	 */
-	static Object eval(String op, Object[] paras) throws ParseException {
+	static Object eval(String op, Object[] paras) throws Throwable {
 		if (paras.length == 1) {
 			if (paras[0] instanceof ExpNull)
 				return ExpCore.getNull();
@@ -48,7 +48,7 @@ class ExpFunBin {
 	 * @throws ParseException
 	 */
 	private static Object evalWithoutNull(String op, Object[] paras)
-			throws ParseException {
+			throws Throwable {
 		String opT = op;
 		if ("+".equals(opT)) {
 			return add(paras);
@@ -74,7 +74,7 @@ class ExpFunBin {
 	 * @return 两个字符串相连的结果.
 	 * @throws ParseException
 	 */
-	private static String concat(Object[] paras) throws ParseException {
+	private static String concat(Object[] paras) throws Throwable {
 		if (paras.length != 2)
 			throw new ParseException(ParseException.Err_Paras_Number);
 		if (paras[0] instanceof java.util.Date || paras[1] instanceof java.util.Date) {
@@ -104,7 +104,7 @@ class ExpFunBin {
 	 * @throws ParseException
 	 */
 	private static boolean compare(String op, Object[] paras)
-			throws ParseException {
+			throws Throwable {
 		if (paras.length == 2) {
 			if (paras[0] instanceof java.util.Date && paras[1] instanceof java.util.Date) {
 				// for: DATE() < > >= <= <>
@@ -189,7 +189,7 @@ class ExpFunBin {
 	 * @return double类型的计算结果.
 	 * @throws ParseException
 	 */
-	private static Object plus(Object[] paras) throws ParseException {
+	private static Object plus(Object[] paras) throws Throwable {
 		if (paras.length == 2) {
 			// 双目运算符"+"
 			if (paras[0] instanceof java.util.Date || paras[1] instanceof java.util.Date) {
@@ -226,6 +226,8 @@ class ExpFunBin {
 					}
 				}
 				return ExpTypeConvert.getDouble(paras[0]) - ExpTypeConvert.getDouble(paras[1]);
+			} else if (paras[0] instanceof Boolean && paras[1] instanceof Boolean) {
+				return ExpTypeConvert.toBoolean(paras[0]) || ExpTypeConvert.toBoolean(paras[1]);
 			} else
 				return ExpTypeConvert.getDouble(paras[0]) - ExpTypeConvert.getDouble(paras[1]);
 		} else if (paras.length == 1) {
@@ -247,7 +249,7 @@ class ExpFunBin {
 	 * @return double或String类型的计算结果.
 	 * @throws ParseException
 	 */
-	private static Object add(Object[] paras) throws ParseException {
+	private static Object add(Object[] paras) throws Throwable {
 		if (paras.length == 2) {
 			// 双目运算符"+"
 			if (paras[0] instanceof java.util.Date || paras[1] instanceof java.util.Date) {
@@ -278,6 +280,8 @@ class ExpFunBin {
 				// 严格区分+和&(+不再支持字符串连接了)
 				// return TypeConvert.getString(paras[0]) + TypeConvert.getString(paras[1]);
 				return ExpTypeConvert.getDouble(paras[0]) + ExpTypeConvert.getDouble(paras[1]);
+			} else if (paras[0] instanceof Boolean && paras[1] instanceof Boolean) {
+				return ExpTypeConvert.toBoolean(paras[0]) & ExpTypeConvert.toBoolean(paras[1]);
 			} else
 				return ExpTypeConvert.getDouble(paras[0]) + ExpTypeConvert.getDouble(paras[1]);
 		} else if (paras.length == 1) {
@@ -302,7 +306,7 @@ class ExpFunBin {
 	 * @throws ParseException
 	 */
 	private static double numEval(String op, Object[] paras)
-			throws ParseException {
+			throws Throwable {
 		if (paras.length == 2) {
 			if (!ExpTypeConvert.isDouble(paras[0]) || !ExpTypeConvert.isDouble(paras[1])) {
 				throw new ParseException(ParseException.Err_Para_Type); // 两个参数只要有一个不能转化为double类型,进行字符串计算.

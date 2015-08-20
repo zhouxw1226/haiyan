@@ -1,7 +1,6 @@
 package haiyan.common.session;
 
 import haiyan.common.CloseUtil;
-import haiyan.common.StringUtil;
 import haiyan.common.intf.exp.IExpUtil;
 import haiyan.common.intf.session.IAppContext;
 import haiyan.common.intf.session.IContext;
@@ -90,11 +89,7 @@ public class AppContext implements IAppContext {
 	}
 	@Override
 	public IUser getUser() {
-		if (this.user!=null)
-			return user;
-		if (this.parent!=null)
-			return this.parent.getUser();
-		return null;
+		return this.user;
 	}
 	private String DSN;
 	@Override
@@ -103,13 +98,11 @@ public class AppContext implements IAppContext {
 	}
 	@Override
 	public String getDSN() {
-		if (!StringUtil.isBlankOrNull(this.DSN))
-			return this.DSN;
-		if (this.user!=null)
-			return this.user.getDSN();
-		if (this.parent!=null)
-			return this.parent.getDSN();
-		return null;
+		return this.DSN;
+	}
+	@Override
+	public IContext getParent() {
+		return parent;
 	}
 	@Override
 	public void close() {
@@ -122,22 +115,4 @@ public class AppContext implements IAppContext {
 	@Override
 	public void clear() {
 	}
-//	@Override
-//	public void setDBM(ITableDBManager dbm) {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public ITableDBManager getDBM() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//	@Override
-//	public void setBBM(IBillDBManager bbm) {
-//		// TODO Auto-generated method stub
-//	}
-//	@Override
-//	public IBillDBManager getBBM() {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
 }

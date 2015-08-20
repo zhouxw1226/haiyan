@@ -1,5 +1,26 @@
 package haiyan.config.util;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.ResourceBundle;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
 import haiyan.common.CloseUtil;
 import haiyan.common.DBColumn;
 import haiyan.common.DebugUtil;
@@ -33,27 +54,6 @@ import haiyan.config.castorgen.root.DbSource;
 import haiyan.config.castorgen.root.Functions;
 import haiyan.config.castorgen.root.JdbcURL;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.ResourceBundle;
-
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
  
 /**
  * ConfigManager Facade
@@ -131,17 +131,25 @@ public class ConfigUtil {
      * @return String
      * @throws Throwable
      */
-    public final static String getDefaultDSNOfSlaves() {
-		String DSN = PropUtil.getProperty("SERVER.DSN.Slaves");
+    public final static String getDSNOfSlaves() {
+		String sDSN = PropUtil.getProperty("SERVER.DSN.Slaves");
+		if (StringUtil.isEmpty(sDSN)) {
+			sDSN = getDSNOfMaster();
+		}
+		String[] aDSN = StringUtil.split(sDSN, ",");
+		String DSN = aDSN[(int)Math.round(Math.random()*(aDSN.length-1))];
 		return DSN;
     }
     /**
      * @return String
      * @throws Throwable
      */
-    public final static String getDefaultDSNOfMaster() {
-		String DSN = PropUtil.getProperty("SERVER.DSN.Master");
-		return DSN;
+    public final static String getDSNOfMaster() {
+		String sDSN = PropUtil.getProperty("SERVER.DSN.Master");
+		if (StringUtil.isEmpty(sDSN)) {
+			sDSN = getDefaultDSN();
+		}
+		return sDSN;
     }
     /**
      * @return String
@@ -164,6 +172,28 @@ public class ConfigUtil {
             return ds.getDbType();
         return null;
     }
+//  /**
+//  * @param dsn
+//  * @return String
+//  * @throws Throwable
+//  */
+// public final static String getDBType(String dsn) throws Throwable {
+//     if (!StringUtil.isBlankOrNull(dsn)) {
+//         Config config = getConfig();
+//         DbSource dbSource = config.getDbSource();
+//         for (JdbcURL jdbc : dbSource.getJdbcURL()) {
+//             if (dsn.equalsIgnoreCase(jdbc.getName())) {
+//                 return jdbc.getDbType();
+//             }
+//         }
+//         for (DataSource ds : dbSource.getDataSource()) {
+//             if (dsn.equalsIgnoreCase(ds.getName())) {
+//                 return ds.getDbType();
+//             }
+//         }
+//     }
+//     return null;
+// }
     /**
      * @param dsn
      * @return JdbcURL
@@ -212,28 +242,6 @@ public class ConfigUtil {
         }
         return StringUtil.EMPTY_STRINGARR;
     }
-//    /**
-//     * @param dsn
-//     * @return String
-//     * @throws Throwable
-//     */
-//    public final static String getDBType(String dsn) throws Throwable {
-//        if (!StringUtil.isBlankOrNull(dsn)) {
-//            Config config = getConfig();
-//            DbSource dbSource = config.getDbSource();
-//            for (JdbcURL jdbc : dbSource.getJdbcURL()) {
-//                if (dsn.equalsIgnoreCase(jdbc.getName())) {
-//                    return jdbc.getDbType();
-//                }
-//            }
-//            for (DataSource ds : dbSource.getDataSource()) {
-//                if (dsn.equalsIgnoreCase(ds.getName())) {
-//                    return ds.getDbType();
-//                }
-//            }
-//        }
-//        return null;
-//    }
     /**
      * @return Config
      * @throws Throwable
@@ -427,60 +435,6 @@ public class ConfigUtil {
 //        DataConstant.UPLOAD_PATH = PathUtil.getConfigUploadPath();
 //		if (StringUtil.isEmpty(DataConstant.UPLOAD_PATH))
 //			DataConstant.UPLOAD_PATH = DataConstant.APPLICATION_PATH;
-//    }
-//    /**
-//     * @param key
-//     * @return String
-//     * @throws Throwable
-//     */
-//    @Deprecated
-//    public final static String getInvokeProperty(String key) {
-//    	try {
-//    		return PropUtil.getInvokeProperty(key);
-//    	}catch(Throwable e){
-//    		throw Warning.wrapException(e);
-//    	}
-//    }
-//    /**
-//     * @param bundName
-//     * @param key
-//     * @return String
-//     * @throws Throwable
-//     */
-//    @Deprecated
-//    public final static String getProperty(String bundName, String key) {
-//    	try {
-//    		return PropUtil.getProperty(bundName, key, "");
-//    	}catch(Throwable e){
-//    		throw Warning.wrapException(e);
-//    	}
-//    }
-//    /**
-//     * @param bundName
-//     * @param key
-//     * @return String
-//     * @throws Throwable
-//     */
-//    @Deprecated
-//    public final static String getProperty(String bundName, String key, String def) {
-//    	try {
-//    		return PropUtil.getProperty(bundName, key, def);
-//    	}catch(Throwable e){
-//    		throw Warning.wrapException(e);
-//    	}
-//    }
-//    /**
-//     * @param key
-//     * @return String
-//     * @throws Throwable
-//     */
-//    @Deprecated
-//    public final static String getProperty(String key) {
-//    	try {
-//    		return PropUtil.getProperty(key);
-//    	}catch(Throwable e){
-//    		throw Warning.wrapException(e);
-//    	}
 //    }
 //    /**
 //     * @throws Throwable

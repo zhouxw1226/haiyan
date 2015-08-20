@@ -191,7 +191,7 @@ public class ExpUtil implements IExpUtil {
 		return pEvalExp(exp);
 	}
 	private Object pEvalExp(String exp) throws Throwable {
-//		DebugUtil.debug("**** Exp.start:\n\t" + exp);
+//		DebugUtil.debug("**** Exp.start:\t" + exp);
 		exp = exp.trim();
 		if (exp.startsWith(";"))
 			exp = exp.substring(1);
@@ -205,7 +205,7 @@ public class ExpUtil implements IExpUtil {
 //			vars[i] = ExpCore.getInstance().eval(expContext, exps[i]);
 //		}
 //		Object res = vars[vars.length - 1];
-		DebugUtil.debug("**** Exp.end:\n\t" + exp);
+		DebugUtil.debug("[**** Exp.end:\t"+exp+"\t计算结果\t"+res+" ****]");
 		// Arrays.dd();
 		// System.out.println("exp.dealed:" + res);
 		// Exp.getInstance().eval(expContextInstance, expression);
@@ -243,6 +243,7 @@ public class ExpUtil implements IExpUtil {
 	@Override
 	public void close() {
 		this.expContext.close();
+		this.expContext = null;
 	}
 	private static Map<String, Method> CACHE = new HashMap<String, Method>();
 	private static AtomicInteger inited = new AtomicInteger(0);
@@ -364,6 +365,8 @@ public class ExpUtil implements IExpUtil {
 		@Override
 		public void close() {
 			this.vars = null;
+			// NOTICE CloseUtil.close(this.context) 不用做最外层已经做了 直接=null
+			this.context = null;
 		}
 		@Override
 		public String[] getExtendImpClass() throws Throwable {
@@ -406,11 +409,6 @@ public class ExpUtil implements IExpUtil {
 				};
 			}
 			return null;
-//			// Application配置优先级最高
-//			String className = PropUtil.getProperty("DEFAULT_FUNCTION");
-//			if (StringUtil.isBlankOrNull(className))
-//				className = FORMULA_RESOURCE.getString("DEFAULT_FUNCTION");
-//			return (IExpFunction) InvokeUtil.newInstanceSingle(className);
 		}
 		public IExpFunction<IContext> getExtendImpInstance(String sExtendProg, String funcName) throws Throwable {
 //			String t = funcName;//byLocal(funcName);
@@ -575,7 +573,7 @@ public class ExpUtil implements IExpUtil {
 ////		return form;
 ////	}
 //
-//	static String parseString(String str) throws ParseException {
+//	static String parseString(String str) throws Throwable {
 //		Parser parser = new Parser(new java.io.StringReader(str));
 //		CTreeRoot n = (CTreeRoot) parser.Start();
 //		// 字符串测试分析器

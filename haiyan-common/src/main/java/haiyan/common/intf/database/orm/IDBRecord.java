@@ -82,6 +82,8 @@ public interface IDBRecord extends Serializable {
 	 * @return JSONObject
 	 */
 	JSONObject toJSon();
+	IDBRecord fromJSon(JSONObject json);
+	IDBRecord fromJSon(JSONObject json, boolean ignoreJSON);
 	// ----------------------------------------------------------------------- //
 	Set<String> oreignKeySet();
 	Set<String> insertedKeySet();

@@ -16,15 +16,20 @@ public abstract class AbstractSQLDBManager implements ISQLDBManager {
 	protected transient ISQLDBClear dbClear = new SQLDBClear();
 	protected transient ISQLDatabase database;
 	protected transient Connection connection;
-	protected transient Savepoint savePoint = null;
+	private transient Savepoint savePoint = null;
 //	protected transient String masterDSNSuffix;
 //	protected transient String slaveDSNSuffix;
 	/**
-	 * @param conn
-	 * @param notSameConn
+	 * @param db
 	 */
 	public AbstractSQLDBManager(ISQLDatabase db) {
 		this.database = db;
+	}
+	protected void afterCommit() {
+		this.savePoint = null;
+	}
+	protected void afterRollback() {
+		this.savePoint = null;
 	}
 //	@Override
 //	public String getMasterDSNSuffix() {

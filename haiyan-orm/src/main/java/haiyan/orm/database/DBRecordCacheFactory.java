@@ -82,7 +82,11 @@ public class DBRecordCacheFactory {
 				String tableName = table.getName();
 				if (!StringUtil.isBlankOrNull(DSN))
 					tableName += DSN_DEMI + DSN;
-				String id = (String)record.get(table.getId().getName());
+				Object obj = record.get(table.getId().getName());
+				String id = null;
+				if(!StringUtil.isBlankOrNull(obj)){
+					id = obj.toString();
+				}
 				//if (type==IDBRecordCacheManager.CONTEXT_SESSION) {
 					// record.setDirty(); // 只要update或者insert过重取  
 					// dirty后doEditOne才能取到最新的for executePlugin

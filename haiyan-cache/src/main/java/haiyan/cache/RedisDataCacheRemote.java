@@ -230,22 +230,22 @@ public class RedisDataCacheRemote extends AbstractDataCache {
     // --------------------- local data cache --------------------- //
 	@Override
 	public Object setLocalData(String cacheID, Object key, Object ele) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 	@Override
 	public Object getLocalData(String cacheID, Object key) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 	@Override
 	public Object removeLocalData(String cacheID, Object key) {
-		// TODO Auto-generated method stub
+		
 		return null;
 	}
 	@Override
 	public void clearData(String cacheID) {
-		// TODO Auto-generated method stub
+		
 	}
 	
 }

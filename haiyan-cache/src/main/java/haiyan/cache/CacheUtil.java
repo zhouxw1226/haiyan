@@ -29,6 +29,13 @@ import java.util.concurrent.locks.ReentrantLock;
  * 
  */
 public class CacheUtil {
+	private static Map<String,IDataCache> CACHE_DSN = new HashMap<String,IDataCache>();
+	public static final void setDataCache(String DSN, IDataCache c) { // IOC
+		CACHE_DSN.put(DSN, c);
+	}
+	public static final IDataCache getDataCache(String DSN) { 
+		return CACHE_DSN.get(DSN);
+	}
 	private static IDataCache CACHE;
 	public static final void setDataCache(IDataCache c) { // IOC
 		CACHE = c;
@@ -38,14 +45,7 @@ public class CacheUtil {
 			synchronized (CacheUtil.class) {
 				if (CACHE == null) {
 					try {
-//						if ("memcache".equalsIgnoreCase(PropUtil.getProperty("CACHE_TYPE"))) {
-//							cache = new MemDataCache();
-//							String[] servers = PropUtil.getProperty("CACHE_SERVERS").split(",");
-//							cache.setServers(servers);
-//						} else 
-						{
-							CACHE = new EHDataCache();
-						}
+						CACHE = new EHDataCache(); // 默认的Cache引擎
 						CACHE.initialize();
 					}catch(Throwable e){
 						throw new RuntimeException(e);
@@ -102,7 +102,8 @@ public class CacheUtil {
 						String schema = bean.schema;
 						Object id = bean.id;
 						Object val = bean.val;
-						getDataCache().setData(schema, id, val);
+						if (val!=null)
+							getDataCache().setData(schema, id, val);
 					}
 				}
 			}
@@ -230,31 +231,100 @@ public class CacheUtil {
 				return false;
 			return System.currentTimeMillis() - ((Long) this.sessions.get(key)).longValue() > overTime;
 		}
+		
+		@Override
+		protected void closeOvertime() {
+			List<String> list = new ArrayList<String>();
+			Iterator<String> iter = this.sessions.keySet().iterator();
+			while (iter.hasNext()) {
+				String key = (String) iter.next();
+				if (isOverTime(key)) {
+					// iter.remove();
+					// remove(key);
+					list.add(key);
+				}
+			}
+			synchronized (this) {
+				for (String key : list) {
+					this.remove(key);
+					CacheUtil.removeUser(key);
+				}
+			}
+		}
 	};
+	public static final String USER_REDISDSN = "USER"; 
+	public static boolean USER_REDIS = false;
+	private static boolean USE_LOCAL_CACHE = true; // 是否使用本地缓存
+	public static boolean isUseLocalCache() {
+		return USE_LOCAL_CACHE;
+	}
+	public static void setUseLocalCache(boolean useLocalCache) {
+		USE_LOCAL_CACHE = useLocalCache;
+	}
+	private static IDataCache getUserDataCache() {
+		IDataCache dc = null;
+		if (USER_REDIS)
+			dc = getDataCache(USER_REDISDSN);
+		else
+			dc = getDataCache();
+		return dc;
+	}
 	public static IUser setUser(String sessionId, IUser user) {
-		USER_CACHE.put(sessionId, user);
-		return getDataCache().setUser(sessionId, user);
+		if (USE_LOCAL_CACHE) {
+			USER_CACHE.put(sessionId, user);
+		}
+		IDataCache dc = getUserDataCache();
+		return dc.setUser(sessionId, user);
 	}
 	public static IUser getUser(String sessionId) {
-		IUser user = (IUser) USER_CACHE.get(sessionId);
-		if (user != null) {
-			return user;
+		IUser user = null;
+		if (USE_LOCAL_CACHE) {
+			user = (IUser) USER_CACHE.get(sessionId);
+			if (user != null) {
+				return user;
+			}
 		}
-		user = getDataCache().getUser(sessionId);
-		DebugUtil.debug("getDataCache().getUser(sessionId),sessionId=" + sessionId + ",user=" + user);
-		if (user != null) {
+		IDataCache dc = getUserDataCache();
+		user = dc.getUser(sessionId);
+		DebugUtil.debug("CacheUtil.getUser(sessionId),sessionId=" + sessionId + ",user=" + user);
+		if (USE_LOCAL_CACHE && user != null) {
 			USER_CACHE.put(sessionId, user);
 		}
 		return user;
 	}
 	public static void removeUser(String sessionId) {
-		USER_CACHE.remove(sessionId);
-		getDataCache().removeUser(sessionId);
+		if (USE_LOCAL_CACHE) {
+			USER_CACHE.remove(sessionId);
+		}
+		IDataCache dc = getUserDataCache();
+		dc.removeUser(sessionId);
 	}
 	public static boolean containsUser(String sessionId) {
-		if (USER_CACHE.containsKey(sessionId))
+		if (USE_LOCAL_CACHE && USER_CACHE.containsKey(sessionId)) {
 			return true;
-		return getDataCache().containsUser(sessionId);
+		}
+		IDataCache dc = getUserDataCache();
+		return dc.containsUser(sessionId);
+	}
+	@Deprecated
+	public static IUser getUserByCode(String userCode) {
+		IUser[] users = getAllUsers();
+		for (IUser user : users) {
+			if (userCode.equals(user.getCode()))
+				return user;
+		}
+		IDataCache dc = getUserDataCache();
+		return dc.getUserByCode(userCode);
+	}
+	@Deprecated
+	public static IUser getUserByID(String userID) {
+		IUser[] users = getAllUsers();
+		for (IUser user : users) {
+			if (userID.equals(user.getId()))
+				return user;
+		}
+		IDataCache dc = getUserDataCache();
+		return dc.getUserByID(userID);
 	}
 	@Deprecated
 	public static IUser[] getAllUsers() {
@@ -265,24 +335,6 @@ public class CacheUtil {
 			users.add((IUser) USER_CACHE.get(sessionId));
 		}
 		return (IUser[]) users.toArray(new IUser[0]);
-	}
-	@Deprecated
-	public static IUser getUserByCode(String userCode) {
-		IUser[] users = getAllUsers();
-		for (IUser user : users) {
-			if (userCode.equals(user.getCode()))
-				return user;
-		}
-		return getDataCache().getUserByCode(userCode);
-	}
-	@Deprecated
-	public static IUser getUserByID(String userID) {
-		IUser[] users = getAllUsers();
-		for (IUser user : users) {
-			if (userID.equals(user.getId()))
-				return user;
-		}
-		return getDataCache().getUserByID(userID);
 	}
 
 }

@@ -1,6 +1,10 @@
 package haiyan.bill.database;
 
 import static haiyan.common.SysCode.SysCodeNum.NOT_INIT_FILTERS;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import haiyan.common.SysCode.SysCodeMessage;
 import haiyan.common.SysCode.SysCodeNum;
 import haiyan.common.exception.Warning;
@@ -11,13 +15,9 @@ import haiyan.common.intf.database.IDBFilter;
 import haiyan.common.intf.database.IPredicate;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBResultSet;
-import haiyan.common.intf.session.IUser;
 import haiyan.config.castorgen.Bill;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.DBPage;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * DB单据 Bean
@@ -29,13 +29,11 @@ public class DBBill extends AbstractDBBill {
 
 	private static final long serialVersionUID = 1L;
 	private IBillConfig billConfig;
-	private IUser user;
 	private IDBResultSet[] resultSets;
 	private IDBFilter[] dbFilters;
 	private int tableCount;
 	private Object billID;
-	public DBBill(IUser user, IBillConfig billConfig) {
-		this.user = user;
+	public DBBill(IBillConfig billConfig) {
 		this.billConfig = billConfig;
 		init();
 	}
@@ -49,14 +47,6 @@ public class DBBill extends AbstractDBBill {
 		}
 	}
 	@Override
-	public IUser getUser() {
-		return this.user;
-	}
-	@Override
-	public void setUser(IUser user) {
-		this.user = user;
-	}
-	@Override
 	public IBillConfig getBillConfig() {
 		return billConfig;
 	}
@@ -68,7 +58,7 @@ public class DBBill extends AbstractDBBill {
 	@Override
 	public void setResultSet(int tableIndex, IDBResultSet rst){ 
 		if (resultSets==null || resultSets.length<tableIndex)
-			throw new Warning(this.user, SysCodeNum.NOT_INIT_RESULTSETS, SysCodeMessage.NOT_INIT_RESULTSETS);
+			throw new Warning(SysCodeNum.NOT_INIT_RESULTSETS, SysCodeMessage.NOT_INIT_RESULTSETS);
 		resultSets[tableIndex] = rst;
 	}
 	@Override
@@ -89,7 +79,7 @@ public class DBBill extends AbstractDBBill {
 	@Override
 	public void setDBFilter(int index, IDBFilter dbFilter){ 
 		if (dbFilters==null || dbFilters.length<index)
-			throw new Warning(this.user, NOT_INIT_FILTERS, SysCodeMessage.NOT_INIT_FILTERS);
+			throw new Warning(NOT_INIT_FILTERS, SysCodeMessage.NOT_INIT_FILTERS);
 		dbFilters[index] = dbFilter;
 	}
 	@Override

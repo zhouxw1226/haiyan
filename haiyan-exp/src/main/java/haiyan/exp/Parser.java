@@ -6,7 +6,7 @@ package haiyan.exp;
 public class Parser/*@bgen(jjtree)*/implements ParserTreeConstants, ParserConstants {/*@bgen(jjtree)*/
   protected JJTParserState jjtree = new JJTParserState();
 
-  final public SimpleNode Start() throws ParseException {
+  final public SimpleNode Start() throws Throwable {
                          /*@bgen(jjtree) Root */
   CTreeRoot jjtn000 = new CTreeRoot(JJTROOT);
   boolean jjtc000 = true;
@@ -39,11 +39,11 @@ public class Parser/*@bgen(jjtree)*/implements ParserTreeConstants, ParserConsta
     throw new Error("Missing return statement in function");
   }
 
-  final public void Expression() throws ParseException {
+  final public void Expression() throws Throwable {
     ComparisonOpExpression();
   }
 
-  final public void ComparisonOpExpression() throws ParseException {
+  final public void ComparisonOpExpression() throws Throwable {
     StringConcatExpression();
     label_1:
     while (true) {
@@ -112,7 +112,7 @@ public class Parser/*@bgen(jjtree)*/implements ParserTreeConstants, ParserConsta
     }
   }
 
-  final public void StringConcatExpression() throws ParseException {
+  final public void StringConcatExpression() throws Throwable {
     AdditiveExpression();
     label_2:
     while (true) {
@@ -153,7 +153,7 @@ public class Parser/*@bgen(jjtree)*/implements ParserTreeConstants, ParserConsta
     }
   }
 
-  final public void AdditiveExpression() throws ParseException {
+  final public void AdditiveExpression() throws Throwable {
     MultiplicativeExpression();
     label_3:
     while (true) {
@@ -206,7 +206,7 @@ public class Parser/*@bgen(jjtree)*/implements ParserTreeConstants, ParserConsta
     }
   }
 
-  final public void MultiplicativeExpression() throws ParseException {
+  final public void MultiplicativeExpression() throws Throwable {
     ExpoExpression();
     label_4:
     while (true) {
@@ -259,7 +259,7 @@ public class Parser/*@bgen(jjtree)*/implements ParserTreeConstants, ParserConsta
     }
   }
 
-  final public void ExpoExpression() throws ParseException {
+  final public void ExpoExpression() throws Throwable {
     PlusExpression();
     label_5:
     while (true) {
@@ -300,7 +300,7 @@ public class Parser/*@bgen(jjtree)*/implements ParserTreeConstants, ParserConsta
     }
   }
 
-  final public void PlusExpression() throws ParseException {
+  final public void PlusExpression() throws Throwable {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 35:
     case 36:
@@ -359,7 +359,7 @@ public class Parser/*@bgen(jjtree)*/implements ParserTreeConstants, ParserConsta
     }
   }
 
-  final public void UnaryExpression() throws ParseException {
+  final public void UnaryExpression() throws Throwable {
     if (jj_2_1(2)) {
               CTreeFunShortCircuit jjtn001 = new CTreeFunShortCircuit(JJTFUNSHORTCIRCUIT);
               boolean jjtc001 = true;
@@ -629,7 +629,7 @@ String s = getToken(0).image;
     }
   }
 
-  final public void FunOpParaList() throws ParseException {
+  final public void FunOpParaList() throws Throwable {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 42:
   CTreeStrConstant jjtn001 = new CTreeStrConstant(JJTSTRCONSTANT);
@@ -705,7 +705,7 @@ String s = getToken(0).image;
     }
   }
 
-  final public void InnerFunParaList() throws ParseException {
+  final public void InnerFunParaList() throws Throwable {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case 42:
   CTreeStrConstant jjtn001 = new CTreeStrConstant(JJTSTRCONSTANT);
@@ -770,7 +770,7 @@ String s = getToken(0).image;
     }
   }
 
-  final public void FunOpNotLastPara() throws ParseException {
+  final public void FunOpNotLastPara() throws Throwable {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IDENTIFIER:
     CTreeStrConstant jjtn001 = new CTreeStrConstant(JJTSTRCONSTANT);
@@ -821,7 +821,7 @@ String s = getToken(0).image;
     }
   }
 
-  final public void FunOpLastPara() throws ParseException {
+  final public void FunOpLastPara() throws Throwable {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case IDENTIFIER:
     CTreeStrConstant jjtn001 = new CTreeStrConstant(JJTSTRCONSTANT);
@@ -1100,7 +1100,7 @@ String s = getToken(0).image;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
-  private Token jj_consume_token(int kind) throws ParseException {
+  private Token jj_consume_token(int kind) throws Throwable {
     Token oldToken;
     if ((oldToken = token).next != null) token = token.next;
     else token = token.next = token_source.getNextToken();

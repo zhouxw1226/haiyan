@@ -162,7 +162,6 @@ public class MySqlDBManager extends SQLTableDBManager {
             // // alter table dbo.mybbs add constraint FK_mybbs_author
             // // foreign key (authorId)
             // // references dbo.author([id])
-            // // TODO
             // sKeySQL.add("alter table `" + tableName
             // + "` add constraint `FK" + (count++) + "_" + tableName
             // + "` foreign key (`" + field.getName()

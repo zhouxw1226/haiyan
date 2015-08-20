@@ -13,7 +13,7 @@ public class CTreeStrConstant extends SimpleNode {
 
 
   /** Accept the visitor. **/
-  public Object jjtAccept(ParserVisitor visitor, Object data) throws ParseException {
+  public Object jjtAccept(ParserVisitor visitor, Object data) throws Throwable {
     return visitor.visit(this, data);
   }
   

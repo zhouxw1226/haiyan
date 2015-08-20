@@ -135,10 +135,8 @@
 				<xs:element ref="javascript" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="isSelectable" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="isShowable" minOccurs="0" maxOccurs="unbounded" />
-				<xs:element ref="pluginInterceptor" minOccurs="0"
-					maxOccurs="unbounded" />
-				<xs:element ref="pluginOperation" minOccurs="0"
-					maxOccurs="unbounded" />
+				<xs:element ref="pluginInterceptor" minOccurs="0" maxOccurs="unbounded" />
+				<xs:element ref="pluginOperation" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="Operation" minOccurs="0" />
 				<xs:element ref="DataRules" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="doc" minOccurs="0" />

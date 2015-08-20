@@ -28,19 +28,9 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	public BillDBContext(IContext parent) { 
 		super(parent);
 	}
-	private ITableDBContext tableContext = null;
-	@Override
-	public void setTableDBContext(ITableDBContext context) {
-//		if(tableContexts.size()>tableIndex)
-//			tableContexts.set(tableIndex, context);
-//		else
-//			tableContexts.add(context);
-		this.tableContext=context;
-	}
-	@Override
-	public ITableDBContext getTableDBContext() {
-//		return tableContexts.get(tableIndex);
-		return this.tableContext;
+	public Object getNextID(IBillConfig bill) throws Throwable {
+		return DBBillAutoID.genShortID(this, ConfigUtil.getMainTable(bill), 100);
+//		return UUID.randomUUID().toString();
 	}
 //	private List<ITableDBContext> tableContexts = new ArrayList<ITableDBContext>();
 //	@Override
@@ -54,9 +44,19 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 //	public ITableDBContext getTableDBContext(int tableIndex) {
 //		return tableContexts.get(tableIndex);
 //	}
-	public Object getNextID(IBillConfig bill) throws Throwable {
-		return DBBillAutoID.genShortID(this, ConfigUtil.getMainTable(bill), 100);
-//		return UUID.randomUUID().toString();
+	private ITableDBContext tableContext = null;
+	@Override
+	public void setTableDBContext(ITableDBContext context) {
+//		if(tableContexts.size()>tableIndex)
+//			tableContexts.set(tableIndex, context);
+//		else
+//			tableContexts.add(context);
+		this.tableContext=context;
+	}
+	@Override
+	public ITableDBContext getTableDBContext() {
+//		return tableContexts.get(tableIndex);
+		return this.tableContext;
 	}
 	private IBillDBManager bbm;
 	@Override
@@ -105,16 +105,6 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	}
 	@Override
 	public void commit() throws Throwable {
-//		IBillDBManager bbm = this.getBBM();
-//		//for (ITableDBContext context:this.tableContexts) 
-//		ITableDBContext context = this.getTableDBContext();
-//		{
-////			ITableDBManager dbm = context.getDBM();
-////			if (bbm!=null)
-////				dbm.setConnection(null); // 用bbm中的connection统一commit
-////			if(dbm != null)
-////				dbm.commit();
-//		}
 		IBillDBManager bbm = this.getBBM();
 		if (bbm==null)
 			return;
@@ -123,42 +113,40 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	@Override
 	public void rollback() throws Throwable {
 		IBillDBManager bbm = this.getBBM();
-		//for (ITableDBContext context:this.tableContexts) 
-//		ITableDBContext context = this.getTableDBContext();
-//		{
-////			ITableDBManager dbm = context.getDBM();
-////			if (bbm!=null)
-////				dbm.setConnection(null); // 用bbm中的connection统一rollback
-////			if(dbm != null)
-////				dbm.rollback();
-//		}
 		if (bbm==null)
 			return;
 		bbm.rollback();
 	} 
 	@Override
 	public void close() {
-		//for (ITableDBContext context:this.tableContexts) 
 		ITableDBContext context = this.getTableDBContext();
-		{
-			CloseUtil.close(context);
-		}
-		//this.tableContexts.clear();
-		CloseUtil.close(this.bbm);
+		CloseUtil.close(context);
+		this.tableContext=null;
+		IBillDBManager bdm = this.getBBM();
+		CloseUtil.close(bdm);
 		this.bbm = null;
 		super.close();
+//		CloseUtil.close(this.tableContext);
+//		this.tableContext=null;
+//		CloseUtil.close(this.bbm);
+//		this.bbm=null;
+//		super.close();
 	}
 	@Override
 	public void clear() {
-		//for (ITableDBContext context:this.tableContexts) 
 		ITableDBContext context = this.getTableDBContext();
-		{
+		if (context!=null)
 			context.clear();
-		}
-//		this.tableContexts.clear();
-		if (this.bbm!=null)
-			this.bbm.clear();
+		IBillDBManager bdm = this.getBBM();
+		if (bdm!=null)
+			bdm.clear();
 		super.clear();
+		//for (ITableDBContext context:this.tableContexts) 
+//		if (this.tableContext!=null)
+//			this.tableContext.clear();
+//		if (this.bbm!=null)
+//			this.bbm.clear();
+//		super.clear();
 	}
 	
 }

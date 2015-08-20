@@ -2,6 +2,10 @@ package haiyan.common.session;
 
 import haiyan.common.intf.session.IRole;
 
+/**
+ * @author zhouxw
+ *
+ */
 public class AppUser extends User { 
 	private static final long serialVersionUID = 1L;
 	public AppUser() { 

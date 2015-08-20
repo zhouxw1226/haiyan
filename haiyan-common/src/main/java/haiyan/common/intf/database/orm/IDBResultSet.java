@@ -9,11 +9,12 @@ import net.sf.json.JSONArray;
 public interface IDBResultSet {
 
 	void setTotalRecordCount(long c);
-	long getTotalRecordCount();
-	int getPageIndex();
-	int getMaxPageCount();
-	int getPageRowCount();
-	int getRecordCount();
+	long getTotalRecordCount(); // 总记录数
+	int getPageIndex(); // 当前页数
+	int getTotalPageCount(); // 总页数
+	int getPageRowCount(); // 每页最大行数
+	int getRecordCount(); // 当前行数
+	
 	void setActiveRecord(int rowIndex);
 	IDBRecord getRecord(int i);
 	Collection<IDBRecord> getRecords();

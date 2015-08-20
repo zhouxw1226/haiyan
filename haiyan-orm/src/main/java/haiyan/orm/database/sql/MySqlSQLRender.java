@@ -3,12 +3,16 @@
  */
 package haiyan.orm.database.sql;
 
+import haiyan.common.DebugUtil;
 import haiyan.common.intf.database.sql.ISQLRecordFactory;
+import haiyan.config.castorgen.Table;
 import haiyan.orm.database.sql.page.MySqlPageFactory;
 import haiyan.orm.database.sql.page.SQLDBPageFactory;
 import haiyan.orm.database.sql.page.SQLWrapPageFactory;
+import haiyan.orm.database.sql.query.PrimaryTable;
 import haiyan.orm.database.sql.query.Query;
 import haiyan.orm.database.sql.query.QueryListener;
+import haiyan.orm.intf.session.ITableDBContext;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -18,6 +22,22 @@ import java.sql.SQLException;
  */
 class MySqlSQLRender extends SQLRender {
 
+	@Override
+	public PreparedStatement getSelectPreparedStatement(ITableDBContext context, Table table, String id) throws Throwable {
+		PrimaryTable pTable = getBaseSelectSQL(context, table);
+		String pTableAlias = pTable.getFirstTableAlias();
+		// main
+		mainSQL = pTable.getSQL();
+		mainSQL += " where " + pTableAlias + "." + table.getId().getName() + "=? limit 1 ";
+		DebugUtil.debug(">selectByPK(Table=" + table.getName() + ",ID=" + id + "):" + mainSQL);
+		// deal
+		PreparedStatement ps = null;
+		ps = getConnection(context).prepareStatement(mainSQL);
+		//ps.setInt(1,id);
+		//ps.setObject(1, id);
+		ps.setString(1, id);
+		return ps;
+	}
 	@Override
 	protected Query dealWithSelectQueryByLimit(Query selectQuery, final long startNum, final int count) {
 		// oracle OraclePage listener

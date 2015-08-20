@@ -36,10 +36,10 @@ class SQLMappingDBManager extends MappingDBManager {
 		Field refTableChildTableRefField = ConfigUtil.searchChildTableRefField(refTable, mappingTable);
 		Field tableChildTableRefField = ConfigUtil.searchChildTableRefField(table, mappingTable);
 		if (refTableChildTableRefField == null) {
-			throw new Warning(context.getUser(), 100006, "error_childtable_reffld", new String[] { refTable.getName(), mappingTable.getName() });
+			throw new Warning(100006, "error_childtable_reffld", new String[] { refTable.getName(), mappingTable.getName() });
 		}
 		if (tableChildTableRefField == null) {
-			throw new Warning(context.getUser(), 100006, "error_childtable_reffld", new String[] { table.getName(), mappingTable.getName() });
+			throw new Warning(100006, "error_childtable_reffld", new String[] { table.getName(), mappingTable.getName() });
 		}
 		String realRefTable = ConfigUtil.getRealTableName(refTable);
 		String realMappingTable = ConfigUtil.getRealTableName(mappingTable);
@@ -93,11 +93,12 @@ class SQLMappingDBManager extends MappingDBManager {
 		Table refTable = ConfigUtil.getTable(field.getReferenceTable());
 		Field refFldOfRefChildTbl = ConfigUtil.searchChildTableRefField(refTable, mappingTable);
 		Field refFldOfChildTbl = ConfigUtil.searchChildTableRefField(table, mappingTable);
+		//IUser user = context.getUser();
 		if (refFldOfRefChildTbl == null) {
-			throw new Warning(context.getUser(), 100006, "error_childtable_reffld", new String[] { refTable.getName(), mappingTable.getName() });
+			throw new Warning(100006, "error_childtable_reffld", new String[] { refTable.getName(), mappingTable.getName() });
 		}
 		if (refFldOfChildTbl == null) {
-			throw new Warning(context.getUser(), 100006, "error_childtable_reffld", new String[] { table.getName(), mappingTable.getName() });
+			throw new Warning(100006, "error_childtable_reffld", new String[] { table.getName(), mappingTable.getName() });
 		}
 		String label = ConfigUtil.isDecimalPK(table)?"":"'";
 		String sql = "select " + refFldOfChildTbl.getName()

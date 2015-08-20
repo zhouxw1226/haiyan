@@ -31,8 +31,7 @@ public class ExpCore {
 		return instance;
 	}
 
-	private CTreeRoot parse(String exp) throws ParseException,
-			UnsupportedEncodingException {
+	private CTreeRoot parse(String exp) throws Throwable {
 		if (!parseCache.containsKey(exp)) {
 			synchronized (this) {
 				if (!parseCache.containsKey(exp)) {
@@ -46,7 +45,7 @@ public class ExpCore {
 	}
 
 	public Object eval(@SuppressWarnings("rawtypes") IExpContext o, String exp)
-			throws ParseException, UnsupportedEncodingException {
+			throws Throwable {
 		// return this.realEval(o, preDealInner(o, exp));
 		if (StringUtil.isBlankOrNull(exp)) // 容错处理
 			return "";

@@ -31,17 +31,21 @@ public class PropUtil {
 				lookup.put(k, rs.getObject(k));
 			}
 		}
+		@Override
 		public Object handleGetObject(String key) {
 			if (key == null) {
 				throw new NullPointerException();
 			}
 			return lookup.get(key);
 		}
+		@SuppressWarnings("restriction")
+		@Override
 		public Enumeration<String> getKeys() {
 			ResourceBundle parent = this.parent;
 			return new sun.util.ResourceBundleEnumeration(lookup.keySet(),
 					(parent != null) ? parent.getKeys() : null);
 		}
+		@Override
 		protected Set<String> handleKeySet() {
 			return lookup.keySet();
 		}
@@ -72,6 +76,22 @@ public class PropUtil {
 		return BUNDLE;
 	}
     /**
+     * @return PropertyResourceBundle
+     * @throws Throwable
+     */
+    public final static ResourceBundle getPropertyBundle(String bundleName)
+            throws Throwable {
+        // ResourceBundle.getBundle(bundName)
+        // ResourceBundle.getBundle(bundName,Locale.getDefault())
+        // ResourceBundle.getBundle(bundName,Locale.getDefault(),getLoader()) (PropertyResourceBundle)
+		String s = System.getProperty("APP_BUNDLE_NAME");
+		if (!StringUtil.isEmpty(bundleName))
+			s = bundleName;
+		if (StringUtil.isEmpty(s))
+			s = APP_BUNDLE_NAME;
+        return ResourceBundle.getBundle(s, Locale.getDefault(), Thread.currentThread().getContextClassLoader());
+    }
+    /**
      * @param bundName
      * @param key
      * @return
@@ -93,27 +113,19 @@ public class PropUtil {
         }
     }
     /**
-     * @return PropertyResourceBundle
-     * @throws Throwable
-     */
-    public final static ResourceBundle getPropertyBundle(String bundleName)
-            throws Throwable {
-        // ResourceBundle.getBundle(bundName)
-        // ResourceBundle.getBundle(bundName,Locale.getDefault())
-        // ResourceBundle.getBundle(bundName,Locale.getDefault(),getLoader()) (PropertyResourceBundle)
-		String s = System.getProperty("APP_BUNDLE_NAME");
-		if (!StringUtil.isEmpty(bundleName))
-			s = bundleName;
-		if (StringUtil.isEmpty(s))
-			s = APP_BUNDLE_NAME;
-        return ResourceBundle.getBundle(s, Locale.getDefault(), Thread.currentThread().getContextClassLoader());
-    }
-    /**
      * @param key
      * @return
      */
     public static String getProperty(String key) {
         return getProperty(null, key, "");
+    }
+    /**
+     * @param bundName
+     * @param key
+     * @return
+     */
+    public static String getProperty(String key, String def) {
+        return getProperty(null, key, def);
     }
     /**
      * @return PropertyResourceBundle
