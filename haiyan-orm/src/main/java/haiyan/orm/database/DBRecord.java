@@ -28,38 +28,46 @@ public class DBRecord extends AbstractDBRecord {
     }
     @Override
     protected boolean containsKey(String name) {
+		if (name == null)
+			return false;
         return dataMap.containsKey(name);
     }
     @Override
     protected Object removeParameter(String name) {
+		if (name == null)
+			return null;
         return dataMap.remove(name);
     }
     @Override
     protected void setParameter(String name, Object value) {
+		if (name == null)
+			return;
         dataMap.put(name, value);
     }
     @Override
     protected void setParameterValues(String name, Object[] values) {
+		if (name == null)
+			return;
         dataMap.put(name, values);
     }
     @Override
     protected Object getParameter(String name) {
 		if (name == null)
 			return null;
-		if (dataMap==null)
-			return null;
-        Object obj = dataMap.get(name);
-        return obj;
+        return dataMap.get(name);
     }
     @Override
     protected Object[] getParameterValues(String name) {
 		if (name == null)
 			return null;
-		if (dataMap==null)
-			return null;
         Object obj = dataMap.get(name);
         Object[] result = obj == null ? null : (obj instanceof Object[] ? (Object[]) obj : new Object[] { obj });
         return result;
     }
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@Override
+	public void putAll(Map map) {
+		this.dataMap.putAll(map);
+	}
 
 } 

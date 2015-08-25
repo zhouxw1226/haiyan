@@ -6,7 +6,7 @@ import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBRecordCacheManager;
 import haiyan.config.castorgen.Table;
 import haiyan.config.util.ConfigUtil;
-import haiyan.orm.intf.database.orm.ITableRecordCacheManager;
+import haiyan.orm.intf.database.orm.ITableDBRecordCacheManager;
 import haiyan.orm.intf.session.ITableDBContext;
 
 import java.util.HashMap;
@@ -39,8 +39,8 @@ public class DBRecordCacheFactoryNoEhCache {
 		}
 		throw new RuntimeException("this cachetype:"+name+" not support");
 	}
-	private static ITableRecordCacheManager createRecordCacheManager() {
-		return new ITableRecordCacheManager() { // 模拟了在内存中的ACID
+	private static ITableDBRecordCacheManager createRecordCacheManager() {
+		return new ITableDBRecordCacheManager() { // 模拟了在内存中的ACID
 			// 跟着DBSession走，DBSession既是IDBManager
 			protected transient Map<String,IDBRecord> transaction = new HashMap<String,IDBRecord>(); // ConcurrentHashMap 
 			@Override
@@ -238,10 +238,10 @@ public class DBRecordCacheFactoryNoEhCache {
 			}
 		};
 	}
-	private static ITableRecordCacheManager APP_LOCAL = null;
-	private static ThreadLocal<ITableRecordCacheManager> THREAD_LOCAL = new ThreadLocal<ITableRecordCacheManager>();
+	private static ITableDBRecordCacheManager APP_LOCAL = null;
+	private static ThreadLocal<ITableDBRecordCacheManager> THREAD_LOCAL = new ThreadLocal<ITableDBRecordCacheManager>();
 	// NOTICE 这些缓存可以都是集群可用的
-	public static ITableRecordCacheManager getCacheManager(short type) { 
+	public static ITableDBRecordCacheManager getCacheManager(short type) { 
 		switch(type) {
 		case IDBRecordCacheManager.CONTEXT_SESSION: // 绑定到当前上下文的缓存管理器实例（一个dbm一个缓存管理器）
 			return createRecordCacheManager();
@@ -256,7 +256,7 @@ public class DBRecordCacheFactoryNoEhCache {
 		}
 		case IDBRecordCacheManager.THREAD_SESSION: { // 绑定到当前线程的缓存管理器实例（使用不当会造成内存泄漏）
 			if (THREAD_LOCAL.get()==null) {
-				ITableRecordCacheManager mgr = createRecordCacheManager();
+				ITableDBRecordCacheManager mgr = createRecordCacheManager();
 				THREAD_LOCAL.set(mgr);
 			}
 			return THREAD_LOCAL.get();

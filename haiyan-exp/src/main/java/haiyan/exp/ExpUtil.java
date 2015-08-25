@@ -1,5 +1,13 @@
 package haiyan.exp;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import haiyan.common.CloseUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.StringUtil;
@@ -11,13 +19,6 @@ import haiyan.common.intf.session.IContext;
 import haiyan.common.session.AppContext;
 import haiyan.config.castorgen.Table;
 import haiyan.config.util.ConfigUtil;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author suddenzhou
@@ -191,30 +192,37 @@ public class ExpUtil implements IExpUtil {
 		return pEvalExp(exp);
 	}
 	private Object pEvalExp(String exp) throws Throwable {
-//		DebugUtil.debug("**** Exp.start:\t" + exp);
-		exp = exp.trim();
-		if (exp.startsWith(";"))
-			exp = exp.substring(1);
-		if (exp.endsWith(";"))
-			exp = exp.substring(0, exp.length() - 1);
-		Object res = ExpCore.getInstance().eval(expContext, exp);
-//		String[] exps = StringUtil.split(exp, ";");
-//		Object[] vars = new Object[exps.length];
-//		expContext.setInnerVars(vars);
-//		for (int i = 0; i < exps.length; i++) {
-//			vars[i] = ExpCore.getInstance().eval(expContext, exps[i]);
-//		}
-//		Object res = vars[vars.length - 1];
-		DebugUtil.debug("[**** Exp.end:\t"+exp+"\t计算结果\t"+res+" ****]");
-		// Arrays.dd();
-		// System.out.println("exp.dealed:" + res);
-		// Exp.getInstance().eval(expContextInstance, expression);
-		// System.out.println(o);
-//		// vars = nul;
-//		if (res instanceof String || res instanceof Double
-//			|| res instanceof Integer || res instanceof java.util.Date)
-//			DebugUtil.debug("--Exp.result:" + res);
-		return res;
+		try {
+	//		DebugUtil.debug("**** Exp.start:\t" + exp);
+			exp = exp.trim();
+			if (exp.startsWith(";"))
+				exp = exp.substring(1);
+			if (exp.endsWith(";"))
+				exp = exp.substring(0, exp.length() - 1);
+			Object res = ExpCore.getInstance().eval(expContext, exp);
+	//		String[] exps = StringUtil.split(exp, ";");
+	//		Object[] vars = new Object[exps.length];
+	//		expContext.setInnerVars(vars);
+	//		for (int i = 0; i < exps.length; i++) {
+	//			vars[i] = ExpCore.getInstance().eval(expContext, exps[i]);
+	//		}
+	//		Object res = vars[vars.length - 1];
+			DebugUtil.debug("[**** Exp.end:\t"+exp+"\t计算结果\t"+res+" ****]");
+			// Arrays.dd();
+			// System.out.println("exp.dealed:" + res);
+			// Exp.getInstance().eval(expContextInstance, expression);
+			// System.out.println(o);
+	//		// vars = nul;
+	//		if (res instanceof String || res instanceof Double
+	//			|| res instanceof Integer || res instanceof java.util.Date)
+	//			DebugUtil.debug("--Exp.result:" + res);
+			return res;
+		}catch(Throwable e) {
+			if (e instanceof InvocationTargetException) {
+				throw ((InvocationTargetException)e).getTargetException();
+			}
+			throw e;
+		}
 	}
 //	private static HashMap<String, String> localFuncMap = null;
 //	public static synchronized String byLocal(String localName) {

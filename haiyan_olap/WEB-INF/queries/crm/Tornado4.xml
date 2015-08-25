@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<Schema name="Tornado">
+	<Dimension name="DEPTS" caption="部门">
+		<Hierarchy allMemberName="ALL_DEPTS" allMemberCaption="所有部门" hasAll="true" primaryKey="ID">
+			<Table name="SYSORGA"/>
+			<Level name="DEPTID" caption="部门" type="Numeric" uniqueMembers="true" column="ID" nameColumn="NAME" table="SYSORGA" parentColumn="PID" nullParentValue="null">
+				<Closure parentColumn="ORGAID" childColumn="ID">
+					<Table name="SYSORGA"/>
+				</Closure>
+				<Property name="DEPT_CODE" caption="部门编号" column="CODE"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="USERS" caption="人员">
+		<Hierarchy allMemberName="ALL_USERS" allMemberCaption="所有人员" hasAll="true" primaryKey="ID">
+			<Table name="SYSOPERATOR"/>
+			<Level name="USER_NAME" caption="人员名称" column="NAME" uniqueMembers="false">
+				<Property name="USER_CODE" caption="人员编号" column="CODE"/>
+				<Property name="USER_GENDER" caption="人员性别" column="SEX"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="PROVINCES" caption="省份">
+		<Hierarchy allMemberName="ALL_PROVINCES" allMemberCaption="所有省份" hasAll="true" primaryKey="ID">
+			<Table name="T_DIC_PROVINCE" caption="tbl_cap_省份"/>
+			<Level name="PROVINCE_NAME" caption="省份名称" column="NAME" uniqueMembers="false">
+				<Property name="PROVINCE_CODE" caption="省份编号" column="CODE"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+	<Cube name="CUSTOMER" caption="cub_cap_客户">
+		<Table name="T_DIC_ORGA" caption="tbl_cap_组织机构"/>
+		<DimensionUsage name="DEPTS" source="DEPTS" foreignKey="DEPT_ID"/>
+		<DimensionUsage name="USERS" source="USERS" foreignKey="CREATE_USER_ID"/>
+		<DimensionUsage name="PROVINCES" source="PROVINCES" foreignKey="PROVINCE"/>
+		<Measure name="TOTAL_CUSTOMERS" caption="合计客户" column="NAME" aggregator="count"/>
+		<Measure name="AFFE_CUSTOMERS" caption="有效客户" aggregator="count">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+(case when `T_DIC_ORGA`.`STATUS` = 0 then null else `T_DIC_ORGA`.`NAME` end)
+		        </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="UNAFFE_CUSTOMERS" caption="无效客户" aggregator="count">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+(case when `T_DIC_ORGA`.`STATUS` &lt;&gt; 0 then null else `T_DIC_ORGA`.`NAME` end)
+		        </SQL>
+			</MeasureExpression>
+		</Measure>
+	</Cube>
+</Schema>
+<!--
+<Dimension name="部门" foreignKey="DEPT_ID">
+	<Hierarchy hasAll="true" allMemberName="所有部门" primaryKey="ID">
+        <Table name="SYSORGA"/>
+	    <Level name="部门名称" column="NAME" uniqueMembers="false">
+	    	<Property name="部门编号" column="CODE"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+<Dimension name="城市" foreignKey="CITY">
+	<Hierarchy hasAll="true" allMemberName="所有城市" primaryKey="ID">
+		<Table name="T_DIC_COMMON"/>
+		<Level name="城市名称" column="NAME" uniqueMembers="false">>
+			<Property name="城市编号" column="CODE"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+<Dimension name="部门" foreignKey="DEPT_ID">
+	<Hierarchy hasAll="true" allMemberName="所有部门" primaryKey="ID" primaryKeyTable="SYSORGA">
+        <Join leftKey="ID" rightKey="ORGAID">
+            <Table name="SYSORGA"/>
+            <Table name="SYSOPERATOR"/>
+        </Join>
+	    <Level name="部门名称" table="SYSORGA" column="NAME" uniqueMembers="false">
+	    	<Property name="部门编号" column="CODE"/>
+		</Level>
+        <Level name="人员名称" table="SYSOPERATOR" column="NAME" uniqueMembers="false">
+			<Property name="人员编号" column="CODE"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+<CalculatedMember name="Profit" dimension="Measures" 
+	formula="[Measures].[Store Sales]-[Measures].[Store Cost]">
+<CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00" formatString="#,###" />
+</CalculatedMember>
+-->

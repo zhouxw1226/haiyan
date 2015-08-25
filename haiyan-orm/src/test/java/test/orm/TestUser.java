@@ -12,7 +12,7 @@ public class TestUser {
 		user.setId("10000");
 		user.setName("admin");
 		user.setCode("admin");
-		user.setDSN("MYSQL");
+		user.setDSN("local_mysql");
 		return user;
 	}
 

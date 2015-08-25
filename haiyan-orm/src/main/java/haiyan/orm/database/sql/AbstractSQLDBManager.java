@@ -1,22 +1,33 @@
 package haiyan.orm.database.sql;
 
+import java.sql.Connection;
+import java.sql.Savepoint;
+import java.util.HashMap;
+import java.util.Map;
+
 import haiyan.common.DebugUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.IDatabase;
+import haiyan.common.intf.database.orm.IDBRecord;
+import haiyan.common.intf.database.orm.IDBRecordCacheManager;
 import haiyan.common.intf.database.sql.ISQLDBClear;
 import haiyan.common.intf.database.sql.ISQLDBManager;
 import haiyan.common.intf.database.sql.ISQLDatabase;
+import haiyan.config.castorgen.Table;
+import haiyan.orm.database.AbstractCacheDBManager;
+import haiyan.orm.database.TableDBRecordCacheFactory;
+import haiyan.orm.intf.database.orm.ITableDBRecordCacheManager;
+import haiyan.orm.intf.session.ITableDBContext;
 
-import java.sql.Connection;
-import java.sql.Savepoint;
-
-public abstract class AbstractSQLDBManager implements ISQLDBManager {
-	protected transient volatile boolean autoCommit = true;
-	protected transient volatile boolean commited = false;
+public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implements ISQLDBManager {
+	// ================================================= //
 	protected transient ISQLDBClear dbClear = new SQLDBClear();
 	protected transient ISQLDatabase database;
 	protected transient Connection connection;
-	private transient Savepoint savePoint = null;
+	protected transient Savepoint savePoint;
+	// ================================================= //
+	protected transient volatile boolean autoCommit = true;
+	protected transient volatile boolean commited = false;
 //	protected transient String masterDSNSuffix;
 //	protected transient String slaveDSNSuffix;
 	/**
@@ -25,8 +36,12 @@ public abstract class AbstractSQLDBManager implements ISQLDBManager {
 	public AbstractSQLDBManager(ISQLDatabase db) {
 		this.database = db;
 	}
+	protected void beforeCommit() {
+	}
 	protected void afterCommit() {
 		this.savePoint = null;
+	}
+	protected void beforeRollback() {
 	}
 	protected void afterRollback() {
 		this.savePoint = null;
@@ -148,9 +163,103 @@ public abstract class AbstractSQLDBManager implements ISQLDBManager {
 			throw Warning.wrapException(e);
 		}
 	}
-	@Override
-	public abstract void commit() throws Throwable;
-	@Override
-	public abstract void rollback() throws Throwable;
-
+	// ------------------------------------------------------ Cache ------------------------------------------------------ //
+	protected Map<Short,ITableDBRecordCacheManager> cacheMgr = new HashMap<Short, ITableDBRecordCacheManager>(); // 事务缓存管理器
+	protected ITableDBRecordCacheManager getCacheMgr(short type) {
+		if (!cacheMgr.containsKey(type)) {
+			synchronized(this) {
+				if (!cacheMgr.containsKey(type)) {
+					ITableDBRecordCacheManager m = TableDBRecordCacheFactory.getCacheManager(type);
+					cacheMgr.put(type, m);
+				}
+			}
+		}
+		return cacheMgr.get(type);
+	}
+	public IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable {
+		ITableDBRecordCacheManager cacheMgr = getCacheMgr(type);
+		if (cacheMgr!=null) {
+			return cacheMgr.getCache(context, table, id);
+		}
+		return null;
+	}
+	public void removeCache(ITableDBContext context, Table table, String[] ids, short type) throws Throwable {
+		ITableDBRecordCacheManager cacheMgr = getCacheMgr(type);
+		if (cacheMgr!=null) {
+			cacheMgr.removeCache(context, table, ids);
+		}
+	}
+	// NOTICE 在getFormByRow|insertNoSyn|update执行后在会调用到
+	public void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable {
+		ITableDBRecordCacheManager cacheMgr = getCacheMgr(type);
+		if (cacheMgr!=null) {
+			cacheMgr.updateCache(context, table, record);
+		}
+	}
+	public void commit() throws Throwable {
+		// --------------------------------------------------------- //
+		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
+		try { // 内存记录提交
+			if (cacheMgr!=null) 
+				cacheMgr.commit();
+		}catch(Throwable ex){
+			throw Warning.wrapException(ex);
+		}finally {
+			if (cacheMgr!=null)
+				cacheMgr.clear();
+		}
+		// --------------------------------------------------------- //
+		this.commited = true; // 事务是否结束
+//		// 清理缓存
+//		EventQueue.invokeLater(new Runnable() {
+//			public void run() {
+//				synchronized(EVENTS) {
+//					for (String s:EVENTS) {
+//						String[] regTables = SQLRegUtil.getEventTableFromSQL(s);
+//						cacheMgr.clearCache(regTables);
+//					}
+//					EVENTS.clear();
+//				}
+//			}
+//		});
+//		this.commited = true;
+//		//this.autoCommit = true;
+	}
+	public void rollback() throws Throwable {
+		// --------------------------------------------------------- //
+		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
+		try { // 内存记录提交
+			if (cacheMgr!=null)
+				cacheMgr.rollback();
+		}catch(Throwable ex){
+			throw Warning.wrapException(ex);
+		}finally {
+			if (cacheMgr!=null)
+				cacheMgr.clear();
+		}
+		// --------------------------------------------------------- //
+		this.commited = true; // 事务是否结束
+//		// 清理缓存 回滚不清理缓存
+//		EventQueue.invokeLater(new Runnable() {
+//			public void run() {
+//				synchronized(EVENTS) {
+//					for (String s:EVENTS) {
+//						String[] regTables = RegExpUtil.getTableFromSQL(s);
+//						clearCache(regTables);
+//					}
+//					EVENTS.clear();
+//				}
+//			}
+//		});
+//		//this.autoCommit = true;
+	}
+	public void clear() {
+		//LOCAL.remove();
+		try {
+			if (this.cacheMgr!=null)
+				this.cacheMgr.clear();
+		} catch (Throwable ignore) {
+			ignore.printStackTrace();
+		}
+	}
 }

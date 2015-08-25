@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<Schema name="FoodMart">
+	<Cube name="CUSTOMER">
+		<Table name="T_DIC_ORGA"/>
+		<Dimension name="人员" foreignKey="CREATE_USER_ID">
+			<Hierarchy hasAll="true" allMemberName="所有人员" primaryKey="ID" primaryKeyTable="SYSOPERATOR">
+		      <Join leftKey="ID" rightKey="ORGAID">
+		        <Table name="SYSORGA"/>
+		        <Table name="SYSOPERATOR"/>
+		      </Join>
+		      <Level name="人员名称" table="SYSOPERATOR" column="NAME" uniqueMembers="false"/>
+			  <Level name="人员部门" table="SYSORGA" column="NAME" uniqueMembers="false"/>
+			</Hierarchy>
+			<!--
+			<Hierarchy hasAll="true" allMemberName="All Users" primaryKey="ID">
+				<Table name="SYSOPERATOR"/>
+				<Level name="NAME" column="NAME" uniqueMembers="true"/>
+				<Level name="USER_DEPT" table="SYSORGA" column="NAME" uniqueMembers="false"/>
+			</Hierarchy>
+			-->
+		</Dimension>
+		<Dimension name="城市" foreignKey="CITY">
+			<Hierarchy hasAll="false" primaryKey="ID">
+				<Table name="T_DIC_COMMON"/>
+				<Level name="城市名称" column="NAME" uniqueMembers="false"/>
+			</Hierarchy>
+		</Dimension>
+		<!--
+		<Level name="Year" column="the_year" type="Numeric" uniqueMembers="true"/>
+		<Level name="Month" column="month_of_year" type="Numeric" uniqueMembers="false"/>
+		-->
+		<!-- formatString="#,###" -->
+		<Measure name="合计NAME" column="NAME" aggregator="count"/>
+		<Measure name="合计CODE" column="CODE" aggregator="count"/>
+		<!--
+		<CalculatedMember name="Profit" dimension="Measures" formula="[Measures].
+ [Store Sales]-[Measures].[Store Cost]">
+			<CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+		</CalculatedMember>
+		-->
+	</Cube>
+</Schema>

@@ -90,11 +90,11 @@ public class WebContext extends AppContext implements IWebContext {
 		String sData = req.getParameter(key);
 		if (sData==null)
 			return null;
-		if (!StringUtil.isEmpty(decode))
-			sData = URLDecoder.decode(sData, decode);
 		if (checkSign) {
 			SecurityUtil.checkSign(this, sData);
 		}
+		if (!StringUtil.isEmpty(decode))
+			sData = URLDecoder.decode(sData, decode);
 		JSONArray jsonData = JSONArray.fromObject(sData);
 		return jsonData;
 	}
@@ -103,11 +103,11 @@ public class WebContext extends AppContext implements IWebContext {
 		String sData = req.getParameter(key);
 		if (sData==null)
 			return null;
-		if (!StringUtil.isEmpty(decode))
-			sData = URLDecoder.decode(sData, decode);
 		if (checkSign) {
 			SecurityUtil.checkSign(this, sData);
 		}
+		if (!StringUtil.isEmpty(decode))
+			sData = URLDecoder.decode(sData, decode);
 		JSONObject jsonData = JSONObject.fromObject(sData);
 		return jsonData;
 	}

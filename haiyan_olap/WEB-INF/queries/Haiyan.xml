@@ -1,0 +1,17 @@
+﻿<?xml version="1.0"?>
+<Schema name="Haiyan">
+	<Dimension name="USERS" caption="人员">
+		<Hierarchy allMemberName="ALL_USERS" allMemberCaption="所有人员" hasAll="true" primaryKey="ID">
+			<Table name="SYSOPERATOR"/>
+			<Level name="USER_NAME" caption="人员名称" column="NAME" uniqueMembers="false">
+				<Property name="USER_CODE" caption="人员编号" column="CODE"/>
+				<Property name="USER_GENDER" caption="人员性别" column="SEX"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+	<Cube name="CUSTOMER" caption="cub_cap_客户">
+		<Table name="T_DIC_ORGA" caption="tbl_cap_机构"/>
+		<DimensionUsage name="USERS" source="USERS" foreignKey="CREATE_USER_ID"/>
+		<Measure name="TOTAL_CUSTOMERS" caption="合计客户" column="NAME" aggregator="count"/>
+	</Cube>
+</Schema>

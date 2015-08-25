@@ -85,6 +85,9 @@ public interface IDBRecord extends Serializable {
 	IDBRecord fromJSon(JSONObject json);
 	IDBRecord fromJSon(JSONObject json, boolean ignoreJSON);
 	// ----------------------------------------------------------------------- //
+	public String getTableName();
+    public void setTableName(String tableName);
+	// ----------------------------------------------------------------------- //
 	Set<String> oreignKeySet();
 	Set<String> insertedKeySet();
 	Set<String> updatedKeySet();
@@ -106,5 +109,6 @@ public interface IDBRecord extends Serializable {
     BigDecimal getBigDecimal(String key);
     String getValuesString(String name, String split);
 	// ----------------------------------------------------------------------- //
+	void putAll(Map<?, ?> map);
 
 }

@@ -122,7 +122,7 @@ public class Query {
 				continue;
 			for (Object o:filter.getParas()) {
 				DebugUtil.debug(">setFilterValue,"+number+":"+o);
-				CriticalItem.setDBValue(ps, number, o, o.getClass());
+				CriticalItem.setDBValue(ps, number, o, o==null?null:o.getClass());
 				number++;
 			}
 		}

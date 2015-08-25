@@ -66,5 +66,15 @@ public class LogUtil {
 			else
 				getLogger().info(obj==null?null:obj.toString());
 	}
+	/**
+	 * @param obj
+	 */
+	public static void debug(Object obj) {
+		if (loggerType > 0)
+			if (obj instanceof Throwable)
+				getLogger().debug("LogUtil.ERROR", (Throwable)obj);
+			else
+				getLogger().debug(obj==null?null:obj.toString());
+	}
 
 }

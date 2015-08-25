@@ -1,5 +1,15 @@
 package haiyan.orm.database.sql;
 
+import java.io.Serializable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
 import haiyan.common.CloseUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.PropUtil;
@@ -29,36 +39,26 @@ import haiyan.config.util.ConfigUtil;
 import haiyan.config.util.NamingUtil;
 import haiyan.database.SQLDatabase;
 import haiyan.orm.database.DBRecord;
-import haiyan.orm.database.DBRecordCacheFactory;
 import haiyan.orm.database.MappingDBManager;
 import haiyan.orm.database.TableDBContextFactory;
 import haiyan.orm.intf.database.ITableDBManager;
-import haiyan.orm.intf.database.orm.ITableRecordCacheManager;
 import haiyan.orm.intf.database.sql.ITableSQLRender;
 import haiyan.orm.intf.session.ITableDBContext;
 
-import java.io.Serializable;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableDBManager, ISQLDBManager {
-
+abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableDBManager, ISQLDBManager {
 	protected static final int MAX_DEEP = 2;
 	protected transient int deep = 0;
 	protected transient ITableSQLRender sqlRender;
-	public SQLTableDBManager(ISQLDatabase db) {
+	SQLTableDBManager(ISQLDatabase db) {
 		super(db);
 	}
 	@Override
 	public void commit(ITableDBContext context) throws Throwable {
 		this.commit();
+	}
+	@Override
+	public void rollback(ITableDBContext context) throws Throwable {
+		this.rollback();
 	}
 	@Override
 	public void commit() throws Throwable {
@@ -67,7 +67,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 				this.beforeCommit(); // for hsqldb
 				this.connection.commit(); // 主动提交
 				this.connection.setAutoCommit(true); // 变回自动提交
-				this.autoCommit=true;
+				this.autoCommit=true; // 设置成自动提交
 				this.afterCommit(); // for hsqldb
 			}
 			DebugUtil.debug(">----< dbm.commit.connHash:" + this.connection.hashCode()
@@ -76,37 +76,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			DebugUtil.debug(">----< dbm.commit.visualHash:" + this.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
-		// --------------------------------------------------------- //
-		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
-		try { // 内存记录提交
-			if (cacheMgr!=null) 
-				cacheMgr.commit();
-		}catch(Throwable ex){
-			throw Warning.wrapException(ex);
-		}finally {
-			if (cacheMgr!=null)
-				cacheMgr.clear();
-		}
-		// --------------------------------------------------------- //
-		this.commited = true; // 事务是否结束
-//		// 清理缓存
-//		EventQueue.invokeLater(new Runnable() {
-//			public void run() {
-//				synchronized(EVENTS) {
-//					for (String s:EVENTS) {
-//						String[] regTables = SQLRegUtil.getEventTableFromSQL(s);
-//						cacheMgr.clearCache(regTables);
-//					}
-//					EVENTS.clear();
-//				}
-//			}
-//		});
-//		this.commited = true;
-//		//this.autoCommit = true;
-	}
-	@Override
-	public void rollback(ITableDBContext context) throws Throwable {
-		this.rollback();
+		super.commit();
 	}
 	@Override
 	public void rollback() throws Throwable {
@@ -127,32 +97,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			DebugUtil.debug(">----< dbm.rollback.visualHash:" + this.hashCode()
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
-		// --------------------------------------------------------- //
-		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
-		try { // 内存记录提交
-			if (cacheMgr!=null)
-				cacheMgr.rollback();
-		}catch(Throwable ex){
-			throw Warning.wrapException(ex);
-		}finally {
-			if (cacheMgr!=null)
-				cacheMgr.clear();
-		}
-		// --------------------------------------------------------- //
-		this.commited = true; // 事务是否结束
-//		// 清理缓存 回滚不清理缓存
-//		EventQueue.invokeLater(new Runnable() {
-//			public void run() {
-//				synchronized(EVENTS) {
-//					for (String s:EVENTS) {
-//						String[] regTables = RegExpUtil.getTableFromSQL(s);
-//						clearCache(regTables);
-//					}
-//					EVENTS.clear();
-//				}
-//			}
-//		});
-//		//this.autoCommit = true;
+		super.rollback();
 	}
 	@Override
 	public void close() {
@@ -187,12 +132,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	@Override
 	public void clear() {
 		//LOCAL.remove();
-		try {
-			if (this.cacheMgr!=null)
-				this.cacheMgr.clear();
-		} catch (Throwable ignore) {
-			ignore.printStackTrace();
-		}
+		super.clear();
 		try {
 			if (this.dbClear != null)
 				this.dbClear.clean(); // clear cache blob object or etc
@@ -203,16 +143,6 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	@Override
 	public IDBClear getClear() {
 		return this.dbClear;
-	}
-	/**
-	 * @throws Throwable
-	 */
-	protected void beforeRollback() throws Throwable {
-	}
-	/**
-	 * @throws Throwable
-	 */
-	protected void beforeCommit() throws Throwable {
 	}
 	// ----------------------------------------------------------//
 	protected static SQLTableDBManager getDBM(ITableDBContext context) {
@@ -898,7 +828,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 		return record;
 	}
 	@Override
-	public IDBRecord createRecord(Class<?> clz) throws InstantiationException, IllegalAccessException {
+	public IDBRecord createRecord(Class<?> clz) throws Throwable {
 		IDBRecord record = (IDBRecord)clz.newInstance();
 		return record;
 	}
@@ -1022,7 +952,7 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			}
 		}
 	}
-	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";
+	public final static String VERSION_WARNING = "当前数据已被修改,请重新加载数据后继续操作.";
 	// ------------------------------------------------------ CRUD ------------------------------------------------------ //
 	/**
 	 * @param table
@@ -1064,6 +994,10 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			CloseUtil.close(ps);
 		}
 		return records;
+	}
+	@Override
+	public List<IDBRecord> insert(ITableDBContext context, Table table, List<IDBRecord> records) throws Throwable {
+		return insert(context, table, records, null);
 	}
 	/**
 	 * @param context
@@ -1191,11 +1125,11 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 	}
 	@Override
 	public List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records) throws Throwable {
-		return update(context, table, records, null,null);
+		return update(context, table, records, null, null);
 	}
 	@Override
 	public List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records, IDBFilter filter) throws Throwable {
-		return update(context, table, records, filter,null);
+		return update(context, table, records, filter, null);
 	}
 	/** 
 	 * @param context
@@ -1235,14 +1169,14 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 		return record;
 	}
 	@Override
-	public IDBRecord update(ITableDBContext context, Table table, IDBRecord record)
-			throws Throwable {
-		return update(context, table, record, null, null);
-	}
-	@Override
 	public IDBRecord update(ITableDBContext context, Table table, IDBRecord record, IDBFilter filter)
 			throws Throwable {
 		return update(context, table, record, filter, null);
+	}
+	@Override
+	public IDBRecord update(ITableDBContext context, Table table, IDBRecord record)
+			throws Throwable {
+		return update(context, table, record, null, null);
 	}
 	/**
 	 * @param table
@@ -1915,46 +1849,10 @@ public abstract class SQLTableDBManager extends AbstractSQLDBManager implements 
 			dataTrans.clearCache();
 		}
 	}
+	// ------------------------------------------------------ Flag ------------------------------------------------------ //
 	protected void flushOreign(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable {
 		record.flushOreign();
 	}
-	// ------------------------------------------------------ Cache ------------------------------------------------------ //
-	protected Map<Short,ITableRecordCacheManager> cacheMgr = new HashMap<Short, ITableRecordCacheManager>(); // 事务缓存管理器
-	protected ITableRecordCacheManager getCacheMgr(short type) {
-		if (!cacheMgr.containsKey(type)) {
-			synchronized(this) {
-				if (!cacheMgr.containsKey(type)) {
-					ITableRecordCacheManager m = DBRecordCacheFactory.getCacheManager(type);
-					cacheMgr.put(type, m);
-				}
-			}
-		}
-		return cacheMgr.get(type);
-	}
-	@Override
-	public IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable {
-		ITableRecordCacheManager cacheMgr = getCacheMgr(type);
-		if (cacheMgr!=null) {
-			return cacheMgr.getCache(context, table, id);
-		}
-		return null;
-	}
-	@Override
-	public void removeCache(ITableDBContext context, Table table, String[] ids, short type) throws Throwable {
-		ITableRecordCacheManager cacheMgr = getCacheMgr(type);
-		if (cacheMgr!=null) {
-			cacheMgr.removeCache(context, table, ids);
-		}
-	}
-	// NOTICE 在getFormByRow|insertNoSyn|update执行后在会调用到
-	@Override
-	public void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable {
-		ITableRecordCacheManager cacheMgr = getCacheMgr(type);
-		if (cacheMgr!=null) {
-			cacheMgr.updateCache(context, table, record);
-		}
-	}
-	// ------------------------------------------------------ Flag ------------------------------------------------------ //
 	/**
 	 * 是否在纠错范围内
 	 * 

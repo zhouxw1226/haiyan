@@ -116,7 +116,7 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 		if (bbm==null)
 			return;
 		bbm.rollback();
-	} 
+	}
 	@Override
 	public void close() {
 		ITableDBContext context = this.getTableDBContext();

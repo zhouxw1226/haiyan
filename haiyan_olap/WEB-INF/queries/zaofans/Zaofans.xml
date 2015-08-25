@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<Schema name="FoodMart">
+	<!-- 订单分析 -->
+	<Cube name="ORDERS">
+		<Table name="SCM_ORDER"/>
+		<Dimension name="USERS" caption="会员" foreignKey="USERID"><!-- primaryKey="ID" primaryKeyTable="CP_USER" -->
+			<Hierarchy hasAll="true" allMemberName="ALL_USERS" caption="所有会员"><!-- allMemberName="ALL_USERS" -->
+			  <Table name="CP_USER" />
+		      <Level name="会员名称 " table="CP_USER" column="NAME" uniqueMembers="false" />
+			  <!--
+		      <Join leftKey="ID" rightKey="ORGAID">
+		        <Table name="CP_CORPERATION"/>
+		        <Table name="CP_USER"/>
+		      </Join>
+		      <Level name="会员名称 " table="CP_USER" column="NAME" uniqueMembers="false"/>
+			  <Level name="账套" table="CP_CORPERATION" column="NAME" uniqueMembers="false"/>
+			  -->
+			</Hierarchy>
+		</Dimension>
+		<Dimension name="BUILDINGS" caption="楼宇" foreignKey="BUILDINGID"><!-- primaryKey="ID" primaryKeyTable="T_ORDERFORM_BUILDING" -->
+			<Hierarchy hasAll="true" allMemberName="ALL_BUILDINGS" caption="所有楼宇"><!-- allMemberName="ALL_BUILDINGS" -->
+				<Table name="CP_SM_BUILDING" />
+				<Level name="楼宇名称" column="NAME" uniqueMembers="false" />
+			</Hierarchy>
+		</Dimension>
+		-->
+		<Measure name="TOTOAL_ORDERS" caption="套餐合计" column="BILLID" aggregator="count" />
+		<!--
+		<CalculatedMember name="Profit" dimension="Measures" formula="[Measures].
+			[Store Sales]-[Measures].[Store Cost]">
+			<CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00"/>
+		</CalculatedMember>
+		-->
+	</Cube>
+</Schema>

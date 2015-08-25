@@ -14,8 +14,8 @@ public interface IDBSession extends ISession {
 	void setAutoCommit(boolean b) throws Throwable;
 	void commit() throws Throwable;
 	void rollback() throws Throwable;
-	//void close();
 	void clear();
+	//void close(); // @Override
 	String getDSN();
 	
 }

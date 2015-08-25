@@ -31,11 +31,11 @@ public class DBCPDatabase extends SQLDatabase {
 	 */
 	private final String _password;
 	/**
-	 * 
+	 * @todo-javadoc Describe the column
 	 */
 	private final String _driver;
 	/**
-	 * 
+	 * @todo-javadoc Describe the column
 	 */
 	private final org.apache.commons.dbcp.BasicDataSource ds;
 	/**

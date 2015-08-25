@@ -209,7 +209,8 @@ public abstract class AbstractDBRecord implements IDBRecord {
 					continue;
 				}
 			}
-			setParameter(k.toUpperCase(), o==null?"":o);
+//			setParameter(k.toUpperCase(), o==null?"":o);
+			set(k.toUpperCase(), o);
 //			if (o instanceof net.sf.json.JSONObject) {
 //				this.fromJSon((net.sf.json.JSONObject)o);
 //				break;
@@ -231,7 +232,8 @@ public abstract class AbstractDBRecord implements IDBRecord {
             if (val != null) {
                 //if (val.startsWith("\"") && val.endsWith("\""))
                 //    val = val.substring(0, val.length() - 2).substring(2);
-                setParameter(key, val);
+                //setParameter(key, val);
+                set(key, val);
             }
         }
     }

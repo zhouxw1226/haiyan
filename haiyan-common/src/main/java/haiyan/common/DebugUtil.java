@@ -12,6 +12,10 @@ public class DebugUtil {
 			System.out.println(info);
 		}
 		@Override
+		public void info(Object info) {
+			System.out.println(info);
+		}
+		@Override
 		public void warn(Object info) {
 			System.out.println(info);
 		}

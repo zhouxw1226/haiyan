@@ -1,0 +1,6 @@
+<Context path="/haiyan_olap" reloadable="true" 
+docBase="D:\eclipse_workspace_zaofans\haiyan\trunk\haiyan_olap" 
+workDir="D:\eclipse_workspace_zaofans\haiyan\trunk\haiyan_olap\work" >
+	<Logger className="org.apache.catalina.logger.SystemOutLogger" verbosity="4" timestamp="true"/>
+</Context>
+

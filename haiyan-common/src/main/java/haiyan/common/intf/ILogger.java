@@ -6,6 +6,8 @@ package haiyan.common.intf;
  */
 public interface ILogger {
 
+	public void info(Object info);
+
 	public void debug(Object info);
 
 	public void error(Object info);
@@ -20,6 +22,10 @@ public interface ILogger {
 	 * 
 	 */
 	public static class ILoggerAdapter implements ILogger {
+		@Override
+		public void info(Object info) {
+			System.out.println(info);
+		}
 		@Override
 		public void debug(Object info) {
 			System.out.println(info);

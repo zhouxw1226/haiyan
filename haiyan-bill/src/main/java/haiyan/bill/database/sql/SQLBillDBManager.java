@@ -35,9 +35,9 @@ import haiyan.orm.database.sql.SQLDBFilter;
 import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.session.ITableDBContext;
 
-public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBManager, ISQLDBManager {
+class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBManager, ISQLDBManager {
 	private transient List<IDBBill> billList = new ArrayList<IDBBill>();
-	public SQLBillDBManager(ISQLDatabase db) {
+	SQLBillDBManager(ISQLDatabase db) {
 		super(db);
 	}
 	@Override
@@ -161,15 +161,17 @@ public class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBMan
 		return createBill(context, billConfig, true);
 	} 
 	private ITableDBManager getDBManager(ITableDBContext context) throws Throwable {
-		Connection conn = this.getConnection();
 		ITableDBManager dbm = context.getDBM();
-		Connection old = dbm.getConnectionOnly();
-		if (old!=null) {
-			if (old!=conn)
-				throw new Warning("当前DBM中已经存在Connection");
+		if (dbm instanceof ISQLDBManager) {
+			Connection conn = this.getConnection();
+			Connection old = ((ISQLDBManager)dbm).getConnectionOnly();
+			if (old!=null) {
+				if (old!=conn)
+					throw new Warning("当前DBM中已经存在Connection");
+			}
+			else // 如果dbm里connection为空
+				((ISQLDBManager)dbm).setConnection(conn);
 		}
-		else // 如果dbm里connection为空
-			dbm.setConnection(conn);
 		return dbm;
 	}
 	@Override

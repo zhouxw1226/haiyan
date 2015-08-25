@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<Schema name="Haiyan">
+	<Dimension name="PRODUCTS" caption="商品">
+		<Hierarchy allMemberName="ALL_PRODUCTS" allMemberCaption="所有商品" hasAll="true" primaryKey="ID">
+			<Table name="T_DIC_PRODUCT"/>
+			<Level name="PROD_NAME" caption="商品名称" column="NAME" uniqueMembers="false">
+				<Property name="PROD_CODE" caption="商品编码" column="CODE"/>
+				<Property name="PROD_SPEC" caption="商品规格" column="SPEC"/>
+				<Property name="PROD_MODEL" caption="商品型号" column="MODEL"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+	<Dimension name="WAREHOUSES" caption="仓库">
+		<Hierarchy allMemberName="ALL_WAREHOUSES" allMemberCaption="所有仓库" hasAll="true" primaryKey="ID">
+			<Table name="T_DIC_WAREHOUSE"/>
+			<Level name="WM_NAME" caption="仓库名称" column="NAME" uniqueMembers="false">
+				<Property name="WM_CODE" caption="仓库编码" column="CODE"/>
+			</Level>
+		</Hierarchy>
+	</Dimension>
+	<Cube name="WMPRODUCT" caption="cub_cap_库存">
+		<Table name="V_WM_PRODUCT2" caption="tbl_cap_库存明细"/>
+		<DimensionUsage name="PRODUCTS" source="PRODUCTS" foreignKey="PRODUCTID"/>
+		<DimensionUsage name="WAREHOUSES" source="WAREHOUSES" foreignKey="WAREHOUSE"/>
+		<Measure name="TOTAL_WMPRODUCT" caption="合计库存" column="PRO_COUNT" aggregator="sum">
+			<!--
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `V_WM_PRODUCT`.`BT` like '1' then `V_WM_PRODUCT`.`PRO_COUNT`*1 else `V_WM_PRODUCT`.`PRO_COUNT`*-1 end)
+		        </SQL>
+			</MeasureExpression>
+			-->
+		</Measure>
+	</Cube>
+</Schema>

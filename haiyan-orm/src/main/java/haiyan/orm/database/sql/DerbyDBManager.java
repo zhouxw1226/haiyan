@@ -137,7 +137,7 @@ class DerbyDBManager extends SQLTableDBManager {
 		return false;
 	}
 	@Override
-	protected void beforeCommit() throws Throwable {
+	protected void beforeCommit() {
 		// this.executeUpdate("SHUTDOWN;");
 	}
 

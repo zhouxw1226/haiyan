@@ -91,10 +91,11 @@
 	</security>
 	<!-- ============================================================= -->
 	<dbSource>
+		<!-- -->
 		<jdbcURL name="local_mysql" dbType="mysql" driver="com.mysql.jdbc.Driver" 
-			url="jdbc:mysql://localhost:3306/haiyan?useUnicode=true&amp;characterEncoding=UTF-8" username="root" password=""/>
-		<jdbcURL name="local_myerp2" dbType="mysql" driver="com.mysql.jdbc.Driver" 
-			url="jdbc:mysql://localhost:3306/myerp?useUnicode=true&amp;characterEncoding=UTF-8" username="root" password=""/>
+			url="jdbc:mysql://localhost:3306/leedongift?useUnicode=true&amp;characterEncoding=UTF-8" username="root" password=""/>
+		<jdbcURL name="local_mysql2" dbType="mysql" driver="com.mysql.jdbc.Driver" 
+			url="jdbc:mysql://localhost:3306/shopex?useUnicode=true&amp;characterEncoding=UTF-8" username="root" password=""/>
 		<!-- -->
 		<jdbcURL name="local_oracle" dbType="oracle" driver="oracle.jdbc.driver.OracleDriver" 
 			url="jdbc:oracle:thin:@localhost:1521:XE" username="bkcrm" password="bkcrm"/>
@@ -108,11 +109,10 @@
 		<jdbcURL name="SQLSERVER" dbType="sqlserver" driver="com.microsoft.sqlserver.jdbc.SQLServerDriver" 
 			url="jdbc:sqlserver://ps1:1433;databaseName=Cloud_Weekrpt" username="weekrpt" password="111"/>
 		<!-- dbType还是需要，因为要指定dbmanager而jndi只能用于指定dbm相对的数据库信息，除非是genaldbmanager -->
-		<!--dataSource name="local_jndi" dbType="sqlserver" jndi="haiyan"/-->
-		<dataSource name="local_jndi2" dbType="jndi" jndi="java:comp/env/jdbc/haiyan"/>
+		<!-- dataSource name="local_jndi" dbType="sqlserver" jndi="haiyan" /-->
+		<dataSource name="test_jndi" dbType="jndi" jndi="java:comp/env/jdbc/haiyan"/>
 		<dataSource name="soap_jndi" dbType="soap" jndi="java:comp/env/soap/haiyan"/>
-		<!-- -->
-		<dataSource name="JNDI" dbType="jndi" jndi="java:comp/env/jdbc/haiyan"/>
+		<dataSource name="mongodb" dbType="mongodb" jndi="192.168.46.108:27017/haiyan"/>
 		<!-- 也可以不指定类型,会自动识别 -->
 	</dbSource>
 	<!-- ============================================================= -->

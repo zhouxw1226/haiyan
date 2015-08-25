@@ -1,0 +1,203 @@
+<?xml version="1.0"?>
+<Schema name="Tornado">
+	<Cube name="CUSTOMER" caption="客户">
+		<!-- -->
+		<Table name="VIEW_CUSTOMER" caption="客户资料"/>
+		<!-- -->
+		<Dimension name="USERS" caption="部门" foreignKey="CREATE_USER_ID">
+			<Hierarchy allMemberName="ALL_USERS" allMemberCaption="所有部门" hasAll="true" primaryKey="ID">
+				<Table name="VIEW_ORGA_OPER" caption="部门"/>
+				<Level name="ORGA_NAME" caption="部门名称" column="ORGA_NAME" uniqueMembers="false">
+					<Property name="ORGA_CODE" caption="部门编号" column="ORGA_CODE"/>
+				</Level>
+				<Level name="USER_NAME" caption="人员名称" column="USER_NAME" uniqueMembers="false">
+					<Property name="USER_CODE" caption="人员编号" column="USER_CODE"/>
+				</Level>
+			</Hierarchy>
+		</Dimension>
+		<!--
+		<Dimension name="USERS" caption="人员" foreignKey="CREATE_USER_ID">
+			<Hierarchy allMemberName="ALL_USERS" allMemberCaption="所有人员" hasAll="true" primaryKey="ID">
+				<Table name="VIEW_ORGA_OPER_UNION" />
+				<Level name="名称" caption="名称" column="ID" uniqueMembers="true" 
+					   nameColumn="NAME" parentColumn="PID" nullParentValue="ORGA_"/>
+			</Hierarchy>
+		</Dimension>
+		-->
+		<Dimension name="MONS" caption="月份" foreignKey="CREATE_MONTH">
+			<Hierarchy allMemberName="ALL_MONS" allMemberCaption="所有月份" hasAll="true" primaryKey="CODE">
+				<Table name="T_DIC_MONTH" caption="tbl_cap_月份"/>
+				<Level name="MONTH_NAME" caption="月份" column="NAME" uniqueMembers="false"/>
+			</Hierarchy>
+		</Dimension>
+		<Dimension name="CUSS" caption="客户" foreignKey="ID">
+			<Hierarchy allMemberName="ALL_CUSS" allMemberCaption="所有客户" hasAll="true" primaryKey="ID">
+				<Table name="T_DIC_ORGA" caption="tbl_cap_客户"/>
+				<Level name="CUSTOMER_NAME" caption="客户" column="NAME" uniqueMembers="false"/>
+			</Hierarchy>
+		</Dimension>
+		<!-- -->
+		<Measure name="YX_CUSTOMERS" caption="有效客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`AVAILABLE` = 0 then 0 else 1 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."AVAILABLE" = 0 then 0 else 1 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.AVAILABLE = 0 then 0 else 1 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="WX_CUSTOMERS" caption="无效客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`AVAILABLE` = 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."AVAILABLE" = 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.AVAILABLE = 0 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="SJ_CUSTOMERS" caption="商机客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`STAGE` = 2 and `VIEW_CUSTOMER`.`AVAILABLE` != 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."STAGE" = 2 and "VIEW_CUSTOMER"."AVAILABLE" != 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.STAGE = 2 and VIEW_CUSTOMER.AVAILABLE != 0 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="LX_CUSTOMERS" caption="立项客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`STAGE` = 3 and `VIEW_CUSTOMER`.`AVAILABLE` != 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."STAGE" = 3 and "VIEW_CUSTOMER"."AVAILABLE" != 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.STAGE = 3 and VIEW_CUSTOMER.AVAILABLE != 0 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="HT_CUSTOMERS" caption="合同客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`STAGE` = 4 and `VIEW_CUSTOMER`.`AVAILABLE` != 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."STAGE" = 4 and "VIEW_CUSTOMER"."AVAILABLE" != 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.STAGE = 4 and VIEW_CUSTOMER.AVAILABLE != 0 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="TOTAL_CUSTOMERS" caption="合计客户" column="NAME" aggregator="count"/>
+		<!-- formatString="Standard" -->
+		<Measure name="HTNAME" caption="合同数" column="HTNAME" aggregator="count" />
+		<Measure name="HTMONEY" caption="合同金额(元)" column="HTMONEY" aggregator="sum" formatString="#,###.00"/>
+		<!-- -->
+		<CalculatedMember
+		      name="CAL_SJCZL"
+		      caption="商机充足率"
+		      dimension="Measures"
+		      formula="([Measures].[SJ_CUSTOMERS]+[Measures].[LX_CUSTOMERS]+[Measures].[HT_CUSTOMERS])/[Measures].[YX_CUSTOMERS]"
+		      visible="false">
+		    <CalculatedMemberProperty name="FORMAT_STRING" value="0.0%"/>
+		</CalculatedMember>
+		<!-- -->
+	</Cube>
+</Schema>
+<!--
+<Dimension name="DEPTS" caption="部门" foreignKey="DEPT_ID" >
+	<Hierarchy allMemberName="ALL_DEPTS" allMemberCaption="所有部门" hasAll="true" primaryKey="ID" >
+		<Table name="SYSORGA" caption="tbl_cap_部门" />
+        <Level name="DEPT_ID" caption="部门" type="Numeric" uniqueMembers="true"
+	      column="ID" nameColumn="NAME" table="SYSORGA" parentColumn="PID" nullParentValue="null">
+	        <Closure parentColumn="ORGAID" childColumn="ID">
+	            <Table name="SYSORGA"/>
+	        </Closure>
+	        <Property name="DEPT_CODE" caption="部门编号" column="CODE"/>
+        </Level>
+	</Hierarchy>
+</Dimension>
+<Dimension name="USERS" caption="人员" foreignKey="CREATE_USER_ID" >
+	<Hierarchy allMemberName="ALL_USERS" allMemberCaption="所有人员" hasAll="true" primaryKey="ID">
+		<Table name="SYSOPERATOR" caption="tbl_cap_人员"  />
+        <Level name="USER_NAME" caption="人员名称" column="NAME" uniqueMembers="false">
+			<Property name="USER_CODE" caption="人员编号" column="CODE"/>
+			<Property name="USER_GENDER" caption="人员性别" column="SEX"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+<Dimension name="USERS" caption="人员" foreignKey="CREATE_USER_ID">
+	<Hierarchy allMemberName="ALL_USERS" allMemberCaption="所有人员" hasAll="true" primaryKey="ID">
+		<Table name="SYSOPERATOR" caption="tbl_cap_人员"/>
+		<Level name="USER_NAME" caption="人员名称" column="NAME" uniqueMembers="false">
+			<Property name="USER_CODE" caption="人员编号" column="CODE"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+<Dimension name="DEPTS" caption="部门" foreignKey="DEPT_ID">
+	<Hierarchy allMemberName="ALL_DEPTS" allMemberCaption="所有部门" hasAll="true" primaryKey="ID">
+		<Table name="SYSORGA" caption="tbl_cap_部门"/>
+		<Level name="DEPT_NAME" caption="部门名称" column="NAME" uniqueMembers="false">
+			<Property name="DEPT_CODE" caption="部门编号" column="CODE"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+<Dimension name="PROVINCES" caption="省份" foreignKey="PROVINCE_ID">
+	<Hierarchy allMemberName="ALL_PROVINCES" allMemberCaption="所有省份" hasAll="true" primaryKey="ID">
+		<Table name="T_DIC_PROVINCE" caption="tbl_cap_省份" />
+		<Level name="PROVINCE_NAME" caption="省份名称" column="NAME" uniqueMembers="false">
+			<Property name="PROVINCE_CODE" caption="省份编号" column="CODE"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+-->
+<!--
+<Dimension name="部门" foreignKey="DEPT_ID">
+	<Hierarchy hasAll="true" allMemberName="所有部门" primaryKey="ID">
+        <Table name="SYSORGA"/>
+	    <Level name="部门名称" column="NAME" uniqueMembers="false">
+	    	<Property name="部门编号" column="CODE"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+<Dimension name="城市" foreignKey="CITY">
+	<Hierarchy hasAll="true" allMemberName="所有城市" primaryKey="ID">
+		<Table name="T_DIC_COMMON"/>
+		<Level name="城市名称" column="NAME" uniqueMembers="false">>
+			<Property name="城市编号" column="CODE"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+<Dimension name="部门" foreignKey="DEPT_ID">
+	<Hierarchy hasAll="true" allMemberName="所有部门" primaryKey="ID" primaryKeyTable="SYSORGA">
+        <Join leftKey="ID" rightKey="ORGAID">
+            <Table name="SYSORGA"/>
+            <Table name="SYSOPERATOR"/>
+        </Join>
+	    <Level name="部门名称" table="SYSORGA" column="NAME" uniqueMembers="false">
+	    	<Property name="部门编号" column="CODE"/>
+		</Level>
+        <Level name="人员名称" table="SYSOPERATOR" column="NAME" uniqueMembers="false">
+			<Property name="人员编号" column="CODE"/>
+		</Level>
+	</Hierarchy>
+</Dimension>
+<CalculatedMember name="Profit" dimension="Measures" 
+	formula="[Measures].[Store Sales]-[Measures].[Store Cost]">
+	<CalculatedMemberProperty name="FORMAT_STRING" value="$#,##0.00" formatString="#,###" />
+</CalculatedMember>
+-->

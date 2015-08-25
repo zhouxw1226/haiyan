@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<Schema name="Tornado">
+	
+	<Cube name="CUSTOMER" caption="cub_cap_customer">
+		
+		<Table name="T_DIC_ORGA" caption="tbl_cap_orga" />
+		<!--
+		<Dimension name="USERS" caption="person" foreignKey="CREATE_USER_ID">
+			<Hierarchy allMemberName="ALL_USERS" allMemberCaption="all person" hasAll="true" primaryKey="ID">
+				<Table name="SYSOPERATOR" caption="tbl_cap_users" />
+				<Level name="USER_NAME" caption="person name" column="NAME" uniqueMembers="false">
+					<Property name="USER_CODE" caption="person code" column="CODE"/>
+				</Level>
+			</Hierarchy>
+		</Dimension>
+		-->
+		<Dimension name="USERS" caption="人员" foreignKey="CREATE_USER_ID">
+			<Hierarchy allMemberName="ALL_USERS" allMemberCaption="所有人员" hasAll="true" primaryKey="ID" primaryKeyTable="SYSOPERATOR">
+		        <Join leftKey="ID" rightKey="ORGAID">
+		            <Table name="SYSORGA"/>
+		            <Table name="SYSOPERATOR"/>
+		        </Join>
+			    <Level name="部门名称" caption="部门名称" table="SYSORGA" column="NAME" uniqueMembers="false">
+			    	<Property name="部门编号" caption="部门编号" column="CODE"/>
+				</Level>
+		        <Level name="人员名称" caption="人员名称" table="SYSOPERATOR" column="NAME" uniqueMembers="false">
+					<Property name="人员编号" caption="人员编号" column="CODE"/>
+				</Level>
+			</Hierarchy>
+		</Dimension>
+		<!-- -->
+		<Measure name="TOTAL_CUSTOMERS" caption="合计客户" column="NAME" aggregator="count"/>
+		<Measure name="YX_CUSTOMERS" caption="有效客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `T_DIC_ORGA`.`AVAILABLE` = 0 then 0 else 1 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "T_DIC_ORGA"."AVAILABLE" = 0 then 0 else 1 end)
+		        </SQL>
+			    <SQL dialect="generic">
+			    (case when T_DIC_ORGA.AVAILABLE = 0 then 0 else 1 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="WX_CUSTOMERS" caption="无效客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `T_DIC_ORGA`.`AVAILABLE` = 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "T_DIC_ORGA"."AVAILABLE" = 0 then 1 else 0 end)
+		        </SQL>
+			    <SQL dialect="generic">
+			    (case when T_DIC_ORGA.AVAILABLE = 0 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="SJ_CUSTOMERS" caption="商机客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `T_DIC_ORGA`.`STAGE` = 2 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "T_DIC_ORGA"."STAGE" = 2 then 1 else 0 end)
+		        </SQL>
+			    <SQL dialect="generic">
+			    (case when T_DIC_ORGA.STAGE = 2 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="LX_CUSTOMERS" caption="立项客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `T_DIC_ORGA`.`STAGE` = 3 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "T_DIC_ORGA"."STAGE" = 3 then 1 else 0 end)
+		        </SQL>
+			    <SQL dialect="generic">
+			    (case when T_DIC_ORGA.STAGE = 3 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="HT_CUSTOMERS" caption="合同客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `T_DIC_ORGA`.`STAGE` = 4 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "T_DIC_ORGA"."STAGE" = 4 then 1 else 0 end)
+		        </SQL>
+			    <SQL dialect="generic">
+			    (case when T_DIC_ORGA.STAGE = 4 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		
+	</Cube>
+	
+</Schema>

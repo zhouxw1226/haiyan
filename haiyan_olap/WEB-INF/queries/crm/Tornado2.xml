@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<Schema name="Tornado">
+	<Cube name="CUSTOMER" caption="cub_cap_customer">
+		<Table name="VIEW_CUSTOMER"/>
+		<!--
+		<Dimension name="USERS" caption="person" foreignKey="CREATE_USER_ID">
+			<Hierarchy allMemberName="ALL_USERS" allMemberCaption="all person" hasAll="true" primaryKey="ID">
+				<Table name="SYSOPERATOR" caption="tbl_cap_users" />
+				<Level name="USER_NAME" caption="person name" column="NAME" uniqueMembers="false">
+					<Property name="USER_CODE" caption="person code" column="CODE"/>
+				</Level>
+			</Hierarchy>
+		</Dimension>
+		-->
+		<Dimension name="USERS" caption="人员" foreignKey="CREATE_USER_ID">
+			<Hierarchy allMemberName="ALL_USERS" allMemberCaption="所有人员" hasAll="true" primaryKey="ID">
+				<Table name="VIEW_ORGA_OPER_UNION"/>
+				<Level name="名称" caption="名称" column="ID" uniqueMembers="true" nameColumn="NAME" parentColumn="PID" nullParentValue="ORGA_1"/>
+			</Hierarchy>
+		</Dimension>
+		<!-- -->
+		<Measure name="TOTAL_CUSTOMERS" caption="合计客户" column="NAME" aggregator="count"/>
+		<Measure name="YX_CUSTOMERS" caption="有效客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`AVAILABLE` = 0 then 0 else 1 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."AVAILABLE" = 0 then 0 else 1 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.AVAILABLE = 0 then 0 else 1 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="WX_CUSTOMERS" caption="无效客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`AVAILABLE` = 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."AVAILABLE" = 0 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.AVAILABLE = 0 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="SJ_CUSTOMERS" caption="商机客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`STAGE` = 2 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."STAGE" = 2 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.STAGE = 2 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="LX_CUSTOMERS" caption="立项客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`STAGE` = 3 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."STAGE" = 3 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.STAGE = 3 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+		<Measure name="HT_CUSTOMERS" caption="合同客户" aggregator="sum">
+			<MeasureExpression>
+				<SQL dialect="mysql">
+				(case when `VIEW_CUSTOMER`.`STAGE` = 4 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="oracle">
+				(case when "VIEW_CUSTOMER"."STAGE" = 4 then 1 else 0 end)
+		        </SQL>
+				<SQL dialect="generic">
+			    (case when VIEW_CUSTOMER.STAGE = 4 then 1 else 0 end)
+			    </SQL>
+			</MeasureExpression>
+		</Measure>
+	</Cube>
+</Schema>

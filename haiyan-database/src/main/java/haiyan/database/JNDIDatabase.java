@@ -35,15 +35,15 @@
  */
 package haiyan.database;
 
-import haiyan.common.CloseUtil;
-import haiyan.common.DebugUtil;
-import haiyan.common.intf.database.ISOAPDataSource;
-
 import java.sql.Connection;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
+
+import haiyan.common.CloseUtil;
+import haiyan.common.DebugUtil;
+import haiyan.common.intf.database.ISOAPDataSource;
 
 /**
  * Describe what this class does
@@ -74,7 +74,7 @@ public class JNDIDatabase extends SQLDatabase {
 	/**
 	 * 
 	 */
-	private ISOAPDataSource ds2;
+	private ISOAPDataSource soap;
 	/**
 	 * Describe what the JNDIDatabase constructor does
 	 * 
@@ -100,7 +100,11 @@ public class JNDIDatabase extends SQLDatabase {
 		Context initContext = null;
 		try {
 			initContext = new InitialContext();
-			ds = (DataSource) initContext.lookup(_dataSourceJNDIName);
+			Object obj = initContext.lookup(_dataSourceJNDIName);
+			if (obj instanceof DataSource)
+				ds = (DataSource) obj;
+			else if (obj instanceof ISOAPDataSource)
+				soap = (ISOAPDataSource) obj;
 		} finally {
 			CloseUtil.close(initContext);
 		}
@@ -129,23 +133,23 @@ public class JNDIDatabase extends SQLDatabase {
 			if (obj instanceof DataSource)
 				ds = (DataSource) obj;
 			else if (obj instanceof ISOAPDataSource)
-				ds2 = (ISOAPDataSource) obj;
+				soap = (ISOAPDataSource) obj;
 		} finally {
 			CloseUtil.close(initContext);
 		}
 	}
 	@Override
 	public String getURL() throws Throwable {
-		if (ds2!=null)
-			return ds2.getURL();
+		if (soap!=null)
+			return soap.getURL();
 		else if (ds!=null)
 			return _providerURL;
 		return null;
 	}
 	@Override
 	public Connection getDBConnection() throws Throwable {
-		if (ds2!=null) {
-			DebugUtil.debug(">thin=RefDatabase, url=" + ds2.getURL());
+		if (soap!=null) {
+			DebugUtil.debug(">thin=SOAPDatabase, url=" + soap.getURL());
 			return null;
 		} else {
 			Connection conn = ds.getConnection();

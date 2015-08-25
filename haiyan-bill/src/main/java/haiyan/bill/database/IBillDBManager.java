@@ -5,7 +5,7 @@ import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.database.IDBBill;
 import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.database.sql.ISQLDBFilter;
-import haiyan.common.intf.database.sql.ISQLDBManager;
+import haiyan.common.intf.session.IDBSession;
 
 /**
  * 单据管理器 既是DB管理器也是功能程序上下文
@@ -15,7 +15,7 @@ import haiyan.common.intf.database.sql.ISQLDBManager;
  * @author ZhouXW
  *
  */
-public interface IBillDBManager extends ISQLDBManager {
+public interface IBillDBManager extends IDBSession {
 
 	IDBBill createBill(IBillDBContext context, IBillConfig billConfig, boolean createBillID) throws Throwable;
 	IDBBill createBill(IBillDBContext context, IBillConfig billConfig) throws Throwable;

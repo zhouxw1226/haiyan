@@ -2,13 +2,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<!--
-		<parent>
-			<groupId>isearch</groupId>
-			<artifactId>isearch</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<relativepath>../parent/pom.xml</relativepath>
-		</parent>
-		-->
+	<parent>
+		<groupId>isearch</groupId>
+		<artifactId>isearch</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+		<relativepath>../parent/pom.xml</relativepath>
+	</parent>
+	-->
 	<name>haiyan-orm</name>
 	<groupId>haiyan</groupId>
 	<artifactId>haiyan-orm</artifactId>
@@ -46,6 +46,11 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<!-- -->
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>3.0.3</version>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
