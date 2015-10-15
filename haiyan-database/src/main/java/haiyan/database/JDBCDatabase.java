@@ -93,7 +93,7 @@ public class JDBCDatabase extends SQLDatabase {
 			conn = DriverManager.getConnection(_url);
 		else
 			conn = DriverManager.getConnection(_url, _userName, _password);
-		DebugUtil.debug(">----< dbm.open.connHash." + conn.hashCode()+", thin=JDBCDatabase Driver=" + _driver + ", URL="
+		DebugUtil.info(">----< dbm.open.connHash." + conn.hashCode()+", thin=JDBCDatabase Driver=" + _driver + ", URL="
 				+ _url + ", UserName=" + _userName + ", Password=" + _password);
 		return conn;
 	}

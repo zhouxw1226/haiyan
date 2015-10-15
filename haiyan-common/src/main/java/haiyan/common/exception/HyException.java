@@ -23,7 +23,7 @@ import bsh.TargetError;
  * @author zhouxw
  * 
  */
-public abstract class HyException extends RuntimeException {
+abstract class HyException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
     private String detailMessage = null;
@@ -96,8 +96,6 @@ public abstract class HyException extends RuntimeException {
             } else if (ex instanceof SQLException) { // NOTICE 不能暴露数据库错误信息
                 SQLException sex = (SQLException) ex;
                 String mes = null;
-//                mes = GenSQLException.getMessage(sex);
-//                if (mes == null)
                     mes = sex.toString();
                 this.detailMessage = mes;
             } else {
@@ -106,17 +104,7 @@ public abstract class HyException extends RuntimeException {
                     mes = ex.toString();
                 this.detailMessage = mes;
             }
-//            if (Math.random()*10>5) {
-//                String productKey;
-//                try {
-//                    productKey = new String(Check.getSequence());
-//                    this.desc+="(@copyright 本产品授权 "+productKey+" 使用)";
-//                } catch (Throwable e) {
-//                    DebugUtil.error(e);
-//                }
-//            }
         }
-        // DebugUtil.debug(">GenException.desc:" + this.desc);
         return this.detailMessage;
     }
     /**
@@ -131,9 +119,6 @@ public abstract class HyException extends RuntimeException {
             printStackTrace(ps);
             return bos.toString().replaceAll("\n", delimiter);
         } 
-//        catch (Throwable e) {
-//            throw e;
-//        } 
         finally {
             bos.close();
         }
@@ -230,17 +215,9 @@ public abstract class HyException extends RuntimeException {
      */
     public final static String dealWithException(IContext context, Throwable ex) {
         try {
-//            if (GeneralCore.isReturnMeta(context)) {
-//                DebugUtil.error("dealWithException", ex);
-//                String mes = getCauseExMes(ex);
-//                GeneralCore.send2Client(context, mes, -1);
-//                return null;
-//            } else {
-                // error.jsp有DebugUtil.error
-                ex = getCauseEx(ex);
-                context.setAttribute("warning", Warning.getWarning(ex));
-                return "error";
-//            }
+            ex = getCauseEx(ex);
+            context.setAttribute("warning", Warning.getWarning(ex));
+            return "error";
         } catch (Throwable ignore) {
         	ignore.printStackTrace();
             return null;

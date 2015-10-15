@@ -27,7 +27,6 @@ import haiyan.config.castorgen.Bill;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.config.util.ConfigUtil;
-import haiyan.database.SQLDatabase;
 import haiyan.orm.database.DBPage;
 import haiyan.orm.database.sql.AbstractSQLDBManager;
 import haiyan.orm.database.sql.DBBillAutoID;
@@ -68,7 +67,7 @@ class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBManager, I
 	public void rollback() throws Throwable {
 		if (this.isAlive()) {
 			if (!this.connection.getAutoCommit()) {
-				//this.beforeRollback(); // for hsqldb
+				this.beforeRollback(); // for hsqldb
 				if (this.getSavepoint()!=null)
 					this.connection.rollback(this.getSavepoint());
 				else
@@ -92,43 +91,9 @@ class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBManager, I
 		this.commited = false;
 	}
 	@Override
-	public void close() {
-		try {
-			if (!this.commited) {
-				this.rollback();
-			}
-			this.commited = false;
-		} catch (Throwable ignore) {
-			ignore.printStackTrace();
-		}
-		this.clear();
-		{ // close connection
-			int connHash = -1;
-			try {
-				if (this.isAlive()) {
-					connHash = this.connection.hashCode();
-					this.connection.close();
-				}
-				this.connection = null;
-			} catch (Throwable ignore) {
-				ignore.printStackTrace();
-			} finally {
-				if (connHash >= 0) {
-					SQLDatabase.connCount--;
-					DebugUtil.debug(">----< bbm.close.connHash:"+connHash
-							+"\tbbm.connCount:"+SQLDatabase.connCount+"\n");
-				}
-			}
-		}
-	}
-	@Override
 	public void clear() {
-		//try {
-			if (this.billList!=null)
-				this.billList.clear();
-		//} catch (Throwable ignore) {
-		//	ignore.printStackTrace();
-		//}
+		if (this.billList!=null)
+			this.billList.clear();
 	}
 	@Override
 	public Object createBillID(IBillDBContext context, IDBBill bill) throws Throwable {
@@ -164,13 +129,12 @@ class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBManager, I
 		ITableDBManager dbm = context.getDBM();
 		if (dbm instanceof ISQLDBManager) {
 			Connection conn = this.getConnection();
-			Connection old = ((ISQLDBManager)dbm).getConnectionOnly();
-			if (old!=null) {
-				if (old!=conn)
+			Connection old = ((ISQLDBManager) dbm).getConnectionOnly();
+			if (old != null) {
+				if (old != conn)
 					throw new Warning("当前DBM中已经存在Connection");
-			}
-			else // 如果dbm里connection为空
-				((ISQLDBManager)dbm).setConnection(conn);
+			} else // 如果dbm里connection为空
+				((ISQLDBManager) dbm).setConnection(conn);
 		}
 		return dbm;
 	}
@@ -195,7 +159,7 @@ class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBManager, I
 			}
 			ITableDBContext context = bContext.getTableDBContext();//bContext.getTableDBContext(tableIndex);
 			ITableDBManager dbm = this.getDBManager(context);
-			resultSets[tableIndex] = dbm.select(context, table, filter, DBPage.MAXCOUNTPERQUERY, 1);
+			resultSets[tableIndex] = dbm.select(context, table, filter, DBPage.MAXCOUNT_PERQUERY, 1);
 		}
 		int mainTableIndex = ConfigUtil.getMainTableIndex(billConfig);
 		IBillIDConfig billID = ConfigUtil.getBillIDConfig(billConfig, mainTableIndex);
@@ -341,5 +305,10 @@ class SQLBillDBManager extends AbstractSQLDBManager implements IBillDBManager, I
 		if (override)
 			bill.setResultSet(tableIndex, rst);
 		return rst;
+	}
+	@Override
+	public void createConnection(ITableDBManager dbm) throws Throwable {
+		//((ISQLDBManager)bbm)
+		this.setConnection(((ISQLDBManager)dbm).getConnection());
 	}
 }

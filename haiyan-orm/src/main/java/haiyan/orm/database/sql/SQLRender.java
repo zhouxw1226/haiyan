@@ -97,14 +97,13 @@ class SQLRender implements ITableSQLRender {
 				String[] disFieldNames = ConfigUtil.getDisplayRefFields(field);
 				// Table refTable = ConfigUtil.getTable(field.getCommon().getReferenceTable());
 				for (int i = 0; i < disFieldNames.length; i++) {
-					// DebugUtil.debug(">disFieldNames[" + i + "]="
+					// DebugUtil.info(">disFieldNames[" + i + "]="
 					// + pTable.getTableAliasByIndex(pTable.getIndex()
 					// + tableIndex) + "." + disFieldNames[i]);
 					// Field displayField = ConfigUtil.getFieldByName(refTable, disFieldNames[i]);
 					cols.append(",").append(pTable.getTableAliasByIndex(pTable.getIndex() + tableIndex)).append(".")
 						.append(disFieldNames[i]).append(" f_" + (index++));
 				}
-				// DebugUtil.debug(">cols=" + cols.toString() );
 				return index;
 			}
 			@Override
@@ -174,7 +173,7 @@ class SQLRender implements ITableSQLRender {
 			} else {
 				if (!isEmpty(methodName) && !isEmpty(className)) {
 					// NOTICE 后面有pf.getContent()的处理
-					DebugUtil.debug(">doQuerySQL:" + className + " " + methodName);
+					DebugUtil.info(">doQuerySQL:" + className + " " + methodName);
 					String sql =  InvokeUtil.getString(className, methodName, 
 						new Class[] { IContext.class, Table.class, String.class, String.class },
 						new Object[] { context, table, pTable.getFirstTableAlias(), parameter });
@@ -632,7 +631,7 @@ class SQLRender implements ITableSQLRender {
 		bufValue.append(")");
 		buf.append(bufValue.toString());
 		mainSQL = buf.toString();
-		DebugUtil.debug(">InsertSQL=" + mainSQL);
+		DebugUtil.info(">InsertSQL=" + mainSQL);
 		return mainSQL;
 	}
 
@@ -642,7 +641,7 @@ class SQLRender implements ITableSQLRender {
 	 * @return String
 	 * @throws Throwable
 	 */
-	protected String getUpdateSQL(Table table, Field[] validFields,IDBFilter filter)
+	protected String getUpdateSQL(Table table, Field[] validFields, IDBFilter filter)
 			throws Throwable {
 		StringBuffer buf = new StringBuffer().append("update ").append(ConfigUtil.getRealTableName(table)).append(" set ");
 		for (int i = 0; i < validFields.length; i++) {
@@ -650,12 +649,12 @@ class SQLRender implements ITableSQLRender {
 				buf.append(",");
 			buf.append(getDBName(validFields[i])).append("=?");
 		}
-		if(filter == null)
+		if (filter == null)
 			buf.append(" where ").append(getDBName(table.getId())).append("=? ");
 		else
 			buf.append(" where 1=1 ").append(filter.getFilter());
 		mainSQL = buf.toString();
-		DebugUtil.debug(">UpdateSQL=" + mainSQL);
+		DebugUtil.info(">UpdateSQL=" + mainSQL);
 		return mainSQL;
 	}
 	/**
@@ -750,7 +749,7 @@ class SQLRender implements ITableSQLRender {
 			SQLDBTypeConvert.setValue(ps, (SQLDBClear)context.getDBM().getClear(), i + 2, fields[i], value);
 			ss.append("##insert(" + fieldName + "):"+value+"\t");
 		}
-		DebugUtil.debug(ss.toString());
+		DebugUtil.info(ss.toString());
 	}
 	@Override
 	public PreparedStatement getInsertPreparedStatement(ITableDBContext context, Table table, IDBRecord record, String newID) throws Throwable {
@@ -761,7 +760,7 @@ class SQLRender implements ITableSQLRender {
 		if (record!=null) {
 			this.insertPreparedStatement(context, table, record, ps, fields, newID);
 		}
-		DebugUtil.debug("------insert().end------");
+		DebugUtil.info("------insert().end------");
 		return ps;
 	}
 	@Override
@@ -770,11 +769,11 @@ class SQLRender implements ITableSQLRender {
 		Field[] fields = getInsertValidField(context, table);
 		mainSQL = getInsertSQL(table, fields);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
-		DebugUtil.debug("------insert_().end------");
+		DebugUtil.info("------insert_().end------");
 		return ps;
 	}
 	@Override
-	public void updatePreparedStatementValue(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields,IDBFilter filter) throws Throwable {
+	public void updatePreparedStatementValue(ITableDBContext context, Table table, IDBRecord record, PreparedStatement ps, Field[] fields, IDBFilter filter) throws Throwable {
 		int i;
 		Set<String> deletedKeySet = record.deletedKeySet();
 		StringBuffer ss = new StringBuffer();
@@ -805,7 +804,7 @@ class SQLRender implements ITableSQLRender {
 			if(!StringUtil.isBlankOrNull(obj)){
 				newID = obj.toString();
 			}
-			ps.setString(i + 1, newID);
+			ps.setString(i+1, newID);
 		
 		}else{
 			Object[] paras = filter.getParas();
@@ -815,27 +814,27 @@ class SQLRender implements ITableSQLRender {
 			}
 		}
 		ss.append("##update(" + table.getId().getName() + "):"+record.get(table.getId().getName())+"\t");
-		DebugUtil.debug(ss.toString());
+		DebugUtil.info(ss.toString());
 	}
 	@Override
-	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record,IDBFilter filter) throws Throwable {
+	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record, IDBFilter filter) throws Throwable {
 		// 2007-01-09 zhouxw
 		Field[] fields = getUpdateValidField(context, table, record);
-		mainSQL = getUpdateSQL(table, fields,filter);
+		mainSQL = getUpdateSQL(table, fields, filter);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
 		if (record!=null) {
-			this.updatePreparedStatementValue(context, table, record, ps, fields,filter);
+			this.updatePreparedStatementValue(context, table, record, ps, fields, filter);
 		}
-		DebugUtil.debug("------update().end------");
+		DebugUtil.info("------update().end------");
 		return ps;
 	}
 	@Override
 	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table) throws Throwable {
 		// 2007-01-09 zhouxw
 		Field[] fields = getUpdateValidField(context, table);
-		mainSQL = getUpdateSQL(table, fields,null);
+		mainSQL = getUpdateSQL(table, fields, null);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
-		DebugUtil.debug("------update_().end------");
+		DebugUtil.info("------update_().end------");
 		return ps;
 	}
 	@Override
@@ -847,14 +846,14 @@ class SQLRender implements ITableSQLRender {
 			mainSQL += "?";
 		}
 		mainSQL += ")";
-		DebugUtil.debug(">deleteSQL:" + mainSQL);
+		DebugUtil.info(">deleteSQL:" + mainSQL);
 		StringBuffer ss = new StringBuffer();
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
 		for (int i=0;i<ids.length;i++) {
 			SQLDBTypeConvert.setValue(ps, context.getDBM().getClear(), i+1, table.getId(), ids[i]);
 			ss.append("##delete(" + table.getId().getName() + "):"+ids[i]+"\t");
 		}
-		DebugUtil.debug("------delete().end------");
+		DebugUtil.info("------delete().end------");
 		return ps;
 	}
 	// ========================================================================================================================= //
@@ -882,7 +881,7 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public long countBy(ITableDBContext context, Table table, IDBFilter filter)
 			throws Throwable {
-		DebugUtil.debug("##countByFilter:" + filter);
+		DebugUtil.info("##countByFilter:" + filter);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		// count
@@ -907,7 +906,7 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public long countBy(ITableDBContext context, Table table, IDBRecord queryRecord)
 			throws Throwable {
-		DebugUtil.debug("##countByRecord:" + queryRecord);
+		DebugUtil.info("##countByRecord:" + queryRecord);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
@@ -935,7 +934,7 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, 
 			long startRowNum, int count) throws Throwable {
-		DebugUtil.debug("##selectByFilterLimit:" + filter);
+		DebugUtil.info("##selectByFilterLimit:" + filter);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
@@ -967,7 +966,7 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord queryRecord, ISQLRecordFactory factory, 
 			long startRowNum, int count) throws Throwable {
-		DebugUtil.debug("##selectByRecordLimit:" + queryRecord);
+		DebugUtil.info("##selectByRecordLimit:" + queryRecord);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
@@ -999,7 +998,7 @@ class SQLRender implements ITableSQLRender {
     @Override
 	public IDBResultSet selectBy(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, 
 			final int maxPageRecordCount, final int currPageNO) throws Throwable {
-		DebugUtil.debug("##selectByFilter:" + filter);
+		DebugUtil.info("##selectByFilter:" + filter);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
@@ -1040,7 +1039,7 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public IDBResultSet selectBy(final ITableDBContext context, Table table, IDBRecord queryRecord, ISQLRecordFactory factory, 
 			final int maxPageRecordCount, final int currPageNO) throws Throwable {
-		DebugUtil.debug("##selectByRecord:" + queryRecord);
+		DebugUtil.info("##selectByRecord:" + queryRecord);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
@@ -1074,7 +1073,7 @@ class SQLRender implements ITableSQLRender {
     @Override
 	public void loopBy(ITableDBContext context, Table table, IDBFilter filter,
 			ISQLRecordFactory factory, IDBRecordCallBack callback) throws Throwable {
-		DebugUtil.debug("##loopByFilter:" + filter);
+		DebugUtil.info("##loopByFilter:" + filter);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
@@ -1087,7 +1086,7 @@ class SQLRender implements ITableSQLRender {
 		// deal
 		long recordCount = this.countBy(context, table, filter);
 		int currPageNO = 1;
-		int maxPageRecordCount = DBPage.MAXCOUNTPERQUERY;
+		int maxPageRecordCount = DBPage.MAXCOUNT_PERQUERY;
 		int totalPage = VarUtil.toInt(recordCount / maxPageRecordCount + (recordCount % maxPageRecordCount > 0 ? 1 : 0));
 		for (; currPageNO <= totalPage; currPageNO++) { // 分批处理数据
 			selectQry.clearListener();
@@ -1103,7 +1102,7 @@ class SQLRender implements ITableSQLRender {
 	@Override
 	public void loopBy(ITableDBContext context, Table table, IDBRecord queryRecord,
 			ISQLRecordFactory factory, final IDBRecordCallBack callback) throws Throwable {
-		DebugUtil.debug("##loopByRecord:" + queryRecord);
+		DebugUtil.info("##loopByRecord:" + queryRecord);
 		PrimaryTable pTable = getBaseSelectSQL(context, table);
 		String pTableAlias = pTable.getFirstTableAlias();
 		// items
@@ -1116,7 +1115,7 @@ class SQLRender implements ITableSQLRender {
 		// deal
 		long recordCount = this.countBy(context, table, queryRecord);
 		int currPageNO = 1;
-		int maxPageRecordCount = DBPage.MAXCOUNTPERQUERY;
+		int maxPageRecordCount = DBPage.MAXCOUNT_PERQUERY;
 		int totalPage = VarUtil.toInt(recordCount / maxPageRecordCount + (recordCount % maxPageRecordCount > 0 ? 1 : 0));
 		for (; currPageNO <= totalPage; currPageNO++) {
 			selectQry.clearListener();
@@ -1136,7 +1135,7 @@ class SQLRender implements ITableSQLRender {
 		// main
 		mainSQL = pTable.getSQL();
 		mainSQL += " where " + pTableAlias + "." + table.getId().getName() + "=? ";
-		DebugUtil.debug(">selectByPK(Table=" + table.getName() + ",ID=" + id + "):" + mainSQL);
+		DebugUtil.info(">selectByPK(Table=" + table.getName() + ",ID=" + id + "):" + mainSQL);
 		// deal
 		PreparedStatement ps = null;
 		ps = getConnection(context).prepareStatement(mainSQL);
@@ -1175,7 +1174,7 @@ class SQLRender implements ITableSQLRender {
 //		mainSQL = pTable.getSQL();
 //		mainSQL += fixedQueryFilter.length() > 0 ? " where 1=1 " + fixedQueryFilter : "";
 //		// 
-//		DebugUtil.debug(">findAllFromTopLevel(" + table.getName() + "):" + mainSQL);
+//		DebugUtil.info(">findAllFromTopLevel(" + table.getName() + "):" + mainSQL);
 //		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 //		return getConnection(context).prepareStatement(mainSQL);
 //	}
@@ -1206,7 +1205,7 @@ class SQLRender implements ITableSQLRender {
 //		mainSQL = pTable.getSQL();
 //		mainSQL += fixedQueryFilter.length() > 0 ? " where 1=1 " + fixedQueryFilter : "";
 //		//
-//		DebugUtil.debug(">findChildrenByPID(" + table.getName() + "):" + mainSQL);
+//		DebugUtil.info(">findChildrenByPID(" + table.getName() + "):" + mainSQL);
 //		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 //		return getConnection(context).prepareStatement(mainSQL);
 //	}
@@ -1237,7 +1236,7 @@ class SQLRender implements ITableSQLRender {
 //		mainSQL = pTable.getSQL();
 //		mainSQL += fixedQueryFilter.length() > 0 ? " where 1=1 " + fixedQueryFilter : "";
 //		//
-//		DebugUtil.debug(">findXLoadByPID(" + table.getName() + "):" + mainSQL);
+//		DebugUtil.info(">findXLoadByPID(" + table.getName() + "):" + mainSQL);
 //		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 //		return getConnection(context).prepareStatement(mainSQL);
 //	}
@@ -1264,7 +1263,7 @@ class SQLRender implements ITableSQLRender {
 //					+ " where 1=1 ";
 //		mainSQL += fixedQueryFilter;
 //		//
-//		DebugUtil.debug(">findXloadPIDs(" + table.getName() + "):" + mainSQL);
+//		DebugUtil.info(">findXloadPIDs(" + table.getName() + "):" + mainSQL);
 //		// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + sql);
 //		return getConnection(context).prepareStatement(mainSQL);
 //	}
@@ -1276,14 +1275,14 @@ class SQLRender implements ITableSQLRender {
 //		// headTable
 //		Table headTable = ConfigUtil.getParentTable(table);
 //		if (headTable != null) {
-//			DebugUtil.debug(">headTableName:" + headTable.getName() + ",currTableName:" + table.getName());
+//			DebugUtil.info(">headTableName:" + headTable.getName() + ",currTableName:" + table.getName());
 //			Field headField = ConfigUtil.searchChildTableRefField(headTable, table);
 //			if (headField == null) {
 //				throw new Warning("HeadField is Null!");
 //			}
 //			// NOTICE 2005-11-25 zhouxw
 //			String headID = (String)context.getAttribute(headField.getName());
-//			DebugUtil.debug(">headTableName:" + headField.getName() + ",headRefField=" + headID);
+//			DebugUtil.info(">headTableName:" + headField.getName() + ",headRefField=" + headID);
 //			if (StringUtil.isStrBlankOrNull(headID))
 //				result = tableAlias + "." + headField.getName() + " is null ";
 //			else {
@@ -1382,7 +1381,7 @@ class SQLRender implements ITableSQLRender {
 				} else {
 					if (!isEmpty(methodName) && !isEmpty(className)) {
 						// NOTICE 后面有pf.getContent()的处理
-						DebugUtil.debug(">doExecuteFilter:" + className + " " + methodName);
+						DebugUtil.info(">doExecuteFilter:" + className + " " + methodName);
 						filterStr += InvokeUtil.getString(className, methodName, 
 							new Class[] { IContext.class, Table.class, String.class, String.class },
 							new Object[] { context, table, tableAlias, parameter });

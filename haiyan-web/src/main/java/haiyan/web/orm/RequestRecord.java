@@ -49,13 +49,13 @@ public class RequestRecord extends AbstractRequestRecord {
 					}
 				}
 			}
-			if (!StringUtil.isEmpty(v)) {
+//			if (!StringUtil.isEmpty(v)) {
 				v = transValueType(field, v);
 				String dbName = field.getName();
 				record.set(dbName, v); // setValue and setUpdateStatus
-			} else if (!field.isNullAllowed()) {
-				//throw Warning("not allow empty value, field="+);
-			}
+//			} else if (!field.isNullAllowed()) {
+//				//throw Warning("not allow empty value, field="+);
+//			}
 		}
 	}
 

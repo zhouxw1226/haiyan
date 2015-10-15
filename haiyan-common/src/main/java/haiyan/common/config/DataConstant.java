@@ -63,6 +63,7 @@ public class DataConstant {
 	public static final String HYFORMKEY = "HYFORMKEY";
 	public static final String HYVERSION = "HYVERSION";
 	public static final String HYVERSIONCHECK = "HYVERSIONCHECK";
+	public static final String HAIYAN_HOME = "HAIYAN_HOME";
 
 	//------------------------------------------------- for webpara --------------------------------------------- //
 	

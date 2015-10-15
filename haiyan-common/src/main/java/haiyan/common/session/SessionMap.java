@@ -45,8 +45,8 @@ public abstract class SessionMap<K, V> extends HashMap<String, Object> {
 				while (true) {
 					try {
 						Thread.sleep(SessionMap.checkTime);
-					} catch (Throwable e) {
-						e.printStackTrace();
+					} catch (Throwable ignore) {
+						ignore.printStackTrace();
 					}
 					try {
 						synchronized (SessionMap.mapManager) {

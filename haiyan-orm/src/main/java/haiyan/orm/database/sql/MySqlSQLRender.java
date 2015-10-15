@@ -3,6 +3,9 @@
  */
 package haiyan.orm.database.sql;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
 import haiyan.common.DebugUtil;
 import haiyan.common.intf.database.sql.ISQLRecordFactory;
 import haiyan.config.castorgen.Table;
@@ -13,9 +16,6 @@ import haiyan.orm.database.sql.query.PrimaryTable;
 import haiyan.orm.database.sql.query.Query;
 import haiyan.orm.database.sql.query.QueryListener;
 import haiyan.orm.intf.session.ITableDBContext;
-
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 /**
  * @author zhouxw
@@ -29,7 +29,7 @@ class MySqlSQLRender extends SQLRender {
 		// main
 		mainSQL = pTable.getSQL();
 		mainSQL += " where " + pTableAlias + "." + table.getId().getName() + "=? limit 1 ";
-		DebugUtil.debug(">selectByPK(Table=" + table.getName() + ",ID=" + id + "):" + mainSQL);
+		DebugUtil.info(">selectByPK(Table=" + table.getName() + ",ID=" + id + "):" + mainSQL);
 		// deal
 		PreparedStatement ps = null;
 		ps = getConnection(context).prepareStatement(mainSQL);
@@ -76,7 +76,6 @@ class MySqlSQLRender extends SQLRender {
 		selectQuery.addListener(ql);
 		return selectQuery;
 	}
-
 	@Override
 	protected SQLDBPageFactory getPageFactory(PreparedStatement countPS,
 			PreparedStatement selectPS, ISQLRecordFactory factory) {

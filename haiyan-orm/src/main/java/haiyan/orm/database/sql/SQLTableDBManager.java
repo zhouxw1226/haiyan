@@ -37,7 +37,6 @@ import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.config.util.ConfigUtil;
 import haiyan.config.util.NamingUtil;
-import haiyan.database.SQLDatabase;
 import haiyan.orm.database.DBRecord;
 import haiyan.orm.database.MappingDBManager;
 import haiyan.orm.database.TableDBContextFactory;
@@ -98,36 +97,6 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 					+ "\tdbm.isAutoCommit:" + this.autoCommit);
 		}
 		super.rollback();
-	}
-	@Override
-	public void close() {
-		try {
-			if (!this.commited) {
-				this.rollback();
-			}
-			this.commited = false;
-		} catch (Throwable ignore) {
-			ignore.printStackTrace();
-		}
-		this.clear(); // 已经处理了异常
-		{ // close connection
-			int connHash = -1;
-			try {
-				if (this.isAlive()) {
-					connHash = this.connection.hashCode();
-					this.connection.close();
-				}
-				this.connection = null;
-			} catch (Throwable ignore) {
-				ignore.printStackTrace();
-			} finally {
-				if (connHash >= 0) {
-					SQLDatabase.connCount--;
-					DebugUtil.debug(">----< dbm.close.connHash:"+connHash
-							+"\tdbm.connCount:"+SQLDatabase.connCount+"\n");
-				}
-			}
-		}
 	}
 	@Override
 	public void clear() {
@@ -425,7 +394,6 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 //				String id = treeForm.get(table.getId().getName());
 //				String pid = treeForm.get(parentField.getName());
 //				if (id.equals(pID)) {
-//					// DebugUtil.debug();
 //					topForm = treeForm;
 //				}
 //				if (StringUtil.isStrBlankOrNull(pid) || "-1".equals(pid)) {
@@ -511,9 +479,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 //		PreparedStatement ps = null;
 //		ResultSet rs = null;
 //		try {
-//			// DebugUtil.debug("1");
 //			Field parentField = ConfigUtil.searchChildTableRefField(table, table);
-//			// DebugUtil.debug("2");
 //			ps = getSQLDBTemplate().findAllFromTopLevelPreStat(table, context);
 //			rs = ps.executeQuery();
 //			// LogUtil.info(" execute-time:" + DateUtil.getLastTime()
@@ -525,13 +491,12 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 //				if (obj == null)
 //					continue;
 //				TreeForm treeForm = new TreeForm(obj);
-//				// DebugUtil.debug("====>" + parentField);
+//				// DebugUtil.debug("====>parentField" + parentField);
 //				String pid = null;
 //				if (parentField != null)
 //					pid = treeForm.get(parentField.getName());
 //				// TODO pid default value
 //				if (StringUtil.isStrBlankOrNull(pid) || pid.equals("-1") || pid.equals("0")) {
-//					//
 //					result.add(treeForm);
 //				} else {
 //					ArrayList<IRecord> tempList = nodes.get(pid);
@@ -539,7 +504,6 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 //						tempList = new ArrayList<IRecord>();
 //					}
 //					tempList.add(treeForm);
-//					//
 //					nodes.put(pid, tempList);
 //				}
 //			}
@@ -753,7 +717,6 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 //		Field parentField = ConfigUtil.searchChildTableRefField(table, table);
 //		HashMap<String, String> pidsMap = new HashMap<String, String>();
 //		// ArrayList pids = new ArrayList();
-//		// DebugUtil.debug(mainTableName);
 //		// DBTransaction tx = this.transaction;
 //		PreparedStatement ps = null;
 //		ResultSet rs = null;
@@ -963,7 +926,6 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 	 */
 	protected List<IDBRecord> insertNoSyn(ITableDBContext context, Table table, List<IDBRecord> records,
 			int... args) throws Throwable {
-		// DebugUtil.debug(">insertObj:" + form.toXML());
 		PreparedStatement ps = null;
 		try {
 			ps = getSQLRender().getInsertPreparedStatement(context, table);
@@ -1025,7 +987,6 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 	 */
 	protected IDBRecord insertNoSyn(ITableDBContext context, Table table, IDBRecord record,
 			int... args) throws Throwable {
-		// DebugUtil.debug(">insertObj:" + form.toXML());
 		PreparedStatement ps = null;
 		try {
 			Object obj = record.get(table.getId().getName());
@@ -1143,13 +1104,15 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 		this.checkVersion(context, table, record);
 		PreparedStatement ps = null;
 		try {
-			Object obj = record.get(table.getId().getName());
+			Object objID = record.get(table.getId().getName());
 			String newID = null;
-			if(!StringUtil.isBlankOrNull(obj)){
-				newID = obj.toString();
+			if (!StringUtil.isBlankOrNull(objID)) {
+				newID = objID.toString();
+			} else if (filter==null) {
+				throw new Warning("update时既没有ID也没有Filter");
 			}
             record.updateVersion();
-			ps = getSQLRender().getUpdatePreparedStatement(context, table, record,filter);
+			ps = getSQLRender().getUpdatePreparedStatement(context, table, record, filter);
 			// ps.executeUpdate();
 			ps.execute();
 			SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
@@ -2043,7 +2006,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 			Statement stat = null;
 			ResultSetMetaData rstMetaData = null;
 			try {
-				DebugUtil.debug(">pGetTableFields.SQL=" + sql);
+				DebugUtil.info(">pGetTableFields.SQL=" + sql);
 				stat = this.getConnection().createStatement();
 				rst = stat.executeQuery(sql);
 				rstMetaData = rst.getMetaData();
@@ -2052,7 +2015,6 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 					// int columnType = rstMetaData.getColumnType(i);
 					String columnName = rstMetaData.getColumnName(i);
 					sFlds += columnName + "|";
-					// DebugUtil.debug(">" + columnName);
 				}
 				// asEFilds[l] = sFlds;
 				asFlds.refValue[l] = sFlds;
@@ -2305,7 +2267,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 	public void tableErrHandle(String sql) throws Throwable {
 		if ("0".equals(PropUtil.getProperty("TABLE_ERR_FIXED")))
 			return;
-		DebugUtil.debug(">tableErrHandle:" + sql);
+		DebugUtil.info(">tableErrHandle:" + sql);
 		String[] regTables = SQLRegUtil.getTableFromSQL(sql);
 		this.tableErrHandle(regTables, true);
 	}
@@ -2420,7 +2382,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 		final ArrayList<String> notExistList = new ArrayList<String>();
 		String sql = getValidateTablesSQL(asTable.refValue);
 		if (sql != null) {
-			DebugUtil.debug(">pValidateTables.sql=" + sql);
+			DebugUtil.info(">pValidateTables.sql=" + sql);
 			SQLDBHelper.getResultArray(sql, 1, this.getConnection(),
 				new ISQLDBListener() {
 					public void listen(ResultSet rs) throws Throwable {
@@ -2458,7 +2420,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 		// String sql=getSQLDBTemplate().getValidateTablesSQL(tableNames);
 		String sql = this.getValidateTablesSQL(tableNames);
 		if (sql != null) {
-			DebugUtil.debug(">isExistTable().SQL=" + sql);
+			DebugUtil.info(">isExistTable().SQL=" + sql);
 			ResultSet rst = null;
 			Statement stat = null;
 			try {
@@ -2563,7 +2525,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
     public String genFieldSQL(AbstractField field) {
         AbstractCommonFieldJavaTypeType fldType = field.getJavaType();
         // boolean bDefaultValue = false;
-        // DebugUtil.debug(">" + (eDBType.get() == EnumDBType.edbtDB2));
+        // DebugUtil.debug(">genFieldSQL" + (eDBType.get() == EnumDBType.edbtDB2));
         String generateSQL = this.genFieldName(field) + " " + this.genTypeSQL(field);
         if (field instanceof Id) {
             generateSQL += " not null";

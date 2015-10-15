@@ -6,6 +6,7 @@ import haiyan.common.intf.database.IDBBill;
 import haiyan.common.intf.database.orm.IDBResultSet;
 import haiyan.common.intf.database.sql.ISQLDBFilter;
 import haiyan.common.intf.session.IDBSession;
+import haiyan.orm.intf.database.ITableDBManager;
 
 /**
  * 单据管理器 既是DB管理器也是功能程序上下文
@@ -32,4 +33,6 @@ public interface IBillDBManager extends IDBSession {
 			int pageRowCount, boolean override) throws Throwable;
 	IDBResultSet queryPrev(IBillDBContext context, IDBBill bill, int tableIndex, ISQLDBFilter dbFilter,
 			int pageRowCount, boolean override) throws Throwable;
+	
+	void createConnection(ITableDBManager dbm) throws Throwable;
 }

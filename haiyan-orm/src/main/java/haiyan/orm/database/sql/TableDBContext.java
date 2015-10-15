@@ -1,6 +1,7 @@
 package haiyan.orm.database.sql;
 
 import haiyan.common.CloseUtil;
+import haiyan.common.exception.Warning;
 import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.session.IContext;
 import haiyan.common.session.AppContext;
@@ -21,23 +22,20 @@ public class TableDBContext extends AppContext implements ITableDBContext {
 	public TableDBContext(IContext parent) { 
 		super(parent);
 	}
+	@Override
 	public Object getNextID(ITableConfig table) throws Throwable {
 		return DBBillAutoID.genShortID(this, table, 100);
 	}
 	private ITableDBManager dbm;
 	@Override
 	public void setDBM(ITableDBManager dbm) {
-		if (this.dbm!=null && this.dbm.isAlive())
-			CloseUtil.close(this.dbm);
+		if (this.dbm!=null)
+			throw new Warning("dbm exists");
 		this.dbm = dbm;
 	}
 	@Override
 	public ITableDBManager getDBM() {
-		if (this.dbm!=null)
-			return this.dbm;
-		if (this.parent!=null && this.parent instanceof ITableDBContext)
-			return ((ITableDBContext)this.parent).getDBM();
-		return null;
+		return this.dbm;
 	}
 	@Override
 	public Boolean isAlive() {

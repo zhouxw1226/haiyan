@@ -83,11 +83,10 @@ public abstract class AbstractDBRecord implements IDBRecord {
 //			for (String b:blobs) {
 //				if (b!=null) {
 //					File f = new File(b+".bak");
-//			File f2 = new File(b);
+//					File f2 = new File(b);
 //					FileUtil.copy(f, f2);
 //					if (f.exists())
 //						f.delete();
-//					DebugUtil.debug(">save file:" + b);
 //				}
 //			}
 	    	this.deletedKeys.clear();
@@ -115,7 +114,6 @@ public abstract class AbstractDBRecord implements IDBRecord {
 //					File f = new File(b+".bak");
 //					if (f.exists())
 //						f.delete();
-//					DebugUtil.debug(">delete file:" + b+".bak");
 //				}
 //			}
 	    	this.deletedKeys.clear();
@@ -284,6 +282,19 @@ public abstract class AbstractDBRecord implements IDBRecord {
     protected boolean isIgnoredTo(String keyName) {
         return (keyName != null && Arrays.binarySearch(DataConstant.FORM_IGNORE, keyName) >= 0);
     }
+    @Override
+    public void applyIf(IDBRecord etcRecord) {
+    	Map<String,Object> map = this.getDataMap();
+    	Map<String,Object> etcMap = etcRecord.getDataMap();
+		Iterator<?> key = etcMap.keySet().iterator();
+		while (key.hasNext()) {
+			String keyName = (String) key.next();
+			if (!map.containsKey(keyName)||StringUtil.isEmpty(map.get(keyName))) {
+				Object v = etcMap.get(keyName);
+				this.set(keyName, v);
+			}
+		}
+    }
     /**
      * @param tgtRecord
      */
@@ -415,11 +426,12 @@ public abstract class AbstractDBRecord implements IDBRecord {
     }
     @Override
     public Object remove(String name) {
+    	this.updatedKeys.remove(name); 
+//    	this.deletedKeys.add(name); //此API只是做内存的key-value的remove不是做db-delete
         return this.removeParameter(name);
     }
     @Override
     public Object delete(String name) {
-    	//Object v = this.get(name);
     	this.updatedKeys.add(name); // 要加到updateSQL占位符中
     	this.deletedKeys.add(name);
     	Object v = this.remove(name);
@@ -477,6 +489,10 @@ public abstract class AbstractDBRecord implements IDBRecord {
     @Override
     public int getInteger(String name) {
         return getBigDecimal(name).intValue();
+    }
+    @Override
+    public long getLong(String name) {
+        return getBigDecimal(name).longValue();
     }
     @Override
     public double getDouble(String name) {

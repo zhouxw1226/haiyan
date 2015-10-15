@@ -1,8 +1,8 @@
 package haiyan.common;
 
-import haiyan.common.intf.ILogger;
-
 import java.lang.reflect.Method;
+
+import haiyan.common.intf.ILogger;
  
 public class DebugUtil {
 	// 默认的logger实现
@@ -63,9 +63,19 @@ public class DebugUtil {
 		if (logger != null)
 			logger.error(info);
 	}
+	/**
+	 * @param info
+	 */
 	public static void warn(Object info) {
 		if (logger != null)
 			logger.warn(info);
+	}
+	/**
+	 * @param info
+	 */
+	public static void info(Object info) {
+		if (logger != null)
+			logger.info(info);
 	}
 	/**
 	 * @param obj
@@ -81,28 +91,24 @@ public class DebugUtil {
 	private static String seePropertyValue(Object obj) {
 		String className = obj.getClass().getName();
 		String result = "\r\n\t"
-				+ className.substring(className.lastIndexOf('.') + 1, className
-						.length()) + " \r\n\t";
+				+ className.substring(className.lastIndexOf('.') + 1, className.length()) + " \r\n\t";
 		Method m[] = obj.getClass().getMethods();
 		for (int i = 0; i < m.length; i++) {
 			try {
 				String name = m[i].getName();
 				String param = "";
 				if (name.startsWith("get")
-						&& m[i].getParameterTypes().length == 0
-						&& !name.equals("getClass")) {
+					&& m[i].getParameterTypes().length == 0
+					&& !name.equals("getClass")) {
 					param = name.substring(3, name.length());
 					result += "[" + param + ":" + m[i].invoke(obj) + "] ";
 				}
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
 		return result;
 	}
-	/**
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return seePropertyValue(this.getClass());

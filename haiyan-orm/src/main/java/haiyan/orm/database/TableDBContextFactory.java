@@ -1,6 +1,7 @@
 package haiyan.orm.database;
 
 import haiyan.common.StringUtil;
+import haiyan.common.exception.Warning;
 import haiyan.common.intf.exp.IExpUtil;
 import haiyan.common.intf.factory.IFactory;
 import haiyan.common.intf.session.IContext;
@@ -30,42 +31,26 @@ public class TableDBContextFactory implements IFactory {
 		context.setExpUtil(exp);
 		return context;
 	}
-	@Deprecated
-	public static ITableDBContext createDBContext() {
-		String DSN = ConfigUtil.getDefaultDSN();
-		return createDBContext(DSN);
-	}
 	// ----------------------------------------------------------------------------------- //
-	public static ITableDBContext createDBContext(IUser user, ITableDBManager dbm) {
-		ITableDBContext context = new TableDBContext();
-		context.setUser(user);
-		String DSN = null;
-		if(user != null){
-			String DSN2 = user.getDSN();
-			DSN = StringUtil.isEmpty(DSN2)?ConfigUtil.getDefaultDSN():DSN2;
-		}else{
-			DSN = ConfigUtil.getDefaultDSN();
-		}
-		dbm = dbm==null?TableDBManagerFactory.createDBManager(DSN):dbm;
-		context.setDBM(dbm);
-		IExpUtil exp = new ExpUtil(context);
-		context.setExpUtil(exp);
-		return context;
-	}
 	public static ITableDBContext createDBContext(IUser user) {
-		return createDBContext(user, null);
+		if (user==null)
+			throw new Warning("user lost");
+		String DSN = user.getDSN();
+		ITableDBContext context = createDBContext(DSN);
+		context.setUser(user);
+		return context;
 	}
 	// ----------------------------------------------------------------------------------- //
 	public static ITableDBContext createDBContext(IContext parent, String DSN) {
 		ITableDBContext context = new TableDBContext(parent);
 		if (StringUtil.isEmpty(DSN))
-			if (parent!=null){
-				String DSN2 = parent.getDSN();
-				DSN = StringUtil.isEmpty(DSN2)?ConfigUtil.getDefaultDSN():DSN2;
-			}else{
+			if (parent != null) {
+				String DSNOfParent = parent.getDSN();
+				DSN = StringUtil.isEmpty(DSNOfParent) ? ConfigUtil.getDefaultDSN() : DSNOfParent;
+			} else {
 				DSN = ConfigUtil.getDefaultDSN();
 			}
-		else 
+		else
 			context.setDSN(DSN);
 		ITableDBManager dbm = TableDBManagerFactory.createDBManager(DSN);
 		context.setDBM(dbm);
@@ -76,11 +61,13 @@ public class TableDBContextFactory implements IFactory {
 	public static ITableDBContext createDBContext(IContext parent, ITableDBManager dbm) {
 		ITableDBContext context = new TableDBContext(parent);
 		String DSN = null;
-		if (parent!=null){
-			String DSN2 = parent.getDSN();
-			DSN = StringUtil.isEmpty(DSN2)?ConfigUtil.getDefaultDSN():DSN2;
-		}else{
-			DSN = ConfigUtil.getDefaultDSN();
+		{
+			if (parent != null) {
+				String DSNOfParent = parent.getDSN();
+				DSN = StringUtil.isEmpty(DSNOfParent) ? ConfigUtil.getDefaultDSN() : DSNOfParent;
+			} else {
+				DSN = ConfigUtil.getDefaultDSN();
+			}
 		}
 		dbm = dbm==null?TableDBManagerFactory.createDBManager(DSN):dbm;
 		context.setDBM(dbm);

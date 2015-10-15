@@ -87,8 +87,7 @@ class SQLDBClear implements ISQLDBClear {
 		// MyCache.clearData(cacheID);
 		// MyCache.removeCache(cacheID);
 		// } catch (Throwable ex) {
-		// ex.printStackTrace();
-		// LogUtil.error(ex);
+		// DebugUtil.error(ex);
 		// }
 		// }
 		// if (blob != null)

@@ -1,7 +1,7 @@
 package haiyan.common;
 
-import haiyan.common.exception.Warning;
-
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Enumeration;
@@ -13,8 +13,9 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-public class PropUtil {
+import haiyan.common.config.PathUtil;
 
+public class PropUtil {
 	static class MyPropertyResourceBundle extends PropertyResourceBundle {
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		public MyPropertyResourceBundle(ResourceBundle rs) throws IOException {
@@ -25,6 +26,9 @@ public class PropUtil {
 				}});
 			lookup = new HashMap(System.getProperties()); // 优先级最低
 			lookup.putAll(System.getenv()); // OS Environment Variables
+			this.read(rs);
+		}
+		public void read(ResourceBundle rs) {
 			Iterator<String> keys = rs.keySet().iterator();
 			while(keys.hasNext()) {
 				String k = keys.next();
@@ -38,7 +42,6 @@ public class PropUtil {
 			}
 			return lookup.get(key);
 		}
-		@SuppressWarnings("restriction")
 		@Override
 		public Enumeration<String> getKeys() {
 			ResourceBundle parent = this.parent;
@@ -49,48 +52,57 @@ public class PropUtil {
 		protected Set<String> handleKeySet() {
 			return lookup.keySet();
 		}
-		// ==================privates====================
+		// ==================privates==================== //
 		private Map<String, Object> lookup;
 	}
-	public static String APP_BUNDLE_NAME = "AppResources";
-	public static String INVOKE_BUNDLE_NAME = "AppInvokes";
-	private static ResourceBundle BUNDLE = null;
+	private static String APP_BUNDLE_NAME = "AppResources";
+	private static Map<String,ResourceBundle> BUNDLE = new HashMap<String,ResourceBundle>();
     /**
 	 * @return ResourceBundle(PropertyResourceBundle) 
 	 */
-	public final static ResourceBundle getPropertyBundle() {
-		if (BUNDLE==null)
+	private final static ResourceBundle getPropertyBundle(String bundleName) {
+		String key = System.getProperty("APP_BUNDLE_NAME");
+		if (!StringUtil.isEmpty(bundleName))
+			key = bundleName;
+		if (StringUtil.isEmpty(key))
+			key = APP_BUNDLE_NAME;
+		if (!BUNDLE.containsKey(key))
 			synchronized(PropUtil.class) {
-				if (BUNDLE==null)
+				if (!BUNDLE.containsKey(key))
 					try {
-						String s = System.getProperty("APP_BUNDLE_NAME");
-						if (StringUtil.isEmpty(s))
-							s = APP_BUNDLE_NAME;
-						ResourceBundle rs = ResourceBundle.getBundle(s, 
-								Locale.getDefault(), Thread.currentThread().getContextClassLoader());
-						BUNDLE = new MyPropertyResourceBundle(rs);
+						File rootFile = PathUtil.getRootFile(null);
+						if (rootFile!=null && rootFile.exists()) {
+							File file = new File(rootFile.getAbsolutePath() + File.separator + key + ".properties");
+							InputStream ins = new FileInputStream(file);
+							PropertyResourceBundle rsp = new PropertyResourceBundle(ins);
+							CloseUtil.close(ins);
+							BUNDLE.put(key, rsp);
+						} else {
+							ResourceBundle rso = ResourceBundle.getBundle(key, 
+									Locale.getDefault(), Thread.currentThread().getContextClassLoader());
+							MyPropertyResourceBundle rsb = new MyPropertyResourceBundle(rso); // 从环境变量获取配置
+							BUNDLE.put(key, rsb);
+						}
 					} catch (IOException e) {
-						throw Warning.getWarning(e);
+						throw new RuntimeException(e);
 					}
 			}
-		return BUNDLE;
+		return BUNDLE.get(key);
 	}
-    /**
-     * @return PropertyResourceBundle
-     * @throws Throwable
-     */
-    public final static ResourceBundle getPropertyBundle(String bundleName)
-            throws Throwable {
-        // ResourceBundle.getBundle(bundName)
-        // ResourceBundle.getBundle(bundName,Locale.getDefault())
-        // ResourceBundle.getBundle(bundName,Locale.getDefault(),getLoader()) (PropertyResourceBundle)
-		String s = System.getProperty("APP_BUNDLE_NAME");
-		if (!StringUtil.isEmpty(bundleName))
-			s = bundleName;
+	private final static ResourceBundle getPropertyBundle() {
+		return getPropertyBundle(null);
+	}
+	public final static ResourceBundle getLocalPropertyBundle(String bundleName) {
+		String s = bundleName;
 		if (StringUtil.isEmpty(s))
 			s = APP_BUNDLE_NAME;
-        return ResourceBundle.getBundle(s, Locale.getDefault(), Thread.currentThread().getContextClassLoader());
-    }
+		ResourceBundle rsl = ResourceBundle.getBundle(s, 
+				Locale.getDefault(), Thread.currentThread().getContextClassLoader());
+		return rsl;
+	}
+	public final static ResourceBundle getLocalPropertyBundle() {
+		return getLocalPropertyBundle(null);
+	}
     /**
      * @param bundName
      * @param key
@@ -127,6 +139,8 @@ public class PropUtil {
     public static String getProperty(String key, String def) {
         return getProperty(null, key, def);
     }
+    // ============================================================= //
+	public static String INVOKE_BUNDLE_NAME = "AppInvokes";
     /**
      * @return PropertyResourceBundle
      * @throws Throwable
@@ -156,5 +170,4 @@ public class PropUtil {
             return "";
         }
     }
-    
 }

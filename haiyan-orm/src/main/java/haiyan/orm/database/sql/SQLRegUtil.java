@@ -98,7 +98,7 @@ public class SQLRegUtil {
 	 * @return
 	 */
 	public static String[] getEventTableFromSQL(String SQL) { // , String[] asTable
-		DebugUtil.debug(">dbm.getEventTableFromSQL().matcher(SQL)=" + SQL);
+		DebugUtil.info(">dbm.getEventTableFromSQL().matcher(SQL)=" + SQL);
 		return getTableFromSQL(SQL);
 	}
 	/**
@@ -106,7 +106,7 @@ public class SQLRegUtil {
 	 * @return String[]
 	 */
 	public static String[] getTableFromSQL(String SQL) { // , String[] asTable
-		DebugUtil.debug(">dbm.getTableFromSQL().matcher(SQL)=" + SQL);
+		DebugUtil.info(">dbm.getTableFromSQL().matcher(SQL)=" + SQL);
 		String regex = "(?:(?:from|join|update|into)\\s+)";
 		regex += "(?:(?:(?:\\w+\\.)?\\w+(?:\\s+as)?(?:\\s+\\w+)?\\s*,\\s*)*)";
 		regex += "(?:\\w+\\.)?(\\w+)"; // {%s}
@@ -114,7 +114,7 @@ public class SQLRegUtil {
 		Matcher matcher = patt.matcher(SQL);
 		ArrayList<String> list = new ArrayList<String>();
 		while (matcher.find()) {
-			DebugUtil.debug(">dbm.getTableFromSQL().match() \"" + matcher.group()
+			DebugUtil.info(">dbm.getTableFromSQL().match() \"" + matcher.group()
 					+ "\" at positions " + matcher.start() + "-" + (matcher.end() - 1));
 			String temp = matcher.group().toUpperCase().replaceAll("FROM", "")
 					.replaceAll("JOIN", "").replaceAll("UPDATE", "")

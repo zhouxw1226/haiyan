@@ -74,18 +74,6 @@ public class DatabasePool {
 	 */
 	public static void unbind(String key) throws Throwable {
 		register.remove(key);
-		// DatabaseIntf db = lookup(key);
-		// if (db instanceof HaiyanDatabase) { // haiyan.datasource
-		// HaiyanDatabase dbi = (HaiyanDatabase) db;
-		// try {
-		// dbi.clear();
-		// } catch (Exception ex) {
-		// throw ex;
-		// // e.printStackTrace();
-		// } finally {
-		// dbi = null;
-		// }
-		// }
 	}
 
 }

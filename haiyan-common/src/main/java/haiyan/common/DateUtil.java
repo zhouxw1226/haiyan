@@ -248,7 +248,6 @@ public class DateUtil implements Serializable {
 	 * @return java.util.Date
 	 */
 	public java.util.Date getUtilDate() {
-		// new java.util.Date(getDateString());
 		java.util.Date dt = new java.util.Date();
 		dt.setTime(getTime());
 		return dt;
@@ -747,9 +746,6 @@ public class DateUtil implements Serializable {
 			}
 		} else if (!StringUtil.isStrBlankOrNull(value))
 			d = new SimpleDateFormat("yyyy-MM-dd").parse(value);
-		// } catch (ParseException e) {
-		// e.printStackTrace();
-		// }
 		return d;
 	}
 	/**

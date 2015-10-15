@@ -1,7 +1,7 @@
 package haiyan.orm.database.sql;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import haiyan.common.SysCode;
 import haiyan.common.exception.Warning;
@@ -17,10 +17,21 @@ import haiyan.database.MongoDatabase;
 
 public abstract class AbstractDBManagerFactory implements IFactory {
 	// DataBase必须是单例的，否则类似DBCP的DataSource不能起到Connection复用的效果。
-	protected static final Map<String, IDatabase> DATABASES = new ConcurrentHashMap<String, IDatabase>();
+	protected static final Map<String, IDatabase> DATABASES = new HashMap<String, IDatabase>(); // ConcurrentHashMap
 	public static IDatabase createDatabase(String DSN) throws Throwable {
-		if (DATABASES.containsKey(DSN))
-			return DATABASES.get(DSN);
+//		if (DATABASES.containsKey(DSN))
+//		return DATABASES.get(DSN);
+		if (!DATABASES.containsKey(DSN)) 
+			synchronized(DATABASES) {
+				if (!DATABASES.containsKey(DSN)) {
+					IDatabase database = pCreateDatabase(DSN);
+					DATABASES.put(DSN, database);
+					return database;
+				}
+			}
+		return DATABASES.get(DSN);
+	}
+	private static IDatabase pCreateDatabase(String DSN) throws Throwable {
 		IDatabase database = null;
 		String dbType = null;
 		JdbcURL jdbcURL = ConfigUtil.getJdbcURL(DSN);
@@ -43,7 +54,6 @@ public abstract class AbstractDBManagerFactory implements IFactory {
 		if (database==null)
 	        throw new Warning(SysCode.SysCodeNum.NO_MATCHEDDSN,SysCode.SysCodeMessage.NO_MATCHEDDSN+":"+DSN);
 		database.setDBType(dbType);
-		DATABASES.put(DSN, database);
 		return database;
 	}
 

@@ -1,8 +1,8 @@
 package haiyan.common.intf.session;
 
-import haiyan.common.intf.exp.IExpUtil;
-
 import java.util.List;
+
+import haiyan.common.intf.exp.IExpUtil;
 
 /**
  * 抽象上下文接口
@@ -21,7 +21,6 @@ public interface IContext extends ISession {
 	void setAttribute(String key, Object val);
 	void addException(Throwable e);
 	List<Throwable> getExceptions();
-	
 //	void setDBM(ITableDBManager dbm);
 //	ITableDBManager getDBM();
 //	void setBBM(IBillDBManager bbm);
@@ -32,5 +31,6 @@ public interface IContext extends ISession {
 	String getDSN();
 	void clear();
 	void close();
+	void release();
 
 }

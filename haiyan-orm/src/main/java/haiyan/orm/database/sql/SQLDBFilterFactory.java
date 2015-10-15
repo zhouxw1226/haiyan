@@ -97,9 +97,6 @@ class SQLDBFilterFactory implements IFactory {
 // }
 // }
 // //return pluggedFilterList.toArray();
-// //DebugUtil.debug(pluggedFilterList.size());
-// // } catch (Exception ex) {
-// // ex.printStackTrace();
 // // } finally {
 // // if (tx != null)
 // // tx.close();

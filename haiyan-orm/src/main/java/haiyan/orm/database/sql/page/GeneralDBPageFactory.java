@@ -3,16 +3,16 @@
  */
 package haiyan.orm.database.sql.page;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+
 import haiyan.common.CloseUtil;
 import haiyan.common.intf.database.orm.IDBRecord;
 import haiyan.common.intf.database.orm.IDBRecordCallBack;
 import haiyan.common.intf.database.sql.ISQLRecordFactory;
 import haiyan.orm.database.DBPage;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 
 /**
  * @author zhouxw
@@ -59,8 +59,10 @@ public class GeneralDBPageFactory extends SQLDBPageFactory {
 		ResultSet selectRS = null;
 		try {
 			selectRS = selectPS.executeQuery();
-			if (currPageNO > 1)
-				selectRS.absolute(((currPageNO - 1) * maxPageRecordCount));
+			selectRS.beforeFirst(); // 移动到分页的第一行之前
+//			selectRS.absolute(1);
+//			if (currPageNO > 1)
+//				selectRS.absolute(((currPageNO - 1) * maxPageRecordCount));
 			for (int i = 0; i < maxPageRecordCount; i++) {
 				if (selectRS.next()) {
 					IDBRecord form = (IDBRecord) factory.getRecord(selectRS);
@@ -97,8 +99,10 @@ public class GeneralDBPageFactory extends SQLDBPageFactory {
 		ResultSet selectRS = null;
 		try {
 			selectRS = selectPS.executeQuery();
-			if (currPageNO > 1) // 分页游标处理
-				selectRS.absolute(((currPageNO - 1) * maxPageRecordCount));
+			selectRS.beforeFirst(); // 移动到分页的第一行之前
+//			selectRS.absolute(1);
+//			if (currPageNO > 1) // 分页游标处理
+//				selectRS.absolute(((currPageNO - 1) * maxPageRecordCount));
 			for (int i = 0; i < maxPageRecordCount; i++) {
 				if (selectRS.next()) {
 					// 如果cache里有 就不要花时间build BO 了

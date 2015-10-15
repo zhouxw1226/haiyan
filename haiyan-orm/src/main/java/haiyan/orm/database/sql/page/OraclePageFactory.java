@@ -1,5 +1,6 @@
 package haiyan.orm.database.sql.page;
 
+import haiyan.common.DebugUtil;
 import haiyan.common.intf.database.sql.ISQLRecordFactory;
 
 import java.sql.Connection;
@@ -46,12 +47,14 @@ public class OraclePageFactory extends SQLWrapPageFactory {
 		long startRow = (currPage - 1) * count;
 		selectPS.setLong(index, startRow + count);
 		selectPS.setLong(index + 1, startRow);
+		DebugUtil.debug(index+";"+startRow+";"+count);
 	}
 	@Override
 	public void setSelectPSByLimit(PreparedStatement selectPS, int index,
 			long startRow, int count) throws SQLException {
 		selectPS.setLong(index, startRow + count);
 		selectPS.setLong(index + 1, startRow);
+		DebugUtil.debug(index+";"+startRow+";"+count);
 	}
 
 }

@@ -105,10 +105,12 @@ public interface IDBRecord extends Serializable {
 	String getString(String name);
 	Date getDate(String key, String dateStyle);
 	int getInteger(String key);
+	long getLong(String key);
     double getDouble(String key);
     BigDecimal getBigDecimal(String key);
     String getValuesString(String name, String split);
 	// ----------------------------------------------------------------------- //
 	void putAll(Map<?, ?> map);
+	void applyIf(IDBRecord etcRecord);
 
 }

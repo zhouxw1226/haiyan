@@ -1,9 +1,9 @@
 package haiyan.common.config;
 
-import haiyan.common.CloseUtil;
-import haiyan.common.PropUtil;
-import haiyan.common.StringUtil;
-import haiyan.common.exception.Warning;
+import static haiyan.common.config.DataConstant.HAIYAN_HOME;
+import static haiyan.common.config.DataConstant.PATH_NAME;
+import static haiyan.common.config.DataConstant.UPLOAD_PATH;
+import static haiyan.common.config.DataConstant.UPLOAD_PATH_NAME;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -22,6 +22,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+
+import haiyan.common.CloseUtil;
+import haiyan.common.PropUtil;
+import haiyan.common.StringUtil;
 
 /**
  * @author zhouxw
@@ -73,54 +77,51 @@ public class PathUtil {
      */
     private static String getPropertyHome() throws Throwable {
         getClassPaths();
-        ResourceBundle props = PropUtil.getPropertyBundle(null);
-        if (!props.containsKey(DataConstant.PATH_NAME))
+        ResourceBundle props = PropUtil.getLocalPropertyBundle(null);
+        if (!props.containsKey(PATH_NAME))
         	return null;
-        return props.getString(DataConstant.PATH_NAME);
+        return props.getString(PATH_NAME);
     }
 	public static String getUploadPath(boolean son) {
-		return DataConstant.UPLOAD_PATH + File.separator + (son? "upload" + File.separator:"");
+		return UPLOAD_PATH + File.separator + (son? "upload" + File.separator:"");
 	}
 	public static String getWebInfoHome() {
 		return getHome()+File.separator+"WEB-INF";
 	}
-    private static String HOME = null;
     public static final Properties getEnvVars() throws Throwable {
     	return ReadEnv.getEnvVars();
     }
-    /**
-     * @return
-     */
+    private static String HOME = null;
     public static final String getHome() {
     	getClassPaths();
         if (!StringUtil.isEmpty(HOME))
             return HOME;
     	try {
             Properties p = ReadEnv.getEnvVars();
-            if (!StringUtil.isStrBlankOrNull(p.getProperty("HAIYAN_HOME"))) {
-                HOME = p.getProperty("HAIYAN_HOME");
-                System.out.println("#HAIYAN_HOME:"+HOME);
+            if (!StringUtil.isEmpty(p.getProperty(HAIYAN_HOME))) {
+                HOME = p.getProperty(HAIYAN_HOME);
+                System.out.println("#ReadEnv.home:"+HOME);
             }
-    	}catch(Throwable ignore){
-    		ignore.printStackTrace();
-    	}
+		} catch (Throwable ignore) {
+			ignore.printStackTrace();
+		}
         try {
 	        if (StringUtil.isEmpty(HOME)) {
-	            if (!StringUtil.isStrBlankOrNull(System.getProperty("HAIYAN_HOME"))) {
-	                HOME = System.getProperty("HAIYAN_HOME");
-	                System.out.println("#HAIYAN_HOME="+HOME);
-	            } else if (!StringUtil.isStrBlankOrNull(getPropertyHome())) {
+	            if (!StringUtil.isEmpty(System.getProperty(HAIYAN_HOME))) {
+	                HOME = System.getProperty(HAIYAN_HOME);
+	                System.out.println("#SystemProperty.home="+HOME);
+	            } else if (!StringUtil.isEmpty(getPropertyHome())) {
 	                HOME = getPropertyHome();
-	                System.out.println("#property.home="+HOME);
+	                System.out.println("#Property.home="+HOME);
 	            } else {
 	            	HOME = System.getProperty("user.dir");
-	                System.out.println("#user.dir="+HOME);
+	                System.out.println("#UserDir.home="+HOME);
 	            }
 	        }
         } catch (Throwable ex) {
-        	throw Warning.getWarning(ex);
+        	throw new RuntimeException(ex);
         }
-        System.out.println("#HOME="+HOME);
+        System.out.println("#Haiyan.home="+HOME);
         if (HOME != null && (HOME.endsWith("\\") || HOME.endsWith("/")))
             HOME = HOME.substring(0, HOME.length() - 1);
         return HOME;
@@ -131,7 +132,7 @@ public class PathUtil {
      */
     public final static String getSkinPath() throws Throwable {
         String value = PropUtil.getProperty("SKIN");
-        if (StringUtil.isStrBlankOrNull(value)) {
+        if (StringUtil.isEmpty(value)) {
             return "defualt";
         }
         return value;
@@ -141,10 +142,11 @@ public class PathUtil {
      * @throws Throwable
      */
     private final static String getUploadRootName() throws Throwable {
-    	ResourceBundle rs = PropUtil.getPropertyBundle(null);
-    	if (rs.containsKey(DataConstant.UPLOAD_PATH_NAME))
-    		return rs.getString(DataConstant.UPLOAD_PATH_NAME);
-    	return null;
+        getClassPaths();
+    	ResourceBundle rs = PropUtil.getLocalPropertyBundle(null);
+    	if (!rs.containsKey(UPLOAD_PATH_NAME))
+    		return null;
+    	return rs.getString(UPLOAD_PATH_NAME);
     }
     private static String UPLOADPATH = null;
 	/**
@@ -166,7 +168,7 @@ public class PathUtil {
 // public final static String getUploadService(IContext context)
 //         throws Throwable {
 //     try {
-//         String uploadService = getPropertyBundle(null).getString(DataConstant.UPLOAD_SERVICE);
+//         String uploadService = getPropertyBundle(null).getString(UPLOAD_SERVICE);
 //         if (!StringUtil.isBlankOrNull(uploadService))
 //             return uploadService;
 //     } catch (Throwable ex) {
@@ -188,8 +190,7 @@ public class PathUtil {
 //	 */
 //	public static String getUploadFilePath(IContext context, Table table, AbstractField field) {
 //		// TODO 需要从context中根据dsn再到对应目录下取路径
-//		// String uploadRootPath = DataConstant.APPLICATION_PATH +
-//		// File.separator + "upload";
+//		// String uploadRootPath = APPLICATION_PATH + File.separator + "upload";
 //		String result = getUploadPath(true);
 //		// DebugUtil.debug(">table,pathTable,result:" + table.getName() + "," +
 //		// field.getComponent().getPathTable() + "," + result);
@@ -211,8 +212,7 @@ public class PathUtil {
 //	 */
 //	public static String getUploadFileUrl(IContext context, Table table, AbstractField field) {
 //		// TODO 需要从context中根据dsn再到对应目录下取路径
-//		// String uploadRootPath = DataConstant.UPLOAD_SERVICE_PATH
-//		// + File.separator + "upload";
+//		// String uploadRootPath = UPLOAD_SERVICE_PATH + File.separator + "upload";
 //		String result = "upload" + File.separator;
 //		// DebugUtil.debug(">table,pathTable,result:" + table.getName() + "," +
 //		// field.getComponent().getPathTable() + "," + result);
@@ -277,7 +277,7 @@ public class PathUtil {
      */
     private static URL getClassLocationURL(final Class<?> cls) {
         if (cls == null)
-            throw new IllegalArgumentException("null input: cls");
+            throw new IllegalArgumentException("cls lost");
         URL result = null;
         final String clsAsResource = cls.getName().replace('.', '/').concat(".class");
         final ProtectionDomain pd = cls.getProtectionDomain();
@@ -310,7 +310,6 @@ public class PathUtil {
                 }
             }
         }
-
         if (result == null) {
             // Try to find 'cls' definition as a resource;
             // this is not implementations seem to //allow this:
@@ -320,6 +319,20 @@ public class PathUtil {
         }
         return result;
     }
+	public static File getRootFile(String webInfPath) {
+		File file = null;
+		File home = new File(PathUtil.getHome() + File.separator + "config");
+		if (home.exists()) {
+			String rootName = home.getAbsolutePath();
+			file = new File(rootName);
+		} else {
+			if (webInfPath==null)
+				return null;
+			String rootName = webInfPath + File.separator + "classes";
+			file = new File(rootName);
+		}
+		return file;
+	}
     // /**
     // * @return String
     // * @throws UnsupportedEncodingException
@@ -329,11 +342,10 @@ public class PathUtil {
     // "utf-8").replaceAll("file:", "").replaceAll("file:/", "");
     // }
 }
-
 class ReadEnv {
+    final static Properties envVars = new Properties();
     final static Properties getEnvVars() throws Throwable {
         Process p = null;
-        Properties envVars = new Properties();
         Runtime r = Runtime.getRuntime();
         String OS = System.getProperty("os.name").toLowerCase();
         // System.out.println(OS);

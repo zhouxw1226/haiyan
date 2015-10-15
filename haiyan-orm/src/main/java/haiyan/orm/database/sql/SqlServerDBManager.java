@@ -100,7 +100,7 @@ public class SqlServerDBManager extends SQLTableDBManager {
 	public String genFieldSQL(AbstractField field) {
 		AbstractCommonFieldJavaTypeType fldType = field.getJavaType();
 		// boolean bDefaultValue = false;
-		// DebugUtil.debug(">" + (eDBType.get() == EnumDBType.edbtDB2));
+		// DebugUtil.debug(">genFieldSQL" + (eDBType.get() == EnumDBType.edbtDB2));
 		String generateSQL = this.genFieldName(field) + " "
 				+ this.genTypeSQL(field);
 		if (field instanceof Id) {

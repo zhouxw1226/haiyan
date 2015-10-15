@@ -132,7 +132,7 @@ class SQLMappingDBManager extends MappingDBManager {
 				|| operationType == SET_MAPPING_TABLE_WHEN_REMOVE) {
 				String deleteSql = "delete from " + realTableName
 						+ " where " + ConfigUtil.searchChildTableRefField(table, mappingTable).getName() + "=?";
-				DebugUtil.debug(">MappingSQL=" + deleteSql);
+				DebugUtil.info(">MappingSQL=" + deleteSql);
 				context.getDBM().executeUpdate(deleteSql, new Object[]{ID});
 			}
 			if (operationType == SET_MAPPING_TABLE_WHEN_MODIFY

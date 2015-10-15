@@ -8,18 +8,18 @@ System.out.println("Zaofans.jsp");
 <!-- 必须是query01 因为testpage里这么定义了 -->
 <jp:mondrianQuery id="query01" 
 	jdbcDriver="com.mysql.jdbc.Driver" 
-	jdbcUrl="jdbc:mysql://db-yigo.zaofans.com:3306/yigo?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull"
-	jdbcUser="zaofans"
-	jdbcPassword="zaofans"
+	jdbcUrl="jdbc:mysql://192.168.46.92:3306/yigo_prd?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull"
+	jdbcUser="root"
+	jdbcPassword="root.com"
 	catalogUri="/WEB-INF/queries/zaofans/Zaofans.xml">
-	SELECT 
-		{
-			[Measures].[TOTOAL_ORDERS]
-		} on columns, 
-		{(
-			[USERS].[ALL_USERS],[BUILDINGS].[ALL_BUILDINGS]
-		)} on rows 
-	FROM [ORDERS] 
+SELECT 
+	{
+		[Measures].[TOTOAL_ORDERS]
+	} on columns, 
+	{(
+		[CITIES].[ALL_CITIES],[AREAS].[ALL_AREAS],[USERS].[ALL_USERS]
+	)} on rows 
+FROM [ORDERS] 
 </jp:mondrianQuery>
 <!-- NON EMPTY {[Measures]. ... [DEPTS].[ALL_DEPTS],,[PROVINCES].[ALL_PROVINCES])} on rows -->
 <!-- 必须是title01 因为testpage里这么定义了 -->

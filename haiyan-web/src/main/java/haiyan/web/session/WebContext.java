@@ -73,9 +73,9 @@ public class WebContext extends AppContext implements IWebContext {
 	}
 	@Override
 	public void close() {
-		super.close();
 		req = null;
 		res = null;
+		super.close();
 	}
 	@Override
 	public JSONArray getJSONArrayParameter(String key, String decode) throws Throwable {

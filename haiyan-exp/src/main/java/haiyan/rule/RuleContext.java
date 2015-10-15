@@ -32,6 +32,7 @@ public class RuleContext extends AppContext implements IRuleContext {
 		String codeRule = rule.getString(RULE_TAG_CODE);
 		DebugUtil.debug("规则编号："+codeRule);
 		String condition = rule.getString(RULE_TAG_CONDITION);
+		DebugUtil.debug("规则条件："+condition);
 		boolean pass = VarUtil.toBool(expUtil.evalExp(condition));
 		if (pass) {
 			String action = rule.getString(RULE_TAG_ACTION);

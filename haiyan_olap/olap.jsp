@@ -3,7 +3,6 @@
 <%@ taglib uri="http://www.tonbeller.com/jpivot" prefix="jp" %>
 <%@ taglib uri="http://www.tonbeller.com/wcf" prefix="wcf" %>
 <%@ taglib uri="http://java.sun.com/jstl/core" prefix="c" %>
-
 <%--
   JPivot / WCF comes with its own "expression language", which simply
   is a path of properties. E.g. #{customer.address.name} is
@@ -25,7 +24,6 @@
   Check out the WCF distribution which contains many examples on
   how to use the WCF tags (like tree, form, table etc).
 --%>
-
 <html>
 	<head>
 	  <title>早Fan-Olap</title>
@@ -100,12 +98,6 @@
 			<!-- wcf:render ref="toolbar01" xslUri="/WEB-INF/wcf/htoolbar.xsl" xslCache="true"/ -->
 			
 			<p>
-			<%-- if there was an overflow, show error message --%>
-			<c:if test="${query01.result.overflowOccured}">
-			  <p>
-			  <strong style="color:red">Resultset overflow occured</strong>
-			  <p>
-			</c:if>
 
 			<%-- render navigator --%>
 			<wcf:render ref="navi01" xslUri="/WEB-INF/jpivot/navi/navigator.xsl" xslCache="true"/>

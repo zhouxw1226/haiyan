@@ -90,6 +90,105 @@ class DBBillAutoNumber {
 		cacheID.put(key + ".end", spEnd);
 		return ret;
 	}
+	static synchronized BigDecimal requestID(IContext context, String key, int lngNumber)throws Throwable  {
+		// '申请的个数不可以小于等于零
+				if (lngNumber <= 0) {
+					throw new Warning("申请的ID个数不能小于等于零.");
+				}
+				BigDecimal spNumber = BigDecimal.valueOf(lngNumber);
+				BigDecimal spBegin = cacheID.get(key + ".start");
+				BigDecimal spEnd = cacheID.get(key + ".end");
+				if (spBegin == null) {
+					spBegin = BigDecimal.valueOf((long) 1);
+				}
+				if (spEnd == null) {
+					spEnd = BigDecimal.valueOf((long) 0);
+				}
+				BigDecimal lngDBIDRequestNumber;
+				Ref<BigDecimal> lngRBeginNumber = new Ref<BigDecimal>();
+				Ref<BigDecimal> lngREndNumber = new Ref<BigDecimal>();
+				if (spBegin.add(spNumber).compareTo(spEnd.add(SEED)) == 1) {
+					// ' 数据库数据请求的数量
+					if (spNumber.compareTo(SEEDCACHE) == 1) {
+						lngDBIDRequestNumber = spNumber;
+					} else {
+						lngDBIDRequestNumber = SEEDCACHE;
+					}
+					dbGetNumber(context, key, lngDBIDRequestNumber, lngRBeginNumber, lngREndNumber);
+					spBegin = lngRBeginNumber.getValue();
+					spEnd = lngREndNumber.getValue();
+					if (spBegin == null) {
+						spBegin = BigDecimal.valueOf((long) 1);
+					}
+					if (spEnd == null) {
+						spEnd = BigDecimal.valueOf((long) 0);
+					}
+				}
+				BigDecimal ret = spBegin;
+				spBegin = ret.add(spNumber);
+				cacheID.put(key + ".start", spBegin);
+				cacheID.put(key + ".end", spEnd);
+				return ret;
+	}
+	private static void dbGetNumber(IContext context, String key, BigDecimal lngDBIDRequestNumber,
+			Ref<BigDecimal> lngRBeginNumber, Ref<BigDecimal> lngREndNumber)throws Throwable  {
+		key = key.toUpperCase();
+		ITableDBContext subContext = TableDBContextFactory.createDBContext(context); // 开启一个独立事务
+		try {
+			ITableDBManager dbm = subContext.getDBM();
+			String sSQL = "SELECT ID, VALUE, PROP1 FROM SYSCACHE WHERE K like ?";
+			// for update only for mysql
+			Object[][] rstNumber1 = dbm.getResultArray(sSQL, 3, new Object[]{key});
+			BigDecimal lngGetValue;
+			BigDecimal lngEndNumber;
+			BigDecimal lngIniStartNumber;
+			BigDecimal lngIniEndNumber;
+			BigDecimal lngIniWarnNumber;
+			if (rstNumber1.length == 0) {
+				String ID = UUID.randomUUID().toString();
+				lngIniStartNumber = BigDecimal.valueOf((long) 1);
+				lngIniEndNumber = BigDecimal.valueOf((long) 100);
+				lngIniWarnNumber = BigDecimal.valueOf((long) 90);
+				// lngIniStartNumber = BigDecimal.valueOf((long) 1);
+				// lngIniEndNumber = BigDecimal.valueOf((long) 100);
+				// lngIniWarnNumber = BigDecimal.valueOf((long) 90);
+				sSQL = "insert into SYSCACHE(ID, K, VALUE, PROP1, PROP2) values (?,?,?,?,?)";
+				dbm.executeUpdate(sSQL, new Object[]{ID, key, lngIniStartNumber.add(lngDBIDRequestNumber), lngIniEndNumber, lngIniWarnNumber});
+				lngGetValue = lngIniStartNumber;
+			} else {
+				String ID = VarUtil.toString(rstNumber1[0][0]);
+				lngGetValue = VarUtil.toBigDecimal(rstNumber1[0][1]); // VALUE
+				lngEndNumber = VarUtil.toBigDecimal(rstNumber1[0][2]); // PROP1
+				if (lngGetValue.add(lngDBIDRequestNumber).compareTo(lngEndNumber.add(SEED)) == 1) {
+					// // '数据库中AutoNumber中的数量不够。要从AutoNumberPool中重新分配
+					// lngIniStartNumber =
+					// rstNumber2.bkGetInt("IniStartNumber");
+					// lngIniEndNumber = rstNumber2.bkGetInt("IniEndNumber");
+					// lngIniWarnNumber = rstNumber2.bkGetInt("IniWarnNumber");
+					lngIniStartNumber = lngEndNumber.add(SEEDCACHE).add(SEED);
+					lngIniEndNumber = lngEndNumber.add(SEEDCACHE);
+					lngIniWarnNumber = lngIniEndNumber.add(SEEDWARN);
+					// rstNumber.Close
+					sSQL = "UPDATE SYSCACHE set K=?, VALUE=?, PROP1=?, PROP2=? where ID=? ";
+					dbm.executeUpdate(sSQL, new Object[]{key, lngIniStartNumber, lngIniEndNumber, lngIniWarnNumber, ID});
+					lngGetValue = lngIniStartNumber;
+				} else {
+					sSQL = "UPDATE SYSCACHE SET VALUE=(VALUE*1+" + lngDBIDRequestNumber + ") WHERE K=? ";
+					dbm.executeUpdate(sSQL,new Object[]{key});
+				}
+			}
+			lngRBeginNumber.setValue(lngGetValue);
+			lngREndNumber.setValue(lngRBeginNumber.getValue().add(lngDBIDRequestNumber.subtract(SEED)));
+			subContext.commit();
+		} catch (Throwable e) {
+			if (subContext != null)
+				subContext.rollback();
+			throw e;
+		} finally {
+			CloseUtil.close(subContext);
+		}
+		
+	}
 	/**
 	 * TODO 可以利用分布式锁框架或NoSQL来实现全局自增长ID
 	 * 
@@ -341,4 +440,5 @@ class DBBillAutoNumber {
 		}
 		return ' ';
 	}
+	
 }

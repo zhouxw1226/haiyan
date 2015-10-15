@@ -57,7 +57,7 @@ public class ExpUtil implements IExpUtil {
 		}
 	}
 	// ------------------------------------------------------------------------------ //
-	private IExpContext<IContext> expContext;
+	private transient IExpContext<IContext> expContext;
 	/**
 	 * @param param
 	 * @return boolean
@@ -67,12 +67,6 @@ public class ExpUtil implements IExpUtil {
 				&& (param.startsWith("^") || param.startsWith("?")
 				 || param.startsWith("=") || param.startsWith("$"));
 	}
-//	/** 
-//	 * @param expContextInstance
-//	 */
-//	public ExpUtil(IExpContext<IContext> expContextInstance) {
-//		this.expContext = expContextInstance;
-//	}
 	/**
 	 */
 	public ExpUtil() {
@@ -159,36 +153,6 @@ public class ExpUtil implements IExpUtil {
 	public Object evalExp(String exp) throws Throwable {
 		if (exp == null)
 			return null;
-//		// String[] ids = (String[])this.expContextInstance.getParameter(IDS);
-//		if (ids != null) {
-//			IContext context = expContext.getContext();
-//			if (context instanceof ITableContext) {
-//				ITableContext tableContext = (ITableContext)context;
-//				Table table = (Table) expContext.getParameter(ExpUtil.TABLE);
-//				String batch = (String)tableContext.getAttribute("__batch");
-//				if ("1".equals(batch) || ids.length==0) {
-//					IRecord r = tableContext.getDBM().createRecord();
-//					r.set(table.getId().getName(), ids);
-//					expContext.setParameter(RECORD, r);
-//					return evalExpRecord(exp);
-//				} else {
-//					IRecord r;
-//					for (String id : ids) {
-//						r = tableContext.getDBM().select(tableContext, table, id);
-//						if (r == null)
-//							r = tableContext.getDBM().createRecord();
-//						expContext.setParameter(RECORD, r); // 逐行执行
-//						if (ids.length==1)
-//							return evalExpRecord(exp);
-//						else
-//							evalExpRecord(exp);
-//					}
-//				}
-//			}
-//			return true;
-//		} else {
-//			return evalExpRecord(exp);
-//		}
 		return pEvalExp(exp);
 	}
 	private Object pEvalExp(String exp) throws Throwable {
@@ -242,7 +206,6 @@ public class ExpUtil implements IExpUtil {
 //					}
 //				}
 //			} catch (Throwable e) {
-//				// e.printStackTrace(); //ignore
 //				DebugUtil.error(e);
 //			}
 //		}
@@ -293,31 +256,31 @@ public class ExpUtil implements IExpUtil {
 		private transient Object[] vars; // 公式面变量
 		private transient IContext context;
 		// ////////////////////////////////////////
-		public ExpContextImpl() {
+		private ExpContextImpl() {
 		}
-		public ExpContextImpl(IContext context) {
+		private ExpContextImpl(IContext context) {
 			this.context = context;
 		}
-		public ExpContextImpl(IContext context, Table table) {
+		private ExpContextImpl(IContext context, Table table) {
 			this.context = context;
 			this.setParameter(TABLE, table);
 		}
-		public ExpContextImpl(IContext context, Table table, IDBRecord record) {
+		private ExpContextImpl(IContext context, Table table, IDBRecord record) {
 			this.context = context;
 			this.setParameter(TABLE, table);
 			this.setParameter(RECORD, record);
 		}
-		public ExpContextImpl(IContext context, Table table, String[] ids) {
+		private ExpContextImpl(IContext context, Table table, String[] ids) {
 			this.context = context;
 			this.setParameter(TABLE, table);
 			this.setParameter(IDS, ids);
 		}
-		public ExpContextImpl(IContext context, Table table, ArrayList<IDBRecord> datas) {
+		private ExpContextImpl(IContext context, Table table, ArrayList<IDBRecord> datas) {
 			this.context = context;
 			this.setParameter(TABLE, table);
 			this.setParameter(DATAS, datas);
 		}
-		public ExpContextImpl(IContext context, Table table, IDBResultSet records) {
+		private ExpContextImpl(IContext context, Table table, IDBResultSet records) {
 			this.context = context;
 			this.setParameter(TABLE, table);
 			this.setParameter(RESULT, records);
@@ -372,9 +335,9 @@ public class ExpUtil implements IExpUtil {
 		}
 		@Override
 		public void close() {
-			this.vars = null;
-			// NOTICE CloseUtil.close(this.context) 不用做最外层已经做了 直接=null
+//			CloseUtil.close(this.context); //  NOTICE 外面会自动处理
 			this.context = null;
+			this.vars = null;
 		}
 		@Override
 		public String[] getExtendImpClass() throws Throwable {

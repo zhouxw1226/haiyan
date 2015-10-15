@@ -332,7 +332,7 @@ public class VarUtil {
 			return DateUtil.format((Time) value, "yyyy-MM-dd HH:mm:ss");
 		}
 		if ((value instanceof java.util.Date)) {
-			return DateUtil.format((java.util.Date) value, "yyyy-MM-dd");
+			return DateUtil.format((java.util.Date) value, "yyyy-MM-dd HH:mm:ss");
 		}
 		if ((value instanceof Integer[]))
 			return StringUtil.join((Object[]) value, ";");

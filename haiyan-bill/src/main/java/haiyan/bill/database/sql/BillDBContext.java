@@ -4,7 +4,6 @@ import haiyan.bill.database.IBillDBManager;
 import haiyan.common.CloseUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.config.IBillConfig;
-import haiyan.common.intf.session.IContext;
 import haiyan.common.session.AppContext;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.sql.DBBillAutoID;
@@ -21,59 +20,29 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	public BillDBContext() { 
 		super();
 	}
-	public BillDBContext(String DSN) { 
-		super();
-		super.setDSN(DSN);
-	}
-	public BillDBContext(IContext parent) { 
+	public BillDBContext(ITableDBContext parent) { 
 		super(parent);
 	}
+	@Override
 	public Object getNextID(IBillConfig bill) throws Throwable {
 		return DBBillAutoID.genShortID(this, ConfigUtil.getMainTable(bill), 100);
-//		return UUID.randomUUID().toString();
-	}
-//	private List<ITableDBContext> tableContexts = new ArrayList<ITableDBContext>();
-//	@Override
-//	public void setTableDBContext(int tableIndex, ITableDBContext context) {
-//		if(tableContexts.size()>tableIndex)
-//			tableContexts.set(tableIndex, context);
-//		else
-//			tableContexts.add(context);
-//	}
-//	@Override
-//	public ITableDBContext getTableDBContext(int tableIndex) {
-//		return tableContexts.get(tableIndex);
-//	}
-	private ITableDBContext tableContext = null;
-	@Override
-	public void setTableDBContext(ITableDBContext context) {
-//		if(tableContexts.size()>tableIndex)
-//			tableContexts.set(tableIndex, context);
-//		else
-//			tableContexts.add(context);
-		this.tableContext=context;
 	}
 	@Override
 	public ITableDBContext getTableDBContext() {
-//		return tableContexts.get(tableIndex);
-		return this.tableContext;
+		if (this.parent instanceof ITableDBContext)
+			return (ITableDBContext)this.parent;
+		throw new Warning("unkown parent tableContext");
 	}
 	private IBillDBManager bbm;
 	@Override
 	public void setBBM(IBillDBManager bbm) {
 		if (this.bbm!=null)
-			throw new Warning("当前BillDBContext中已经存在BBM");
-//		if (this.bbm!=null && this.bbm.isAlive())
-//			CloseUtil.close(this.bbm);
+			throw new Warning("bbm exists");
 		this.bbm = bbm;
 	}
 	@Override
 	public IBillDBManager getBBM() {
-		if (this.bbm!=null)
-			return this.bbm;
-		if (this.parent!=null && this.parent instanceof IBillDBContext)
-			return ((IBillDBContext)this.parent).getBBM();
-		return null;
+		return this.bbm;
 	}
 	@Override
 	public Boolean isAlive() {
@@ -119,34 +88,15 @@ public class BillDBContext extends AppContext implements IBillDBContext {
 	}
 	@Override
 	public void close() {
-		ITableDBContext context = this.getTableDBContext();
-		CloseUtil.close(context);
-		this.tableContext=null;
-		IBillDBManager bdm = this.getBBM();
-		CloseUtil.close(bdm);
+		CloseUtil.close(this.bbm);
 		this.bbm = null;
 		super.close();
-//		CloseUtil.close(this.tableContext);
-//		this.tableContext=null;
-//		CloseUtil.close(this.bbm);
-//		this.bbm=null;
-//		super.close();
 	}
 	@Override
 	public void clear() {
-		ITableDBContext context = this.getTableDBContext();
-		if (context!=null)
-			context.clear();
-		IBillDBManager bdm = this.getBBM();
-		if (bdm!=null)
-			bdm.clear();
+		if (this.bbm!=null)
+			this.bbm.clear();
 		super.clear();
-		//for (ITableDBContext context:this.tableContexts) 
-//		if (this.tableContext!=null)
-//			this.tableContext.clear();
-//		if (this.bbm!=null)
-//			this.bbm.clear();
-//		super.clear();
 	}
 	
 }

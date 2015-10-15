@@ -83,7 +83,6 @@ public class MySqlDBManager extends SQLTableDBManager {
     // if (!existList.contains(srcName.toUpperCase()))
     // notExistList.add(srcName.toUpperCase());
     // }
-    // // DebugUtil.debug(notExistList.size());
     // asTable.refValue = (String[]) notExistList.toArray(new String[0]);
     // asExistTbl.refValue = (String[]) existList.toArray(new String[0]);
     // // asTable.setValue(notExistList.toArray(new String[0]));
@@ -96,22 +95,17 @@ public class MySqlDBManager extends SQLTableDBManager {
         for (String tName : tNames) {
             // String sql=getSQLRender().getValidateTablesSQL(tableNames);
             String sql = getValidateTablesSQL(tName.toUpperCase());
-            //
             ResultSet rst = null;
             Statement stat = null;
             try {
-                DebugUtil.debug(">isExistTable().SQL=" + sql);
+                DebugUtil.info(">isExistTable().SQL=" + sql);
                 stat = this.getConnection().createStatement();
                 rst = stat.executeQuery(sql);
-                //
                 while (rst.next()) {
                     if (tName.equalsIgnoreCase(rst.getString(1)))
                         return true;
                 }
             }
-            // catch (Throwable ex) {
-            // throw ex;
-            // }
             finally {
             	CloseUtil.close(rst);
             	CloseUtil.close(stat);
@@ -133,7 +127,6 @@ public class MySqlDBManager extends SQLTableDBManager {
     }
     @Override
     public String getCreateTableSQL(Table oSerTable) {
-        //
         ArrayList<String> sqls = new ArrayList<String>();
         ArrayList<String> sKeySQL = new ArrayList<String>();
         // int count = 0;
@@ -149,7 +142,6 @@ public class MySqlDBManager extends SQLTableDBManager {
             if (isIgnoredField(field))
                 continue;
             sFieldCreateSQL += this.genFieldSQL(field) + ",";
-            // //
             // if (!field.getLazyLoad()
             // && field.getCommon().getReferenceTable() != null
             // && !field.getCommon().getMultipleSelect()) {
@@ -170,7 +162,6 @@ public class MySqlDBManager extends SQLTableDBManager {
             // // ON UPDATE CASCADE ON DELETE CASCADE
             // }
         }
-        //
         // SET character_set_client='gbk'
         // SET character_set_connection='gbk'
         // SET character_set_results='gbk'

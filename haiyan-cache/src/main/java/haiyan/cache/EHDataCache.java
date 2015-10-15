@@ -158,9 +158,9 @@ public class EHDataCache extends AbstractDataCache {
         // if (f.exists())
         // f.delete();
         // // Haiyan.DATAS.3c853aca-1623-4bcf-9fe3-a06f78e24698.data
-        // } catch (Throwable e) {
-        // e.printStackTrace();
-        // }
+        // } catch (Throwable ignore) {
+        //			ignore.printStackTrace();
+        //		}
     }
     // --------------------- tableconfig cache --------------------- //
     private Ehcache getTableCache() {

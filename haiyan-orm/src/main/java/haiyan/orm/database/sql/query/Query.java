@@ -185,7 +185,7 @@ public class Query {
 		// DebugUtil.asert(sql.indexOf('?') < 0);
 		sql = resetSql(sql);
 		// DebugUtil.asert(sql.indexOf('?') < 0);
-		DebugUtil.debug(">Query sql:" + sql);
+		DebugUtil.info(">Query sql:" + sql);
 		PreparedStatement ps = con.prepareStatement(sql, resultSetType, resultSetConcurrency);
 		setValue(ps);
 		return ps;
@@ -202,7 +202,7 @@ public class Query {
 		// DebugUtil.asert(sql.indexOf('?') < 0);
 		sql = resetSql(sql);
 		// DebugUtil.asert(sql.indexOf('?') < 0);
-		DebugUtil.debug(">Query sql:" + sql);
+		DebugUtil.info(">Query sql:" + sql);
 		PreparedStatement ps = con.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		setValue(ps);
 		return ps;
@@ -232,7 +232,6 @@ public class Query {
 		ArrayList<Item> validOrderByItems = getValidItems(this.orderByItems);
 		for (int i = 0; i < validCriticalItems.size(); i++) {
 			CriticalItem item = (CriticalItem) validCriticalItems.get(i);
-			// DebugUtil.debug(item.fieldName + " " + item.getPreparedStr());
 			if (i != 0)
 				if (StringUtil.isBlankOrNull(item.getRelationOpr()))
 					sqlCritical.append(" and ");

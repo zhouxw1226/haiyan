@@ -24,9 +24,9 @@ public class DBPage implements Serializable, IDBResultSet {
 	public static transient final String PAGE_NO_PARAM_NAME = DataConstant.PAGE_NO_PARAM_NAME;
 	public static transient final String MAX_COUNT_PER_PAGE_NAME = DataConstant.MAX_COUNT_PER_PAGE_NAME;
 	public static transient final int[] opts = { 5, 10, 50, 100, 500, 1000 }; // 几种默认选择项
-	public static transient int MAXCOUNTPERQUERY = 500; // 每次查询最大行数
-	public static transient int MAXNUMPERPAGE = 100; // 默认每页行数
-	private int pageRowCount = MAXNUMPERPAGE;
+	public static transient int MAXCOUNT_PERQUERY = 500; // 每次查询最大行数
+	public static transient int MAXNUM_PERPAGE = 100; // 默认每页行数
+	private int pageRowCount = MAXNUM_PERPAGE;
 	private int pageIndex = 1;
 	private long totalRecordCount = 0;
 	private String tableName;
@@ -167,16 +167,6 @@ public class DBPage implements Serializable, IDBResultSet {
 	 */
 	@Override
 	public String toString() {
-//		StringBuffer result = new StringBuffer("");
-//		Iterator<?> iter = this.getRecords().iterator();
-//		while (iter.hasNext()) {
-//			IDBRecord form = (IDBRecord) iter.next();
-//			if (result.length() > 0)
-//				result.append("\n");
-//			result.append(form.toString());
-//		}
-//		// DebugUtil.debug(result);
-//		return result.toString();
 		return this.toJSon().toString();
 	}
 	@Override

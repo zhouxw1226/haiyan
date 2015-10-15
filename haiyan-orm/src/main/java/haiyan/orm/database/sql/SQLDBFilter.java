@@ -94,7 +94,7 @@ public class SQLDBFilter implements ISQLDBFilter {
 				result = StringUtil.replaceAll(result, "{" + i + "}", s);
 			}
 		// result = String.format(result, values);
-		DebugUtil.debug(">filter: " + result);
+		DebugUtil.info(">filter: " + result);
 		mainSQL = result;
 		return mainSQL;
 	}

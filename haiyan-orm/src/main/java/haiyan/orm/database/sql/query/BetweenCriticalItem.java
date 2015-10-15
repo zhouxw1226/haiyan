@@ -8,12 +8,8 @@ import java.sql.SQLException;
  */
 public class BetweenCriticalItem extends CriticalItem {
 
-	//
 	private Object lowerValue;
-
-	//
 	private Object upperValue;
-
 	/**
 	 * @param fieldName
 	 * @param lowerValue
@@ -27,12 +23,7 @@ public class BetweenCriticalItem extends CriticalItem {
 		this.upperValue = upperValue;
 		this.type = type;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.haiyan.genmis.util.queryengine.CriticalItem#getPreparedStr()
-	 */
+	@Override
 	public String getPreparedStr() {
 		String result = "";
 		if (isValueValid(this.lowerValue) && isValueValid(this.upperValue)) {
@@ -47,21 +38,11 @@ public class BetweenCriticalItem extends CriticalItem {
 		}
 		return result;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.haiyan.genmis.util.queryengine.Item#isIgnored()
-	 */
+	@Override
 	public boolean isIgnored() {
 		return (isValueValid(this.lowerValue) || isValueValid(this.upperValue)) ? false : true;
 	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.haiyan.genmis.util.queryengine.CriticalItem#setValue(java.sql.PreparedStatement, int)
-	 */
+	@Override
 	public int setValue(PreparedStatement ps, int number) throws SQLException {
 		if (isValueValid(this.lowerValue)) {
 			setDBValue(ps, number, this.lowerValue, this.type);

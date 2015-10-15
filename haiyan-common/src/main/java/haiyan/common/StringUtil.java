@@ -5,6 +5,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.validator.GenericTypeValidator;
 
@@ -700,6 +702,19 @@ public final class StringUtil {
 		if (StringUtil.isEmpty(s))
 			return "";
 		return s.replaceAll(".*([';]+|(--)+).*", " ");
+	}
+	/**
+	 * @param str
+	 * @return
+	 */
+	public static int countChineseChar(String str) {
+		Pattern p = Pattern.compile("[\u4e00-\u9fa5]");
+		Matcher m = p.matcher(str);
+		return m.groupCount();
+//		if (m.find()) {
+//			return true;
+//		}
+//		return false;
 	}
 	// public static void main(String[] args) {
 	// DebugUtil.debug(isNumeric("2326,23623.23"));

@@ -168,7 +168,6 @@ public class SQLDBTypeConvert {
         } else {
             throw new Warning(null, 100028, "unsupport_javatype", new String[] { type.toString() });
         }
-        // return clear;
         // DebugUtil.debug("#DT.setValue(" + field.getName() + ")=" + value);
     }
     /**
@@ -304,6 +303,7 @@ public class SQLDBTypeConvert {
             if (!StringUtil.isBlankOrNull(field.getDataStyle())) {
                 dateStyle = field.getDataStyle();
             }
+//          DEFAULT_TIMESTAMPSTYLE
             SimpleDateFormat sdf = new SimpleDateFormat(dateStyle);
             result = new java.sql.Timestamp(sdf.parse(time).getTime() + (isPhp ? 8 * 60 * 60 * 1000 : 0));
         } else {
@@ -386,7 +386,7 @@ public class SQLDBTypeConvert {
             CriticalItem item = new InCriticalItem(" t_1." + ConfigUtil.getDisplayRefFields(field)[0] + " ", showValues, String.class);
             String sFilter = " and " + item.toString();
             SQLDBFilter filter = new SQLDBFilter(sFilter);
-            IDBResultSet page = context.getDBM().select(context, refTable, filter, DBPage.MAXCOUNTPERQUERY, 1);
+            IDBResultSet page = context.getDBM().select(context, refTable, filter, DBPage.MAXCOUNT_PERQUERY, 1);
             for (int i = 0; i < page.getTotalRecordCount(); i++) {
                 if (i > 0)
                     idValuesRef += ",";
@@ -422,7 +422,7 @@ public class SQLDBTypeConvert {
             // DebugUtil.debug("+++++" + refTable.getName());
             IDBResultSet page = null;
             // context.setAttribute("hiddenQuickCondition__ignored", "1");
-            page = context.getDBM().select(context, refTable, (IDBRecord)null, DBPage.MAXCOUNTPERQUERY, 1);
+            page = context.getDBM().select(context, refTable, (IDBRecord)null, DBPage.MAXCOUNT_PERQUERY, 1);
             // context.setAttribute("hiddenQuickCondition__ignored", "0");
             Collection<IDBRecord> datas = null;
             if (page != null)

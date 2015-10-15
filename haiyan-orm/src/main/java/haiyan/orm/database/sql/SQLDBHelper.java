@@ -155,8 +155,7 @@ public class SQLDBHelper {
 //		Statement st = null;
 //		ResultSet rs = null;
 //		try {
-//			DebugUtil.debug(">getResultStrArray:" + sql);
-//			//
+//			DebugUtil.info(">getResultStrArray:" + sql);
 //			st = conn.createStatement();
 //			rs = st.executeQuery(sql);
 //			while (rs.next()) {
@@ -197,7 +196,7 @@ public class SQLDBHelper {
 		Statement st = null;
 		ResultSet rs = null;
 		try {
-			DebugUtil.debug(">getResultArray:" + sql);
+			DebugUtil.info(">getResultArray:" + sql);
 			st = conn.createStatement();
 			rs = st.executeQuery(sql);
 			while (rs.next()) {
@@ -232,7 +231,7 @@ public class SQLDBHelper {
 		int result = 0;
 		PreparedStatement st = null;
 		try {
-			DebugUtil.debug(">executeUpdate:" + sql);
+			DebugUtil.info(">executeUpdate:" + sql);
 			st = conn.prepareStatement(sql);
 			if (paras!=null) {
 				int length = paras.length;
@@ -260,7 +259,7 @@ public class SQLDBHelper {
 		int result = 0;
 		Statement st = null;
 		try {
-			DebugUtil.debug(">executeUpdate:" + sql);
+			DebugUtil.info(">executeUpdate:" + sql);
 			st = conn.createStatement();
 			result = st.executeUpdate(sql);
 			return result;
@@ -282,7 +281,6 @@ public class SQLDBHelper {
 		// try {
 		ResultSetMetaData metaData = rs.getMetaData();
 		int columnCount = metaData.getColumnCount();
-		// DebugUtil.debug(">>columnCount=" + columnCount);
 		while (rs != null && rs.next()) {
 			Vector<String> tempVector = new Vector<String>();
 			for (int i = 1; i <= columnCount; i++) {
@@ -297,12 +295,8 @@ public class SQLDBHelper {
 					break;
 				}
 			}
-			// DebugUtil.debug();
 			data.add(tempVector);
 		}
-		// } catch (Throwable ex) {
-		// throw ex;
-		// }
 		return data;
 	}
 	/**
@@ -325,12 +319,8 @@ public class SQLDBHelper {
 			// ResultSet getColumns(String catalog, String schemaPattern,
 			// String tableNamePattern, String columnNamePattern){}
 			rs = metaData.getColumns(schemaPattern, schemaPattern, tableNamePattern, columnNamePattern);
-			// DebugUtil.debug(metaData.getColumnLabel(1));
 			vc = getStrResults(rs);
 		}
-		// catch (Throwable ex) {
-		// throw ex;
-		// }
 		finally {
 			try {
 				if (rs != null)
@@ -506,10 +496,6 @@ public class SQLDBHelper {
 			}
 			data.add(tempVector);
 		}
-		DebugUtil.debug("\n");
-		// } catch (Throwable ex) {
-		// throw ex;
-		// }
 		return data;
 	}
 	/**
@@ -613,8 +599,7 @@ public class SQLDBHelper {
 				HashMap<String, DBColumn> columnMap = new HashMap<String, DBColumn>();
 				String schemaName = v.elementAt(1).toString();
 				String tableName = v.elementAt(2).toString();
-				// DebugUtil.debug("schemaName=" + schemaName +
-				// ",wantschema=" + wantschema + ",tableName=" + tableName);
+				// DebugUtil.debug("schemaName=" + schemaName + ",wantschema=" + wantschema + ",tableName=" + tableName);
 				if (tableName.indexOf("/") == -1
 						&& (schemaName.equalsIgnoreCase(catalog) || StringUtil.isEmpty(schemaName))) {
 					tableName = tableName.toUpperCase();

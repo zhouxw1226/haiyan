@@ -45,6 +45,15 @@ public class DBCPDatabase extends SQLDatabase {
 		if (url == null) {
 			throw new IllegalArgumentException("dbcp.url can't be null");
 		}
+		if (driver == null) {
+			throw new IllegalArgumentException("dbcp.driver can't be null");
+		}
+		if (user == null) {
+			throw new IllegalArgumentException("dbcp.user can't be null");
+		}
+		if (pass == null) {
+			throw new IllegalArgumentException("dbcp.pass can't be null");
+		}
 		this._driver = driver;
 		this._url = url;
 		this._userName = user;
@@ -93,7 +102,7 @@ public class DBCPDatabase extends SQLDatabase {
 	@Override
 	public Connection getDBConnection() throws Throwable {
 		Connection conn = ds.getConnection();
-		DebugUtil.debug(">----< dbm.open.connHash." + conn.hashCode()+", thin=DBCPDatabase Driver=" + _driver + ", URL="
+		DebugUtil.info(">----< dbm.open.connHash." + conn.hashCode()+", thin=DBCPDatabase Driver=" + _driver + ", URL="
 				+ _url + ", UserName=" + _userName + ", Password=" + _password);
 		return conn;
 	}

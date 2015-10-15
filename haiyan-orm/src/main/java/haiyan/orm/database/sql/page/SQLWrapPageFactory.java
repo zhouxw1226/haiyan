@@ -75,8 +75,6 @@ public abstract class SQLWrapPageFactory extends SQLDBPageFactory {
 	 */
 	public abstract void setSelectPSByLimit(PreparedStatement selectPS, int lastIndex,
 			long startNum, int count) throws SQLException;
-	// DebugUtil.debug("startnum:"+startRowNum+"
-	// endnum:"+startRowNum+maxPageRecordCount);
 	@Override
 	public void dealPage(int maxPageRecordCount, int currPageNO,
 			IDBRecordCallBack callback) throws Throwable {
@@ -84,7 +82,6 @@ public abstract class SQLWrapPageFactory extends SQLDBPageFactory {
 		try {
 			selectRS = selectPS.executeQuery();
 			selectRS.beforeFirst();
-			// while (selectRS.next()) {
 			for (int i = 0; i < maxPageRecordCount; i++) {
 				if (selectRS.next()) {
 					IDBRecord form = (IDBRecord) factory.getRecord(selectRS);
@@ -94,9 +91,6 @@ public abstract class SQLWrapPageFactory extends SQLDBPageFactory {
 				}
 			}
 		}
-		// catch (Throwable ex) {
-		// throw ex;
-		// }
 		finally {
 			CloseUtil.close(selectRS);
 			CloseUtil.close(selectPS);
@@ -116,9 +110,6 @@ public abstract class SQLWrapPageFactory extends SQLDBPageFactory {
 				}
 			}
 		}
-		// catch (Throwable ex) {
-		// throw ex;
-		// }
 		finally {
 			CloseUtil.close(countRS);
 			CloseUtil.close(countPS);
@@ -146,9 +137,6 @@ public abstract class SQLWrapPageFactory extends SQLDBPageFactory {
 				}
 			}
 		}
-		// catch (Throwable ex) {
-		// throw ex;
-		// }
 		finally {
 			CloseUtil.close(selectRS);
 			CloseUtil.close(selectPS);

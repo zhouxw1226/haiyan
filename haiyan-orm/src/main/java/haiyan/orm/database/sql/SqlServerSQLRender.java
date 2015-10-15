@@ -79,7 +79,7 @@ class SqlServerSQLRender extends SQLRender {
         buf.append(bufValue.toString());
         // String reault = buf.toString();
         mainSQL = buf.toString();
-        DebugUtil.debug(">InsertSQL=" + mainSQL);
+        DebugUtil.info(">InsertSQL=" + mainSQL);
         //
         return mainSQL;
     }

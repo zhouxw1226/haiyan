@@ -11,12 +11,13 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -85,22 +86,6 @@ public class ConfigUtil {
     private static synchronized void pInit() {
     	if (DATACACHE==null)
     		throw new Warning(SysCode.SysCodeMessage.ERROR_1001);
-        // // if (tables != null)
-        // // return;
-        // // tables = new HashMap<String, Table>();
-        // // tableFiles = new HashMap<String, File>();
-        // // resources = new ValidatorResources();
-        // // dbSources = new HashMap<String, MyDatabase>();
-        // try {
-        // loadEnvironment();
-        // } catch (Throwable ex) {
-        // ex.printStackTrace();
-        // // "Init Failed! Cause:" +ex.getMessage()
-        // // System.out.println(ex.getMessage());
-        // // System.exit(0);
-        // // ex.printStackTrace();
-        // // throw ex;
-        // }
     }
     public final static void setExpUtil(IExpUtil c) {
     	EXPUTIL = c;
@@ -563,12 +548,6 @@ public class ConfigUtil {
             // Table[] newTables = genmis.getTable();
             DebugUtil.debug(">saved tableFile:" + file.getAbsolutePath());
         }
-        // catch (Throwable ex) {
-        // throw ex;
-        // // ex.printStackTrace();
-        // // throw new Warning(ex, new TransCode(100054, "error_write_config",
-        // // new String[] { file.getAbsolutePath() }));
-        // }
         finally {
         	CloseUtil.close(writer);
         }
@@ -1047,7 +1026,7 @@ public class ConfigUtil {
 		File path = new File(pathName);
 		final ArrayList<File> list = new ArrayList<File>();
 		File[] xmls = path.listFiles(new FileFilter() {
-			public boolean accept(File pathname) {//
+			public boolean accept(File pathname) {
 				if (pathname.isFile()
 						&& pathname.getName().toLowerCase().endsWith(".xml")) {
 					return true;
@@ -1517,14 +1496,14 @@ public class ConfigUtil {
         }
         return result.toArray(new Field[0]);
     }
-    /**
-     * @return PropertyResourceBundle
-     * @throws Throwable
-     */
-    public final static ResourceBundle getPropertyBundle(String bundName)
-            throws Throwable {
-        return PropUtil.getPropertyBundle(bundName);
-    }
+//    /**
+//     * @return PropertyResourceBundle
+//     * @throws Throwable
+//     */
+//    public final static ResourceBundle getPropertyBundle(String bundName)
+//            throws Throwable {
+//        return PropUtil.getPropertyBundle(bundName);
+//    }
 //     /**
 //     * @param mainTable
 //     * @param field
@@ -1743,29 +1722,61 @@ public class ConfigUtil {
         else
             return new String[0];
     }
-    private static String CONFIGHOME = null;
-    /**
-     * @return String
-     * @throws Throwable
-     */
-    public final static String getConfigHome() throws Throwable {
-        if (CONFIGHOME != null)
-            return CONFIGHOME;
-        String configPath = getConfig().getTableConfigFilePath().getValue();
+    private static String transRealPath(String configPath) throws URISyntaxException {
+    	String configPathReal;
         if (configPath.indexOf("/") >= 0 || configPath.indexOf("\\") >= 0) {
             String fileName = configPath;
             fileName = StringUtil.replaceAll(fileName, "\\", File.separator);
             fileName = StringUtil.replaceAll(fileName, "/", File.separator);
-            CONFIGHOME = fileName;
+            configPathReal = fileName;
         } else {
-            String fileName = PathUtil.getHome() + File.separator + configPath;
-            fileName = StringUtil.replaceAll(fileName, "\\", File.separator);
-            fileName = StringUtil.replaceAll(fileName, "/", File.separator);
-            CONFIGHOME = fileName;
+        	configPathReal = configPath;
         }
-        return CONFIGHOME;
+//		String configPath = getConfigHome();
+		URL classURL = ConfigUtil.class.getClassLoader().getResource("AppResources.properties");
+		String classPath = new File(classURL.toURI()).getParentFile().getAbsolutePath(); // classes
+//		File projectFile = new File(classURL.toURI()).getParentFile().getParentFile().getParentFile(); // webcontent
+//		String projectPath = projectFile.getAbsolutePath();
+		String projectPath = PathUtil.getHome(); // webcontent
+		String userDir = System.getProperty("user.dir");
+		configPathReal = StringUtil.replace(configPathReal, "${classpath}", classPath);
+		configPathReal = StringUtil.replace(configPathReal, "${projectpath}", projectPath);
+		configPathReal = StringUtil.replace(configPathReal, "${user.dir}", userDir);
+//    	if (!StringUtil.isEmpty(webInfPath)) {
+//    		configPathReal = StringUtil.replace(configPathReal, "${webinf}", userDir);
+//    	}
+//		if ("../config".equalsIgnoreCase(configPath)) {
+//			if ("${classpath}".equalsIgnoreCase(configPath))
+//		}
+		return configPathReal;
+	}
+    private static String CONFIGHOME = null;
+    @Deprecated
+    public final static String getConfigHome() {
+		try {
+	        if (CONFIGHOME != null)
+	            return CONFIGHOME;
+	        String configPath = getConfig().getTableConfigFilePath().getValue();
+	        CONFIGHOME = transRealPath(configPath);
+	        return CONFIGHOME;
+		} catch (Throwable e) {
+			throw Warning.wrapException(e);
+		}
     }
-    /**
+//	public final static URL getConfigURL(String billOrTableName) {
+//		try {
+//			String realPath = getConfigHome();
+//			File f = new File(realPath + File.separator + billOrTableName);
+//			if (f.exists()) { // 如果指定的统一路径存在则返回此url
+//				URL url = f.toURI().toURL();
+//				return url;
+//			} else
+//				return ConfigUtil.class.getClassLoader().getResource(billOrTableName);
+//		} catch (Throwable e) {
+//			throw Warning.wrapException(e);
+//		}
+//	}
+	/**
      * @param table
      * @return boolean
      */

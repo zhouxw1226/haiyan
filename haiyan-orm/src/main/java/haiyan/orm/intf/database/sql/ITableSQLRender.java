@@ -31,7 +31,7 @@ public interface ITableSQLRender extends ISQLRender {
 	PreparedStatement getDeletePreparedStatement(ITableDBContext context, Table table, String[] ids) throws Throwable;
 	PreparedStatement getSelectPreparedStatement(ITableDBContext context, Table table, String id) throws Throwable;
 	PreparedStatement getInsertPreparedStatement(ITableDBContext context, Table table, IDBRecord record, String newID)  throws Throwable;
-	PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record,IDBFilter filter) throws Throwable;
+	PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record, IDBFilter filter) throws Throwable;
 	PreparedStatement getInsertPreparedStatement(ITableDBContext context, Table table) throws Throwable; // batch
 	PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table) throws Throwable; // batch
 	Field[] getInsertValidField(ITableDBContext context, Table table) throws Throwable; // batch

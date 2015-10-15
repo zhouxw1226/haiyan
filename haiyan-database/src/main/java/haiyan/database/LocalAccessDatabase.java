@@ -49,12 +49,10 @@ public class LocalAccessDatabase extends SQLDatabase {
 	}
 	@Override
 	public Connection getDBConnection() throws Throwable {
-		Connection conn = null;
-		DebugUtil.debug(">thin=LocalAccessDatabase, Driver=" + driver
-				+ ", Address=" + address + ", UserName=" + user + ", Password=" + pass);
 		String url = preURL + "DBQ=" + address;// db1.mdb
-		conn = DriverManager.getConnection(url, user, pass);
-		DebugUtil.debug(">----< dbm.open.connHash." + conn.hashCode());
+		Connection conn = DriverManager.getConnection(url, user, pass);
+		DebugUtil.debug(">----< dbm.open.connHash." + conn.hashCode() + ", thin=LocalAccessDatabase, Driver=" + driver
+				+ ", Address=" + address + ", UserName=" + user + ", Password=" + pass);
 		return conn;
 	}
 	@Override

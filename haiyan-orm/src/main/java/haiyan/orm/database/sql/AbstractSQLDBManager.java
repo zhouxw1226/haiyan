@@ -14,6 +14,7 @@ import haiyan.common.intf.database.sql.ISQLDBClear;
 import haiyan.common.intf.database.sql.ISQLDBManager;
 import haiyan.common.intf.database.sql.ISQLDatabase;
 import haiyan.config.castorgen.Table;
+import haiyan.database.SQLDatabase;
 import haiyan.orm.database.AbstractCacheDBManager;
 import haiyan.orm.database.TableDBRecordCacheFactory;
 import haiyan.orm.intf.database.orm.ITableDBRecordCacheManager;
@@ -94,11 +95,13 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 	 */
 	@Override
 	public Connection getConnection() throws Throwable {
-		if (this.connection == null) {
-			if (this.database == null)
-				throw new Warning("未知数据库类型");
-			this.connection = this.database.getConnection();
-		}
+		if (this.database == null)
+			throw new Warning("未知数据库类型");
+		if (this.connection == null)
+			synchronized(this) {
+				if (this.connection == null) 
+					this.connection = this.database.getConnection();
+			}
 		return this.connection;
 	}
 	/**
@@ -107,11 +110,13 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 	 */
 	@Override
 	public Connection getConnection(boolean openTrans) throws Throwable {
-		if (this.connection == null) {
-			if (this.database == null)
-				throw new Warning("未知数据库类型");
-			this.connection = this.database.getConnection();
-		}
+		if (this.database == null)
+			throw new Warning("未知数据库类型");
+		if (this.connection == null) 
+			synchronized(this) {
+				if (this.connection == null) 
+					this.connection = this.database.getConnection();
+			}
 		if (openTrans && this.autoCommit == false) // 指定要开启事务,例如执行insert update delete 或者 executeUpdate
 			if (this.isAlive() && this.connection.getAutoCommit()) { // 连接允许开启事务
 				this.connection.setAutoCommit(false);
@@ -222,7 +227,6 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 //				}
 //			}
 //		});
-//		this.commited = true;
 //		//this.autoCommit = true;
 	}
 	public void rollback() throws Throwable {
@@ -260,6 +264,41 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 				this.cacheMgr.clear();
 		} catch (Throwable ignore) {
 			ignore.printStackTrace();
+		}
+	}
+	@Override
+	public void close() {
+		try {
+			if (!this.commited) {
+				this.rollback();
+			}
+			this.commited = false;
+		} catch (Throwable ignore) {
+			ignore.printStackTrace();
+		}
+		try {
+			this.clear(); // 已经处理了异常
+		} catch (Throwable ignore) {
+			ignore.printStackTrace();
+		}
+		// close connection
+		int connHash = -1;
+		try {
+			if (this.isAlive()) {
+//			if (this.connection!=null) {
+				connHash = this.connection.hashCode();
+				this.connection.close();
+			}
+			this.connection = null;
+			this.database = null;
+		} catch (Throwable ignore) {
+			ignore.printStackTrace();
+		} finally {
+			if (connHash >= 0) {
+				SQLDatabase.connCount--;
+				DebugUtil.info(">----< bbm.close.connHash:"+connHash
+						+"\tbbm.connCount:"+SQLDatabase.connCount+"\n");
+			}
 		}
 	}
 }

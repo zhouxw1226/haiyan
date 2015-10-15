@@ -39,6 +39,9 @@ public class DBBillAutoID {
 //		}
 		return DBBillAutoNumber.requestID(context, table, 1);
 	}
+	public static BigDecimal genNewID(IContext context, String key)throws Throwable {
+		return DBBillAutoNumber.requestID(context, key, 1);
+	}
 	/**
 	 * 根据种子key，和请求数量lngNumber，计算出一个不重复的长度为6的字符串
 	 * 

@@ -12,7 +12,7 @@ public interface IBillDBContext extends IDBSession, IContext {
 	Object getNextID(IBillConfig bill) throws Throwable;
 
 	ITableDBContext getTableDBContext();
-	void setTableDBContext(ITableDBContext context);
+//	void setTableDBContext(ITableDBContext context);
 //	ITableDBContext getTableDBContext(int tableIndex);
 //	void setTableDBContext(int tableIndex, ITableDBContext context);
 }
