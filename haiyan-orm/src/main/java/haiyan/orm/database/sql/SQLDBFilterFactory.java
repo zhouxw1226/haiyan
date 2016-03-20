@@ -29,7 +29,6 @@ class SQLDBFilterFactory implements IFactory {
 		// if (sec != null && sec.getEnabled() == true) {
 		// if (table.getOperation() != null
 		// && table.getOperation().getUseFlowEngine()) { //
-		// //
 		// List temp = PDMEngine.getFilters(tx, table, tableAlias, context);
 		// if (temp != null)
 		// return temp.toArray();
@@ -38,7 +37,6 @@ class SQLDBFilterFactory implements IFactory {
 		QueryFilter[] queryFilters = table.getQueryFilter();
 		// DebugUtil.debug(table.getName() + "..." + qfs.length);
 		for (int i = 0; i < queryFilters.length; i++) {
-			// 
 			boolean addQueryFilter = false;
 			if (context == null) {
 				addQueryFilter = true;
@@ -57,7 +55,6 @@ class SQLDBFilterFactory implements IFactory {
 				PluggedFilter[] plFilters = queryFilters[i].getPluggedFilter();
 				for (int j = 0; j < plFilters.length; j++)
 					pluggedFilterList.add(plFilters[j]);
-
 			}
 		}
 		return pluggedFilterList.toArray(new PluggedFilter[0]);

@@ -1,13 +1,5 @@
 package haiyan.cache;
 
-import haiyan.common.DebugUtil;
-import haiyan.common.PropUtil;
-import haiyan.common.VarUtil;
-import haiyan.common.intf.cache.IDataCache;
-import haiyan.common.intf.config.ITableConfig;
-import haiyan.common.intf.session.IUser;
-import haiyan.common.session.SessionMap;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +14,14 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import haiyan.common.DebugUtil;
+import haiyan.common.PropUtil;
+import haiyan.common.VarUtil;
+import haiyan.common.intf.cache.IDataCache;
+import haiyan.common.intf.config.ITableConfig;
+import haiyan.common.intf.session.IUser;
+import haiyan.common.session.SessionMap;
+
 /**
  * Cache Facade
  * 
@@ -29,6 +29,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * 
  */
 public class CacheUtil {
+	// ---------------------------------------------------------------------------- //
 	private static Map<String,IDataCache> CACHE_DSN = new HashMap<String,IDataCache>();
 	public static final void setDataCache(String DSN, IDataCache c) { // IOC
 		CACHE_DSN.put(DSN, c);
@@ -55,14 +56,16 @@ public class CacheUtil {
 		return CACHE;
 	}
 	private static class CacheBean {
-		CacheBean(String schema, Object id, Object val) {
-			this.schema = schema;
-			this.id = id;
+		CacheBean(Enum<?> schema, Object id, Object val, int seconds) {
+			this.schema = schema.toString();
+			this.id = id.toString();
 			this.val = val;
+			this.seconds = seconds;
 		}
 		String schema;
-		Object id;
+		String id;
 		Object val;
+		int seconds;
 	}
 	private static Lock LOCK = new ReentrantLock();
 	private static Condition CONDITION = LOCK.newCondition();
@@ -82,8 +85,8 @@ public class CacheUtil {
 						LOCK.lock();
 						try {
 							CONDITION.await();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
+						} catch (InterruptedException ignore) {
+							ignore.printStackTrace();
 						} finally {
 							LOCK.unlock();
 						}
@@ -93,8 +96,8 @@ public class CacheUtil {
 						LOCK.lock();
 						try {
 							CONDITION.await();
-						} catch (InterruptedException e) {
-							e.printStackTrace();
+						} catch (InterruptedException ignore) {
+							ignore.printStackTrace();
 						} finally {
 							LOCK.unlock();
 						}
@@ -102,28 +105,35 @@ public class CacheUtil {
 						String schema = bean.schema;
 						Object id = bean.id;
 						Object val = bean.val;
-						if (val!=null)
-							getDataCache().setData(schema, id, val);
+						int seconds = bean.seconds;
+						if (val != null) {
+							DebugUtil.debug(String.format("setData(%s,%s,%s,%s)", schema, id, val, seconds));
+							getDataCache().setData(schema, id, val, seconds);
+						}
 					}
 				}
 			}
 		});
 	}
+	// ---------------------------------------------------------------------------- //
 //	private static String getKey(String schema, Object id) {
 //		return schema+"_"+id;
 //	}
-	public static Object deleteData(String schema, Object id) {
+	public static void clearData(Enum<?> schema) {
+		getDataCache().clearData(schema.toString());
+	}
+	public static Object deleteData(Enum<?> schema, Object id) {
 //		String key = getKey(schema, id);
 //		if (QUEUE.contains(key)) {
 //			QUEUE.remove();
 //		}
-		return getDataCache().deleteData(schema, id);
+		return getDataCache().deleteData(schema.toString(), id.toString());
 	}
-	public static Object updateData(String schema, Object id, Object o) {
-		return getDataCache().updateData(schema, id, o);
+	public static Object getData(Enum<?> schema, Object id) {
+		return getDataCache().getData(schema.toString(), id.toString());
 	}
 //	// 缓存对象只要一个在队列里即可
-//	public static Object setData(String schema, Object id, Object o, boolean newAlways) {
+//	public static Object setData(Object schema, Object id, Object o, boolean newAlways) {
 //		String key = getKey(schema,id);
 //		if (newAlways!=true) {
 //			return o;
@@ -132,60 +142,74 @@ public class CacheUtil {
 //		return o;
 //		//return getDataCache().setData(schema, id, o);
 //	}
-	// 缓存对象只要一个在队列里即可
-	public static Object setData(String schema, Object id, Object o) {
+	public static Object setData(Enum<?> schema, Object id, Object o, int seconds) {
 //		String key = getKey(schema,id);
 //		if (newAlways!=true) {
 //			return o;
 //		}
-		QUEUE.add(new CacheBean(schema, id, o));
+		QUEUE.add(new CacheBean(schema, id, o, seconds));
 		LOCK.lock();
 		try {
 			CONDITION.signal();
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (Throwable ignore) {
+			ignore.printStackTrace();
 		} finally {
 			LOCK.unlock();
 		}
 		return o;
 //		//return getDataCache().setData(schema, id, o);
 	}
-	public static Object getData(String schema, Object id) {
-		return getDataCache().getData(schema, id);
+	// 缓存对象只要一个在队列里即可
+	public static Object setData(Enum<?> schema, Object id, Object o) {
+		return setData(schema, id, o, -1);
 	}
-	public static Object setLocalData(String schema, Object id, Object o) {
-		return getDataCache().setLocalData(schema, id, o);
+	public static Object updateData(Enum<?> schema, Object id, Object o) {
+		//return getDataCache().updateData(schema.toString(), id.toString(), o);
+		return setData(schema, id, o);
 	}
-	public static Object getLocalData(String schema, Object id) {
-		return getDataCache().getLocalData(schema, id);
+	public static Object updateData(Enum<?> schema, Object id, Object o, int seconds) {
+		//return getDataCache().updateData(schema.toString(), id.toString(), o);
+		return setData(schema, id, o, -1);
 	}
-	public static Object removeLocalData(String schema, Object id) {
-		return getDataCache().removeLocalData(schema, id);
+	// ---------------------------------------------------------------------------- //
+	public static Object setLocalData(Enum<?> schema, Object id, Object o) {
+		return getDataCache().setLocalData(schema.toString(), id.toString(), o);
 	}
-	public static void clearData(String schema) {
-		getDataCache().clearData(schema);
+	public static Object getLocalData(Enum<?> schema, Object id) {
+		return getDataCache().getLocalData(schema.toString(), id.toString());
+	}
+	public static Object removeLocalData(Enum<?> schema, Object id) {
+		return getDataCache().removeLocalData(schema.toString(), id.toString());
+	}
+	// ---------------------------------------------------------------------------- //
+	private static boolean USE_LOCAL_CACHE = true; // 是否使用本地缓存
+	public static boolean isUseLocalCache() {
+		return USE_LOCAL_CACHE;
+	}
+	public static void setUseLocalCache(boolean useLocalCache) {
+		USE_LOCAL_CACHE = useLocalCache;
 	}
 //	// -------------------- list opr --------------------//
-//	public static Object setListData(String cacheID, Object id, Object o) {
-//		return getDataCache().setLocalData(cacheID, id, o);
+//	public static Object setListData(Enum<?> cacheID, Object id, Object o) {
+//		return getDataCache().setLocalData(cacheID.toString(), id.toString(), o);
 //	}
-//	public static Object getListData(String cacheID, Object id) {
-//		return getDataCache().getLocalData(cacheID, id);
+//	public static Object getListData(Enum<?> cacheID, Object id) {
+//		return getDataCache().getLocalData(cacheID.toString(), id.toString());
 //	}
-//	public static boolean addListData(String cacheID, Object o) {
-//		return getDataCache().addListData(cacheID, o);
+//	public static boolean addListData(Enum<?> cacheID, Object o) {
+//		return getDataCache().addListData(cacheID.toString(), o);
 //	}
-//	public static boolean removeListData(String cacheID, Object o) {
-//		return getDataCache().removeListData(cacheID, o);
+//	public static boolean removeListData(Enum<?> cacheID, Object o) {
+//		return getDataCache().removeListData(cacheID.toString(), o);
 //	}
-//	public static int getDataSize(String cacheID) {
-//		return getDataCache().getDataSize(cacheID);
+//	public static int getDataSize(Enum<?> cacheID) {
+//		return getDataCache().getDataSize(cacheID.toString());
 //	}
-//	public static int getIndexOf(String cacheID, Object o) {
-//		return getDataCache().getIndexOf(cacheID, o);
+//	public static int getIndexOf(Enum<?> cacheID, Object o) {
+//		return getDataCache().getIndexOf(cacheID.toString(), o);
 //	}
-//	public static int getLastIndexOf(String cacheID, Object o) {
-//		return getDataCache().getLastIndexOf(cacheID, o);
+//	public static int getLastIndexOf(Enum<?> cacheID, Object o) {
+//		return getDataCache().getLastIndexOf(cacheID.toString(), o);
 //	}
 	// -------------------- table --------------------//
 	private static Map<String,ITableConfig> TABLE_CACHE = new HashMap<String,ITableConfig>();
@@ -216,7 +240,7 @@ public class CacheUtil {
 		return getDataCache().getTableFile(tbl);
 	}
 	// -------------------- user --------------------//
-	private static int USER_CACHE_COUNT = 5000;
+	private static int USER_CACHE_COUNT = 5000; // 用户内存缓存个数，多余的用LULO算法排出
 	static {
 		int count = VarUtil.toInt(PropUtil.getProperty("cache.usercount"));
 		if (count<=0)
@@ -231,7 +255,6 @@ public class CacheUtil {
 				return false;
 			return System.currentTimeMillis() - ((Long) this.sessions.get(key)).longValue() > overTime;
 		}
-		
 		@Override
 		protected void closeOvertime() {
 			List<String> list = new ArrayList<String>();
@@ -254,13 +277,6 @@ public class CacheUtil {
 	};
 	public static final String USER_REDISDSN = "USER"; 
 	public static boolean USER_REDIS = false;
-	private static boolean USE_LOCAL_CACHE = true; // 是否使用本地缓存
-	public static boolean isUseLocalCache() {
-		return USE_LOCAL_CACHE;
-	}
-	public static void setUseLocalCache(boolean useLocalCache) {
-		USE_LOCAL_CACHE = useLocalCache;
-	}
 	private static IDataCache getUserDataCache() {
 		IDataCache dc = null;
 		if (USER_REDIS)
@@ -274,22 +290,26 @@ public class CacheUtil {
 			USER_CACHE.put(sessionId, user);
 		}
 		IDataCache dc = getUserDataCache();
-		return dc.setUser(sessionId, user);
+		user = dc.setUser(sessionId, user);
+		DebugUtil.debug("CacheUtil.setUser(sessionId),sessionId=[" + sessionId + "],user=[" + user + "]");
+		return user;
 	}
 	public static IUser getUser(String sessionId) {
 		IUser user = null;
 		if (USE_LOCAL_CACHE) {
 			user = (IUser) USER_CACHE.get(sessionId);
 			if (user != null) {
+				DebugUtil.debug("CacheUtil.getLocalUser(sessionId),sessionId=[" + sessionId + "],user=[" + user + "]");
 				return user;
 			}
 		}
 		IDataCache dc = getUserDataCache();
 		user = dc.getUser(sessionId);
-		DebugUtil.debug("CacheUtil.getUser(sessionId),sessionId=" + sessionId + ",user=" + user);
-		if (USE_LOCAL_CACHE && user != null) {
-			USER_CACHE.put(sessionId, user);
+		if (USE_LOCAL_CACHE) {
+			if (user != null)
+				USER_CACHE.put(sessionId, user);
 		}
+		DebugUtil.debug("CacheUtil.getUser(sessionId),sessionId=[" + sessionId + "],user=[" + user + "]");
 		return user;
 	}
 	public static void removeUser(String sessionId) {
@@ -300,8 +320,9 @@ public class CacheUtil {
 		dc.removeUser(sessionId);
 	}
 	public static boolean containsUser(String sessionId) {
-		if (USE_LOCAL_CACHE && USER_CACHE.containsKey(sessionId)) {
-			return true;
+		if (USE_LOCAL_CACHE) {
+			if (USER_CACHE.containsKey(sessionId))
+				return true;
 		}
 		IDataCache dc = getUserDataCache();
 		return dc.containsUser(sessionId);

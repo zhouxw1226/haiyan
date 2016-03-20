@@ -1,5 +1,11 @@
 package haiyan.orm.database.sql;
 
+import static haiyan.config.util.ConfigUtil.getDBName;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.UUID;
+
 import haiyan.common.CloseUtil;
 import haiyan.common.Ref;
 import haiyan.common.StringUtil;
@@ -14,10 +20,6 @@ import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.TableDBContextFactory;
 import haiyan.orm.intf.database.ITableDBManager;
 import haiyan.orm.intf.session.ITableDBContext;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.UUID;
  
 /** 
  *
@@ -54,7 +56,7 @@ class DBBillAutoNumber {
 		if (lngNumber <= 0) {
 			throw new Warning("申请的ID个数不能小于等于零.");
 		}
-		String key = context.getDSN()+"_"+ConfigUtil.getRealTableName(table);
+		String key = context.getDSN()+"_"+getDBName(table);
 		BigDecimal spNumber = BigDecimal.valueOf(lngNumber);
 		BigDecimal spBegin = cacheID.get(key + ".start");
 		BigDecimal spEnd = cacheID.get(key + ".end");
@@ -202,7 +204,7 @@ class DBBillAutoNumber {
 	private static void dbGetNumber(IContext context, ITableConfig table,
 			BigDecimal lngDBIDRequestNumber, Ref<BigDecimal> lngRBeginNumber,
 			Ref<BigDecimal> lngREndNumber) throws Throwable {
-		String strObjName = ConfigUtil.getRealTableName(table);
+		String strObjName = getDBName(table);
 		strObjName = strObjName.toUpperCase();
 		ITableDBContext subContext = TableDBContextFactory.createDBContext(context); // 开启一个独立事务
 		try {
@@ -436,6 +438,89 @@ class DBBillAutoNumber {
 		case 60:
 			return 'Y';
 		case 61:
+			return 'Z';
+		}
+		return ' ';
+	}
+	/**
+	 * 将数字转换成长度为4的大写字母串
+	 * @param id
+	 * @return
+	 */
+	static String upperUrl(long id) {
+		return upperUrl(id,4);
+	}
+	/**
+	 * 将数字转换成指定长度的大写字母串
+	 * @param id
+	 * @param length
+	 * @return
+	 */
+	static String upperUrl(long id, int length) {
+		StringBuffer buf = new StringBuffer();
+	    while (id > 0) {  
+	        int remainder = (int) (id % 26);
+	        buf.insert(0, int2Upper(remainder));
+	        id = id / 26;  
+	    }
+	    for(int l=buf.length();l<length;l=buf.length()){
+	    	buf.insert(0, int2Upper(0));
+	    }
+	    return buf.toString();
+	}
+	private static char int2Upper(int i){
+		switch (i){
+		case 0:
+			return 'A';
+		case 1:
+			return 'B';
+		case 2:
+			return 'C';
+		case 3:
+			return 'D';
+		case 4:
+			return 'E';
+		case 5:
+			return 'F';
+		case 6:
+			return 'G';
+		case 7:
+			return 'H';
+		case 8:
+			return 'I';
+		case 9:
+			return 'J';
+		case 10:
+			return 'K';
+		case 11:
+			return 'L';
+		case 12:
+			return 'M';
+		case 13:
+			return 'N';
+		case 14:
+			return 'O';
+		case 15:
+			return 'P';
+		case 16:
+			return 'Q';
+		case 17:
+			return 'R';
+		case 18:
+			return 'S';
+		case 19:
+			return 'T';
+		case 20:
+			return 'U';
+		case 21:
+			return 'V';
+		case 22:
+			return 'W';
+		case 23:
+			return 'X';
+		case 24:
+			return 'Y';
+		case 25:
 			return 'Z';
 		}
 		return ' ';

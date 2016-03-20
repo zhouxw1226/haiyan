@@ -18,7 +18,7 @@ public class DBRecord extends AbstractDBRecord {
     public DBRecord() {
         super();
     }
-    public DBRecord(JSONObject json) throws Throwable {
+    public DBRecord(JSONObject json) {
         super();
         this.fromJSon(json, true);
     }

@@ -1,16 +1,17 @@
 package haiyan.common.cache;
 
-import haiyan.common.intf.cache.IDataCache;
-import haiyan.common.intf.config.IBillConfig;
-import haiyan.common.intf.config.ITableConfig;
-import haiyan.common.intf.session.IUser;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 
-public class AppDataCache implements IDataCache {
+import haiyan.common.intf.cache.IDataCache;
+import haiyan.common.intf.cache.ILocalDataCache;
+import haiyan.common.intf.config.IBillConfig;
+import haiyan.common.intf.config.ITableConfig;
+import haiyan.common.intf.session.IUser;
+
+public class AppDataCache implements IDataCache, ILocalDataCache {
     protected final HashMap<String, Object> localCache = new HashMap<String, Object>();
 	public AppDataCache() {
 		super();
@@ -38,17 +39,25 @@ public class AppDataCache implements IDataCache {
 		return removeLocalData(cacheID, key);
 	}
 	@Override
-	public Object setData(String cacheID, Object key, Object ele) {
-		return setLocalData(cacheID, key, ele);
-	}
-	@Override
 	public Object getData(String cacheID, Object key) {
 		return getLocalData(cacheID, key);
 	}
 	@Override
-	public Object updateData(String cacheID, Object key, Object ele) {
+	public Object setData(String cacheID, Object key, Object ele) {
 		return setLocalData(cacheID, key, ele);
 	}
+    @Override
+    public Object setData(String cacheID, Object key, Object ele, int seconds) {
+        return this.setLocalData(cacheID, key, ele);
+    }
+    @Override
+    public Object updateData(String cacheID, Object key, Object ele) {
+        return this.setLocalData(cacheID, key, ele);
+    }
+    @Override
+    public Object updateData(String cacheID, Object key, Object ele, int seconds) {
+        return this.setLocalData(cacheID, key, ele);
+    }
 	@Override
 	public void clearData(String cacheID) {
 	}

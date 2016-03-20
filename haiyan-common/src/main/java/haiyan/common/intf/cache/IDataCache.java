@@ -7,7 +7,6 @@ import haiyan.common.intf.session.IUser;
 import java.io.File;
 
 public interface IDataCache {
-
 	void setServers(String[] servers); // 集群服务器
 	void initialize(); // 初始化
 	// ------------------------------------ //
@@ -16,8 +15,10 @@ public interface IDataCache {
 	Object getLocalData(String schema, Object key); // 获取本地缓存
 	// ------------------------------------ //
 	Object setData(String schema, Object key, Object ele); // 设置缓存（loadfromdb|syncData->如果有集群同时更新集群对象,不更新状态）
+	Object setData(String schema, Object key, Object ele, int seconds); 
 	Object getData(String schema, Object key); // 获取缓存（如果本地缓存不存在获取集群状态）
 	Object updateData(String schema, Object key, Object ele); // 更新缓存（commit->同时更新集群状态）
+	Object updateData(String schema, Object key, Object ele, int seconds); 
 	Object deleteData(String schema, Object key); // 删除记录（commit->同时更新集群状态）
 //	boolean addListData(String schema, Object ele); // 增加临时列表记录 session beans
 //	boolean removeListData(String schema, Object key); // 删除临时列表记录 session beans
@@ -49,5 +50,4 @@ public interface IDataCache {
 	boolean containsUser(String sessionId); // SessionID索引
 	IUser getUserByCode(String userCode); // Code索引
 	IUser getUserByID(String userID); // UserID索引
-
 }

@@ -159,7 +159,7 @@ public final class StringUtil {
 	 * @return String
 	 */
 	public static String repeat(String string, int times) {
-		HyStringBuffer buf = new HyStringBuffer(string.length() * times);
+		StringBufferUtil buf = new StringBufferUtil(string.length() * times);
 		for (int i = 0; i < times; i++)
 			buf.append(string);
 		return buf.toString();
@@ -413,7 +413,7 @@ public final class StringUtil {
 		if (delimiter == null)
 			delimiter = COMMA;
 		Object s;
-		HyStringBuffer buf = new HyStringBuffer(len * 12);
+		StringBufferUtil buf = new StringBufferUtil(len * 12);
 		for (int i = 0; i < len - 1; i++) {
 			s = array[i];
 			if (s == null)
@@ -457,7 +457,7 @@ public final class StringUtil {
 		if (delimiter == null)
 			delimiter = COMMA;
 		Object a;
-		HyStringBuffer buf = new HyStringBuffer(len * 12);
+		StringBufferUtil buf = new StringBufferUtil(len * 12);
 		if (wrap)
 			buf.append(delimiter);
 		for (int i = 0; i < len - 1; i++) {
@@ -546,7 +546,7 @@ public final class StringUtil {
 		if (loc < 0) {
 			return template;
 		} else {
-			return new HyStringBuffer(template.substring(0, loc))
+			return new StringBufferUtil(template.substring(0, loc))
 					.append(replacement)
 					.append(template.substring(loc + placeholder.length()))
 					.toString();
@@ -564,11 +564,12 @@ public final class StringUtil {
 		if (loc < 0) {
 			return template;
 		} else {
-			return new HyStringBuffer(template.substring(0, loc))
+			return new StringBufferUtil(template.substring(0, loc))
 				.append(replacement)
 				.append(replaceAll(
 					template.substring(loc + placeholder.length()),
-					placeholder, replacement)).toString();
+					placeholder, replacement)
+				).toString();
 		}
 	}
 	/**

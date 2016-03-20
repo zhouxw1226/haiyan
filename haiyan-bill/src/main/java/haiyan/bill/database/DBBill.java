@@ -230,6 +230,11 @@ public class DBBill extends AbstractDBBill {
 		return this.resultSets[tableIndex].deleteRow(rowIndex);
 	}
 	@Override
+	public IDBRecord getRow(int tableIndex, int rowIndex)
+			throws Throwable {
+		return this.resultSets[tableIndex].getRecord(rowIndex);
+	}
+	@Override
 	public void commit() {
 		if (this.resultSets==null)
 			return;

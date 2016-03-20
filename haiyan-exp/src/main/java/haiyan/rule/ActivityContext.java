@@ -22,6 +22,7 @@ public class ActivityContext extends AppContext implements IActivityContext {
 	public static final String ACTIVITY_TAG_TYPE = "type";
 	public static final String ACTIVITY_VAR_TYPE = "__type";
 	public static final String ACTIVITY_TAG_TIMERANGE = "time";
+	public static final String ACTIVITY_TAG_DISPTIMERANGE = "dispTime";
 	public static final String ACTIVITY_TAG_RULES = "rules";
 	public static final String ACTIVITY_TAG_RULEDATAS = "ruleDatas";
 	public static final String ACTIVITY_TAG_DATAS = "datas";
@@ -53,10 +54,10 @@ public class ActivityContext extends AppContext implements IActivityContext {
 		String endStr = timeRange.getString(1);
 		Date start = DateUtil.getDate(startStr);
 		Date end = DateUtil.getDate(endStr);
-		Date now = DateUtil.getDate(DateUtil.getLastTime("yyyy-MM-dd HH:mm:ss"));
-		if (now.before(end) && now.after(start)) {
+//		Date now = DateUtil.getDate(DateUtil.getLastTime("yyyy-MM-dd HH:mm:ss"));
+//		if (now.before(end) && now.after(start)) {
 			DebugUtil.debug("活动编号："+ACTIVITY_TAG_CODE+"="+code);
-			DebugUtil.debug("活动有效："+ACTIVITY_TAG_TIMERANGE+"=["+start+","+end+","+now+"]");
+//			DebugUtil.debug("活动有效："+ACTIVITY_TAG_TIMERANGE+"=["+start+","+end+","+now+"]");
 			//String userRules = activity.getString("userRules"); 
 			//DebugUtil.debug("活动对象规则："+userRules);
 			JSONArray rules = activity.getJSONArray(ACTIVITY_TAG_RULES);
@@ -77,11 +78,11 @@ public class ActivityContext extends AppContext implements IActivityContext {
 				}
 			}
 			return true;
-		} else {
-			DebugUtil.debug("活动编号："+ACTIVITY_TAG_CODE+"="+code);
-			DebugUtil.debug("活动无效："+ACTIVITY_TAG_TIMERANGE+"=["+start+","+end+","+now+"]");
-			return false;
-		}
+//		} else {
+//			DebugUtil.debug("活动编号："+ACTIVITY_TAG_CODE+"="+code);
+//			DebugUtil.debug("活动无效："+ACTIVITY_TAG_TIMERANGE+"=["+start+","+end+","+now+"]");
+//			return false;
+//		}
 	}
 	@Override
 	public JSONObject getActivity() {

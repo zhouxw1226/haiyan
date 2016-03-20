@@ -8,7 +8,7 @@ System.out.println("Zaofans.jsp");
 <!-- 必须是query01 因为testpage里这么定义了 -->
 <jp:mondrianQuery id="query01" 
 	jdbcDriver="com.mysql.jdbc.Driver" 
-	jdbcUrl="jdbc:mysql://192.168.46.92:3306/yigo_prd?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull"
+	jdbcUrl="jdbc:mysql://192.168.46.92:3306/joyseed_yigo_prd?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull"
 	jdbcUser="root"
 	jdbcPassword="root.com"
 	catalogUri="/WEB-INF/queries/zaofans/Zaofans.xml">

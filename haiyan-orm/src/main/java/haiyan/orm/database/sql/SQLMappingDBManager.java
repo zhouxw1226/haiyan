@@ -3,6 +3,8 @@
  */
 package haiyan.orm.database.sql;
 
+import static haiyan.config.util.ConfigUtil.getDBName;
+
 import haiyan.common.DebugUtil;
 import haiyan.common.StringUtil;
 import haiyan.common.VarUtil;
@@ -41,8 +43,8 @@ class SQLMappingDBManager extends MappingDBManager {
 		if (tableChildTableRefField == null) {
 			throw new Warning(100006, "error_childtable_reffld", new String[] { table.getName(), mappingTable.getName() });
 		}
-		String realRefTable = ConfigUtil.getRealTableName(refTable);
-		String realMappingTable = ConfigUtil.getRealTableName(mappingTable);
+		String realRefTable = getDBName(refTable);
+		String realMappingTable = getDBName(mappingTable);
 		String sql = "select " + realRefTable + "." + refTable.getId().getName() + "," + realRefTable + "." + ConfigUtil.getDisplayRefFields(field)[0] 
 				+ " from " + realRefTable + "," + realMappingTable
 				+ " where " + realRefTable + "." + refTable.getId().getName() + "=" + realMappingTable + "." + refTableChildTableRefField.getName()
@@ -102,7 +104,7 @@ class SQLMappingDBManager extends MappingDBManager {
 		}
 		String label = ConfigUtil.isDecimalPK(table)?"":"'";
 		String sql = "select " + refFldOfChildTbl.getName()
-				+ " from " + ConfigUtil.getRealTableName(mappingTable)
+				+ " from " + getDBName(mappingTable)
 				+ " where " + refFldOfRefChildTbl.getName() + " in (" + StringUtil.joinSQL(values, ",", label) + ")";
 		Object[][] rs = context.getDBM().getResultArray(sql, 1, null);
 		String[] idValues = new String[rs.length];
@@ -126,7 +128,7 @@ class SQLMappingDBManager extends MappingDBManager {
 			return;
 		for (int i = 0; i < mappingFields.length; i++) {
 			Table mappingTable = ConfigUtil.getTable(mappingFields[i].getMappingTable());
-			String realTableName = ConfigUtil.getRealTableName(mappingTable);
+			String realTableName = getDBName(mappingTable);
 			Table refTable = ConfigUtil.getTable(mappingFields[i].getReferenceTable());
 			if (operationType == SET_MAPPING_TABLE_WHEN_MODIFY
 				|| operationType == SET_MAPPING_TABLE_WHEN_REMOVE) {

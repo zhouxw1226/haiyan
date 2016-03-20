@@ -1,5 +1,6 @@
 package haiyan.common.config;
 
+import static haiyan.common.config.DataConstant.HAIYAN_CONFIG_HOME;
 import static haiyan.common.config.DataConstant.HAIYAN_HOME;
 import static haiyan.common.config.DataConstant.PATH_NAME;
 import static haiyan.common.config.DataConstant.UPLOAD_PATH;
@@ -75,23 +76,32 @@ public class PathUtil {
      * @return String
      * @throws Throwable
      */
-    private static String getPropertyHome() throws Throwable {
+    private static final String getPropertyHome() throws Throwable {
         getClassPaths();
         ResourceBundle props = PropUtil.getLocalPropertyBundle(null);
         if (!props.containsKey(PATH_NAME))
         	return null;
         return props.getString(PATH_NAME);
     }
-	public static String getUploadPath(boolean son) {
+	public static final String getUploadPath(boolean son) {
 		return UPLOAD_PATH + File.separator + (son? "upload" + File.separator:"");
 	}
-	public static String getWebInfoHome() {
+	private static String webInfoHome;
+//	public static final void setWebInfoHome(String home) {
+//		webInfoHome = home;
+//	}
+	public static final String getWebInfoHome() {
+		if (!StringUtil.isEmpty(webInfoHome))
+			return webInfoHome;
 		return getHome()+File.separator+"WEB-INF";
 	}
     public static final Properties getEnvVars() throws Throwable {
     	return ReadEnv.getEnvVars();
     }
     private static String HOME = null;
+//    public static final void setHome(String home) {
+//    	HOME = home;
+//    }
     public static final String getHome() {
     	getClassPaths();
         if (!StringUtil.isEmpty(HOME))
@@ -125,6 +135,54 @@ public class PathUtil {
         if (HOME != null && (HOME.endsWith("\\") || HOME.endsWith("/")))
             HOME = HOME.substring(0, HOME.length() - 1);
         return HOME;
+    }
+    private static String CONFIG_HOME = null;
+    public static final String getConfigHome(String webInfPath) {
+    	getClassPaths();
+        if (!StringUtil.isEmpty(CONFIG_HOME))
+            return CONFIG_HOME;
+        synchronized(PathUtil.class) {
+        	if (!StringUtil.isEmpty(CONFIG_HOME))
+                return CONFIG_HOME;
+	    	try {
+	            Properties p = ReadEnv.getEnvVars();
+	            if (p.containsKey(HAIYAN_CONFIG_HOME)) {
+	            	CONFIG_HOME = p.getProperty(HAIYAN_CONFIG_HOME);
+	                System.out.println("#ReadEnv.confighome:"+CONFIG_HOME);
+	            }
+			} catch (Throwable ignore) {
+				ignore.printStackTrace();
+			}
+	        try {
+		        if (StringUtil.isEmpty(CONFIG_HOME)) {
+		            if (!StringUtil.isEmpty(System.getProperty(HAIYAN_CONFIG_HOME))) {
+		            	CONFIG_HOME = System.getProperty(HAIYAN_CONFIG_HOME);
+		                System.out.println("#SystemProperty.confighome="+CONFIG_HOME);
+		            } else {
+	        			String rootName = webInfPath + File.separator + "classes";
+	        			File file = new File(rootName);
+	        			if (file.exists()) {
+		        			CONFIG_HOME = file.getAbsolutePath();
+		        			System.out.println("#UserDir.confighome="+CONFIG_HOME);
+	        			} else {
+							// CONFIG_HOME = getHome();
+							// System.out.println("#UserDir.confighome="+CONFIG_HOME);
+							System.out.println("#UserDir.confighome is null");
+							return null;
+	        			}
+		            }
+		        }
+	        } catch (Throwable ex) {
+	        	throw new RuntimeException(ex);
+	        }
+	        System.out.println("#Haiyan.confighome="+CONFIG_HOME);
+	        if (CONFIG_HOME != null && (CONFIG_HOME.endsWith("\\") || CONFIG_HOME.endsWith("/")))
+	        	CONFIG_HOME = CONFIG_HOME.substring(0, CONFIG_HOME.length() - 1);
+	        return CONFIG_HOME;
+        }
+    }
+    public static final String getConfigHome() {
+    	return getConfigHome(getWebInfoHome());
     }
     /**
      * @return String
@@ -319,28 +377,34 @@ public class PathUtil {
         }
         return result;
     }
-	public static File getRootFile(String webInfPath) {
+//	public static File getRootFile(String webInfPath) {
+//		File file = null;
+//		File home = new File(getHome() + File.separator + "config");
+//		if (home.exists()) {
+//			String rootName = home.getAbsolutePath();
+//			file = new File(rootName);
+//		} else {
+//			if (webInfPath==null)
+//				return null;
+//			String rootName = webInfPath + File.separator + "classes";
+//			file = new File(rootName);
+//		}
+//		return file;
+//	}
+	public static File getConfigRootFile(String webInfPath) {
 		File file = null;
-		File home = new File(PathUtil.getHome() + File.separator + "config");
-		if (home.exists()) {
-			String rootName = home.getAbsolutePath();
-			file = new File(rootName);
-		} else {
-			if (webInfPath==null)
-				return null;
-			String rootName = webInfPath + File.separator + "classes";
-			file = new File(rootName);
+		if (webInfPath==null)
+			webInfPath = getWebInfoHome();
+		String configHome = getConfigHome(webInfPath);
+		if (configHome!=null) {
+			File home = new File(configHome);
+			if (home.exists()) {
+				String rootName = home.getAbsolutePath();
+				file = new File(rootName);
+			}
 		}
 		return file;
 	}
-    // /**
-    // * @return String
-    // * @throws UnsupportedEncodingException
-    // */
-    // public static String getClassPath() throws UnsupportedEncodingException {
-    // return URLDecoder.decode(PathUtil.class.getResource("PathUtil.class").getPath(),
-    // "utf-8").replaceAll("file:", "").replaceAll("file:/", "");
-    // }
 }
 class ReadEnv {
     final static Properties envVars = new Properties();

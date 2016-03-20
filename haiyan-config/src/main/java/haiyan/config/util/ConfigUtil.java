@@ -66,7 +66,7 @@ import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
  */
 public class ConfigUtil {
 
-	private ConfigUtil() {
+	protected ConfigUtil() {
 	}
     private static String[] tableKeys = null;
     /**
@@ -87,21 +87,51 @@ public class ConfigUtil {
     	if (DATACACHE==null)
     		throw new Warning(SysCode.SysCodeMessage.ERROR_1001);
     }
+    /**
+     * 设置表达式引擎实现类
+     * 
+     * @param c
+     */
     public final static void setExpUtil(IExpUtil c) {
     	EXPUTIL = c;
     }
+    /**
+     * 设置默认缓存容器
+     * 
+     * @param c
+     */
     public final static void setDataCache(IDataCache c) {
     	DATACACHE = c;
     }
+	/**
+	 * 设置启用ORM缓存
+	 * 
+	 * @param b
+	 */
 	public static void setORMUseCache(boolean b) {
 		ORMUSECACHE = b;
 	}
+	/**
+	 * 是否启用ORM缓存
+	 * 
+	 * @return
+	 */
 	public static boolean isORMUseCache() {
 		return ORMUSECACHE;
 	}
+	/**
+	 * 设置启用ORM的SMCC版本控制策略
+	 * 
+	 * @param b
+	 */
 	public static void setORMSMCC(boolean b) {
 		ORMSMCC = b;
 	}
+	/**
+	 * 是否启用ORM的SMCC版本控制策略
+	 * 
+	 * @return
+	 */
 	public static boolean isORMSMCC() {
 		return ORMSMCC;
 	}
@@ -265,12 +295,6 @@ public class ConfigUtil {
         }
         // System.gc();
     }
-	public final static String getDBName(AbstractBillField field) {
-		return StringUtil.isEmpty(field.getDbName())?field.getName():field.getDbName();
-	}
-	public final static String getDBName(ITableConfig table) {
-        return getRealTableName(table);
-    }
     public final static String getRealTableName(ITableConfig table) {
         String tableName = table.getRealName();
         if (StringUtil.isBlankOrNull(tableName)
@@ -278,13 +302,18 @@ public class ConfigUtil {
             return table.getName();
         return getRealTableName(getTable(tableName));
     }
-    /**
-     * @param tableN
-     * @return String
-     */
     public final static String getRealTableName(String tableN) {
         return getRealTableName(getTable(tableN));
     }
+	public final static String getDBName(String tableN) {
+        return getRealTableName(getTable(tableN));
+    }
+	public final static String getDBName(ITableConfig table) {
+        return getRealTableName(table);
+    }
+	public final static String getDBName(AbstractBillField field) {
+		return StringUtil.isEmpty(field.getDbName())?field.getName():field.getDbName();
+	}
     /**
      * @throws Throwable
      */
@@ -292,25 +321,24 @@ public class ConfigUtil {
 //        // DebugUtil.debug(">properties");
 //        // InputStream in = null;
 //        // cert.loadEnvironment();
-//        System.out.println("Loading Properties.");
-//        // fileName
+//        System.out.println("Loading Properties."); // fileName
 //        try {
 //            // setter
-////            setLogType();
-////            setNeedDebug();
+//            //setLogType();
+//            //setNeedDebug();
 //            setNeedExclusive();
 //            setNeedDBPools();
 //            setCacheParam();
 //            setDBPoolsParam();
 //            setPageParam();
-////            setDownloadParam();
-////            setDataConstant();
-//            // setValidator();
+//            //setDownloadParam();
+//            //setDataConstant();
+//            //setValidator();
 //        } catch (Throwable ex) {
 //            throw ex; // 4debug
 //        } finally {
-//            // if (in != null)
-//            // in.close();
+//            //if (in != null)
+//            //in.close();
 //        }
 //        System.out.println("Properties Loaded.");
     }
@@ -321,8 +349,7 @@ public class ConfigUtil {
 //    private static void setLogType() throws Throwable {
 //        // String value = getProperty("USELOG");
 //        String value = getProperty("LOGGERTYPE");
-//        LogUtil.loggerType = StringUtil.isBlankOrNull(value) ? -1 : 
-//        	Integer.valueOf(value).intValue();
+//        LogUtil.loggerType = StringUtil.isBlankOrNull(value) ? -1 : VarUtil.toInt(value);
 //    }
 //    /**
 //     * @throws Throwable
@@ -333,7 +360,9 @@ public class ConfigUtil {
 //        // if ("true".equalsIgnoreCase(value) || "1".equalsIgnoreCase(value)) {
 //        // if (DebugUtil.logger == null)
 //        DebugUtil.logger = new ILogger() { // 强制设置logger接口
-//
+//  		  public void warn(Object info) {
+//  			  LogUtil.warn(info);
+//			  }
 //            public void debug(Object info) {
 //                LogUtil.info(info);
 //            }
@@ -347,10 +376,6 @@ public class ConfigUtil {
 //                } else
 //                    LogUtil.error(info);
 //            }
-//            public void warn(Object info) {
-//                LogUtil.warn(info);
-//            }
-//
 //        };
 //    }
 //    /**
@@ -618,8 +643,11 @@ public class ConfigUtil {
     private static Id dBProp2ID(String idName, DBColumn prop) {
         Id id = new Id();
         id.setName(idName);
+        id.setDescription(idName);
         if (prop.getType().equalsIgnoreCase("NUMBER")) {
             id.setJavaType(AbstractCommonFieldJavaTypeType.BIGDECIMAL);
+        } else if (prop.getType().equalsIgnoreCase("DATE")) { // 可以用时间戳做PK
+        	id.setJavaType(AbstractCommonFieldJavaTypeType.DATE);
         } else {
             id.setJavaType(AbstractCommonFieldJavaTypeType.STRING);
         }
@@ -644,7 +672,7 @@ public class ConfigUtil {
             field.setJavaType(AbstractCommonFieldJavaTypeType.STRING);
         }
         //Common comp = new Common();
-        if (prop.isFK()) {
+        if (prop.isFK()) { // 外键字段
             //comp.setType(ComponentTypeType.RICHSELECT);
         	field.setReferenceTable(prop.getRefTable());
             field.setReferenceField(prop.getRefField());
@@ -670,17 +698,18 @@ public class ConfigUtil {
         }
     }
     public static boolean hasDataRuleTables(Table table) {
-        Table sysMapTabl = getTable("SYSMAP");
-        if (SYSMAPLIST.size() == 0 && sysMapTabl.getDataRulesCount() > 0)
+        Table sysMapTabl = getTable("SYSMAP", false, true);
+        if (sysMapTabl==null || sysMapTabl.getDataRulesCount()==0)
+        	return false;
+        if (SYSMAPLIST.size() == 0)
             synchronized (SYSMAPLIST) {
-                if (SYSMAPLIST.size() == 0) {
+                if (SYSMAPLIST.size() == 0) 
                     for (DataRules dr : sysMapTabl.getDataRules()) {
                         if (!SYSMAPLIST.contains(dr.getSrcTable()))
                             SYSMAPLIST.add(dr.getSrcTable());
                         if (!SYSMAPLIST.contains(dr.getDestTable()))
                             SYSMAPLIST.add(dr.getDestTable());
                     }
-                }
             }
         return SYSMAPLIST.contains(table.getName());
     }
@@ -731,7 +760,7 @@ public class ConfigUtil {
     public final static ArrayList<LinkField> getLinkTable(ITableConfig table) {
         String key = table.getName();
         ArrayList<LinkField> list = null;
-        if (!LINKMAP.containsKey(key)) {
+        if (!LINKMAP.containsKey(key))
             synchronized (LINKMAP) {
                 if (!LINKMAP.containsKey(key)) {
                     list = new ArrayList<LinkField>();
@@ -753,7 +782,7 @@ public class ConfigUtil {
                     LINKMAP.put(key, list);
                 }
             }
-        } else
+        else
             list = LINKMAP.get(key);
         return list;
     }
@@ -1317,7 +1346,7 @@ public class ConfigUtil {
         for (Field fld : table.getField()) {
             if (fld.getReferenceTable() != null) {
                 Table refTable = getTable(fld.getReferenceTable());
-                if (getRealTableName(refTable).equals(getRealTableName(table)))
+                if (getDBName(refTable).equals(getDBName(table)))
                     return true;
             }
         }
@@ -1401,7 +1430,7 @@ public class ConfigUtil {
         	for (Field field:fs) {
                 if (StringUtil.isBlankOrNull(field.getReferenceTable()))
                     continue;
-                String realParentTableName = getRealTableName(parentTable);
+                String realParentTableName = getDBName(parentTable);
                 if (realParentTableName.equals(field.getReferenceTable())) {
                     result = field;
                     break;
@@ -1722,6 +1751,19 @@ public class ConfigUtil {
         else
             return new String[0];
     }
+    private static String CONFIG_HOME = null;
+    @Deprecated
+    public final static String getConfigHome() {
+		try {
+	        if (CONFIG_HOME != null)
+	            return CONFIG_HOME;
+	        String configPath = getConfig().getTableConfigFilePath().getValue();
+	        CONFIG_HOME = transRealPath(configPath);
+	        return CONFIG_HOME;
+		} catch (Throwable e) {
+			throw Warning.wrapException(e);
+		}
+    }
     private static String transRealPath(String configPath) throws URISyntaxException {
     	String configPathReal;
         if (configPath.indexOf("/") >= 0 || configPath.indexOf("\\") >= 0) {
@@ -1732,37 +1774,20 @@ public class ConfigUtil {
         } else {
         	configPathReal = configPath;
         }
-//		String configPath = getConfigHome();
 		URL classURL = ConfigUtil.class.getClassLoader().getResource("AppResources.properties");
 		String classPath = new File(classURL.toURI()).getParentFile().getAbsolutePath(); // classes
-//		File projectFile = new File(classURL.toURI()).getParentFile().getParentFile().getParentFile(); // webcontent
-//		String projectPath = projectFile.getAbsolutePath();
 		String projectPath = PathUtil.getHome(); // webcontent
+		String projectConfigPath = PathUtil.getConfigHome()+File.separator; // $YIGO_CONFIG_HOME/config
 		String userDir = System.getProperty("user.dir");
 		configPathReal = StringUtil.replace(configPathReal, "${classpath}", classPath);
 		configPathReal = StringUtil.replace(configPathReal, "${projectpath}", projectPath);
+		configPathReal = StringUtil.replace(configPathReal, "${configpath}", projectConfigPath);
 		configPathReal = StringUtil.replace(configPathReal, "${user.dir}", userDir);
 //    	if (!StringUtil.isEmpty(webInfPath)) {
-//    		configPathReal = StringUtil.replace(configPathReal, "${webinf}", userDir);
+//    		configPathReal = StringUtil.replace(configPathReal, "${webinfpath}", webInfPath);
 //    	}
-//		if ("../config".equalsIgnoreCase(configPath)) {
-//			if ("${classpath}".equalsIgnoreCase(configPath))
-//		}
 		return configPathReal;
 	}
-    private static String CONFIGHOME = null;
-    @Deprecated
-    public final static String getConfigHome() {
-		try {
-	        if (CONFIGHOME != null)
-	            return CONFIGHOME;
-	        String configPath = getConfig().getTableConfigFilePath().getValue();
-	        CONFIGHOME = transRealPath(configPath);
-	        return CONFIGHOME;
-		} catch (Throwable e) {
-			throw Warning.wrapException(e);
-		}
-    }
 //	public final static URL getConfigURL(String billOrTableName) {
 //		try {
 //			String realPath = getConfigHome();

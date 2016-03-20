@@ -8,10 +8,13 @@ public class JMSMessage {
 	public JMSMessage(Object data) {
 		this.data = data;
 	}
-	public JMSMessage(Object data, JMSType type, String action) {
-		this.data = data;
+	public JMSMessage(Object data, JMSType type, Enum<?> action) {
+		if (data != null && type == JMSType.STRING)
+			this.data = data.toString();
+		else
+			this.data = data;
 		this.type = type;
-		this.action = action;
+		this.action = action.toString();
 	}
 	public String getAction() {
 		return action;

@@ -223,7 +223,13 @@ public class ExpUtil implements IExpUtil {
 		if (inited.get()==0) {
 			String[] classes = ConfigUtil.getFunctionScanClasses();
 			for (String className:classes) {
-				Class clz = Thread.currentThread().getContextClassLoader().loadClass(className.trim());
+				Class clz = null;
+				try {
+					clz = Thread.currentThread().getContextClassLoader().loadClass(className.trim());
+				} catch (Throwable err) {
+					DebugUtil.error(err);
+					continue;
+				}
 //				Annotation[] annos = clz.getDeclaredAnnotations();
 //				for (Annotation anno:annos) {
 //					System.out.println(anno);

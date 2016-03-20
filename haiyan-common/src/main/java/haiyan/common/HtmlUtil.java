@@ -86,7 +86,7 @@ public class HtmlUtil {
 	 /* 479 */     char c = '\0';
 	 /*     */ 
 	 /* 481 */     int len = string.length();
-	 /* 482 */     HyStringBuffer sb = new HyStringBuffer(len + 4);
+	 /* 482 */     StringBufferUtil sb = new StringBufferUtil(len + 4);
 	 /*     */ 
 //	 /* 485 */     sb.append('"');
 	 /* 486 */     for (int i = 0; i < len; ++i) {

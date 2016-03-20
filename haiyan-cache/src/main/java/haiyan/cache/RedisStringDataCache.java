@@ -28,26 +28,33 @@ public class RedisStringDataCache extends AbstractRedisDataCache {
 	}
     // --------------------- data cache --------------------- //
 	@Override
-	public Object setData(String schema, Object key, Object ele) {
+	public Object setData(String schema, Object key, Object ele, int seconds) {
 		JedisCommands writer = null;
 		try {
 			writer = getJedisMaster();
 			String mk = getDataKey(schema, key);
-			writer.set(mk, ele==null?"":ele.toString());
+			writer.set(mk, ele == null ? "" : ele.toString());
+			if (seconds>0)
+				writer.expire(mk, seconds); // seconds
+//			writer.expireAt(arg0, arg1) // timestamp
 			reconn = 0;
 			return ele;
-		} catch (JedisConnectionException e) {
-			DebugUtil.error(e);
+		} catch (JedisConnectionException ex) {
 			if (reconn>=3) {
 				reconn = 0;
-				return null;
+				throw ex;
 			}
 			reconn++;
+			DebugUtil.error(ex);
 			this.initialize();
-			return setData(schema,key,ele==null?"":ele.toString());
-		}finally{
+			return setData(schema, key, ele == null ? "" : ele.toString(), seconds);
+		} finally {
 			recycleJedisResource(writer);
 		}
+	}
+	@Override
+	public Object setData(String schema, Object key, Object ele) {
+		return setData(schema, key, ele, -1);
 	}
 	@Override
 	public Object getData(String schema, Object key) {
@@ -58,13 +65,13 @@ public class RedisStringDataCache extends AbstractRedisDataCache {
 				reader = getJedisMaster();
 			String mk = getDataKey(schema, key);
 			return reader.get(mk);
-		} catch (JedisConnectionException e) {
-			DebugUtil.error(e);
+		} catch (JedisConnectionException ex) {
 			if (reconn>=3) {
 				reconn = 0;
-				return null;
+				throw ex;
 			}
 			reconn++;
+			DebugUtil.error(ex);
 			this.initialize();
 			return getData(schema,key);
 		} catch(Throwable e){
@@ -89,13 +96,13 @@ public class RedisStringDataCache extends AbstractRedisDataCache {
 			}
 			reconn = 0;
 			return o;
-		} catch (JedisConnectionException e) {
-			DebugUtil.error(e);
+		} catch (JedisConnectionException ex) {
 			if (reconn>=3) {
 				reconn = 0;
-				return null;
+				throw ex;
 			}
 			reconn++;
+			DebugUtil.error(ex);
 			this.initialize();
 			return deleteData(schema,key);
 		} catch(Throwable e){

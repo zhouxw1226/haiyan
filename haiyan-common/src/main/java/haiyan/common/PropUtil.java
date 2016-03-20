@@ -55,12 +55,13 @@ public class PropUtil {
 		// ==================privates==================== //
 		private Map<String, Object> lookup;
 	}
+	// ==================privates==================== //
 	private static String APP_BUNDLE_NAME = "AppResources";
 	private static Map<String,ResourceBundle> BUNDLE = new HashMap<String,ResourceBundle>();
     /**
 	 * @return ResourceBundle(PropertyResourceBundle) 
 	 */
-	private final static ResourceBundle getPropertyBundle(String bundleName) {
+	public final static ResourceBundle getPropertyBundle(String bundleName) {
 		String key = System.getProperty("APP_BUNDLE_NAME");
 		if (!StringUtil.isEmpty(bundleName))
 			key = bundleName;
@@ -70,14 +71,17 @@ public class PropUtil {
 			synchronized(PropUtil.class) {
 				if (!BUNDLE.containsKey(key))
 					try {
-						File rootFile = PathUtil.getRootFile(null);
+						File rootFile = PathUtil.getConfigRootFile(null);
 						if (rootFile!=null && rootFile.exists()) {
 							File file = new File(rootFile.getAbsolutePath() + File.separator + key + ".properties");
-							InputStream ins = new FileInputStream(file);
-							PropertyResourceBundle rsp = new PropertyResourceBundle(ins);
-							CloseUtil.close(ins);
-							BUNDLE.put(key, rsp);
-						} else {
+							if (file.exists()) {
+								InputStream ins = new FileInputStream(file);
+								PropertyResourceBundle rsp = new PropertyResourceBundle(ins);
+								CloseUtil.close(ins);
+								BUNDLE.put(key, rsp);
+							}
+						} 
+						if (!BUNDLE.containsKey(key)) {
 							ResourceBundle rso = ResourceBundle.getBundle(key, 
 									Locale.getDefault(), Thread.currentThread().getContextClassLoader());
 							MyPropertyResourceBundle rsb = new MyPropertyResourceBundle(rso); // 从环境变量获取配置
@@ -89,7 +93,7 @@ public class PropUtil {
 			}
 		return BUNDLE.get(key);
 	}
-	private final static ResourceBundle getPropertyBundle() {
+	public final static ResourceBundle getPropertyBundle() {
 		return getPropertyBundle(null);
 	}
 	public final static ResourceBundle getLocalPropertyBundle(String bundleName) {
@@ -125,19 +129,19 @@ public class PropUtil {
         }
     }
     /**
-     * @param key
-     * @return
-     */
-    public static String getProperty(String key) {
-        return getProperty(null, key, "");
-    }
-    /**
      * @param bundName
      * @param key
      * @return
      */
     public static String getProperty(String key, String def) {
-        return getProperty(null, key, def);
+        return getProperty(APP_BUNDLE_NAME, key, def);
+    }
+    /**
+     * @param key
+     * @return
+     */
+    public static String getProperty(String key) {
+        return getProperty(APP_BUNDLE_NAME, key, "");
     }
     // ============================================================= //
 	public static String INVOKE_BUNDLE_NAME = "AppInvokes";

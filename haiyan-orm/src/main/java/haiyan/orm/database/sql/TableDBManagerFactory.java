@@ -45,7 +45,7 @@ public class TableDBManagerFactory extends AbstractDBManagerFactory implements I
 			else if ("mongodb".equalsIgnoreCase(dbType))
 				return new MongoTableDBManager(database);
 			throw new Warning(SysCode.SysCodeNum.NO_MATCHEDDBMANAGER,SysCode.SysCodeMessage.NO_MATCHEDDBMANAGER);
-		}catch(Throwable e){
+		} catch (Throwable e) {
 			throw Warning.wrapException(e);
 		}
 	}

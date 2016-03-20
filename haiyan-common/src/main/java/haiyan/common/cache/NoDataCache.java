@@ -1,9 +1,7 @@
 package haiyan.common.cache;
 
-import haiyan.common.intf.cache.IDataCache;
-
 @Deprecated
-public class NoDataCache extends AppDataCache implements IDataCache {
+public class NoDataCache extends AppDataCache {
 	public NoDataCache() {
 		super();
 	}

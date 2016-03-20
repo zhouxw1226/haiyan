@@ -73,5 +73,26 @@ public class DBBillAutoID {
 	public static String shortUrl(long id,int length) {
 		return DBBillAutoNumber.shortUrl(id,length);
 	}
+	
+	/**
+	 * 根据id，生成长度为length的字符串
+	 * 
+	 * @param id
+	 * @param length
+	 * @return
+	 */
+	public static String upperUrl(long id) {
+		return DBBillAutoNumber.upperUrl(id);
+	}
+	/**
+	 * 根据id，生成长度为length的字符串
+	 * 
+	 * @param id
+	 * @param length
+	 * @return
+	 */
+	public static String upperUrl(long id,int length) {
+		return DBBillAutoNumber.upperUrl(id,length);
+	}
 
 }

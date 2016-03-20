@@ -1,18 +1,35 @@
 package haiyan.cache;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import haiyan.common.StringUtil;
 import haiyan.common.intf.cache.IDataCache;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.session.IUser;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 public abstract class AbstractDataCache implements IDataCache {
-
+    // ---------------------------------------------------------------------- //
+	@Override
+	public abstract Object deleteData(String schema, Object key);
+	@Override
+	public abstract Object getData(String schema, Object key);
+	@Override
+	public abstract Object setData(String schema, Object key, Object ele);
+	@Override
+	public abstract Object setData(String schema, Object key, Object ele, int seconds);
+	@Override
+	public Object updateData(String schema, Object key, Object ele) {
+		return this.setData(schema, key, ele);
+	}
+	@Override
+	public Object updateData(String schema, Object key, Object ele, int seconds) {
+		return this.setData(schema, key, ele, seconds);
+	}
+    // ---------------------------------------------------------------------- //
     protected final Map<String, File> tableFiles = new HashMap<String, File>();
     @Override
     public File setTableFile(String sKey, File file) {
@@ -155,4 +172,5 @@ public abstract class AbstractDataCache implements IDataCache {
 		}
 		return arr;
 	}
+    // ---------------------------------------------------------------------- //
 }

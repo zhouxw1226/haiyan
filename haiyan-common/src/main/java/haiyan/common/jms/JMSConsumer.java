@@ -1,8 +1,5 @@
 package haiyan.common.jms;
 
-import haiyan.common.CloseUtil;
-import haiyan.common.DebugUtil;
-
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -24,11 +21,30 @@ import javax.jms.TextMessage;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTopic;
 
-public class JMSConsumer extends JMSManager {
+import haiyan.common.CloseUtil;
+import haiyan.common.DebugUtil;
+
+public abstract class JMSConsumer extends JMSManager {
 	private final List<JMSConsumerListener> listeners = new ArrayList<JMSConsumerListener>();
+	public JMSConsumer() {
+		super();
+	}
+	public JMSConsumer(String DSN) {
+		super(DSN);
+	}
+	@Deprecated
 	public void addJMSListener(JMSConsumerListener listener) {
-		listeners.add(listener);
-	} 
+		this.listeners.add(listener);
+	}
+	public void addListener(JMSConsumerListener listener) {
+		this.listeners.add(listener);
+	}
+	public int getListenerCount(){
+		return this.listeners.size();
+	}
+	public void clear() {
+		this.listeners.clear();
+	}
 	@SuppressWarnings("rawtypes")
 	private Map<String,Object> getMap(MapMessage message) throws JMSException { 
 		Map<String,Object> map = new HashMap<String,Object>();
@@ -40,8 +56,8 @@ public class JMSConsumer extends JMSManager {
 		}
 		return map; 
     }
-	public void execute() throws Throwable {
-		MessageListener jmsLisenter = new MessageListener() {
+	protected MessageListener createJMSListener() {
+		return new MessageListener() {
 			public void onMessage(Message m) {
 				for (JMSConsumerListener listener : listeners) {
 					try {
@@ -62,7 +78,7 @@ public class JMSConsumer extends JMSManager {
 									os.write(buff, 0, n);
 								}
 								listener.execute(m, os.toByteArray());
-							}finally{
+							} finally {
 								CloseUtil.close(os);
 							}
 						}
@@ -72,17 +88,35 @@ public class JMSConsumer extends JMSManager {
 				}
 			}
 		};
+	}
+	public void execute() throws Throwable {
+		MessageListener jmsLisenter = createJMSListener();
 		this.createConnection();
 		for (JMSConsumerListener listener : listeners) {
+			String subject = listener.getSubject().toString();
 			Destination destination;
 			if (this.topic) {
-				destination = new ActiveMQTopic(listener.getChannel());
+				destination = new ActiveMQTopic(subject);
+//				// 为每个listener创建独立的ConsumerSession
+//				Session session = connection.createSession(listener.isTransacted(), listener.getSessionType());
+//				TopicSubscriber topicScriber = session.createDurableSubscriber((ActiveMQTopic)destination, subject);
+//				topicScriber.setMessageListener(jmsLisenter);
 			} else {
-				destination = new ActiveMQQueue(listener.getChannel());
+				destination = new ActiveMQQueue(subject);
+//				// 为每个listener创建独立的ConsumerSession
+//				Session session = connection.createSession(listener.isTransacted(), listener.getSessionType());
+//				MessageConsumer consumer = session.createConsumer(destination);
+//				consumer.setMessageListener(jmsLisenter);
 			}
+			// 为每个listener创建独立的ConsumerSession
 			Session session = connection.createSession(listener.isTransacted(), listener.getSessionType());
 			MessageConsumer consumer = session.createConsumer(destination);
 			consumer.setMessageListener(jmsLisenter);
 		}
+	}
+	@Override
+	public void close() {
+		this.clear();
+		super.close();
 	}
 }

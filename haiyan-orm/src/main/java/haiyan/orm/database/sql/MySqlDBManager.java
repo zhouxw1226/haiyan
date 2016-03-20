@@ -3,6 +3,11 @@
  */
 package haiyan.orm.database.sql;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+
 import haiyan.common.CloseUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.StringUtil;
@@ -14,14 +19,8 @@ import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Id;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-import haiyan.config.util.ConfigUtil;
 import haiyan.exp.ExpUtil;
 import haiyan.orm.intf.database.sql.ITableSQLRender;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 
 /**
  * MYSQL
@@ -131,7 +130,7 @@ public class MySqlDBManager extends SQLTableDBManager {
         ArrayList<String> sKeySQL = new ArrayList<String>();
         // int count = 0;
         // alter table users add CONSTRAINT PRI_USER primary key(USERID);
-        String tableName = ConfigUtil.getRealTableName(oSerTable);
+        String tableName = getDBName(oSerTable);
         // tableName = "`" + tableName + "`";
         sKeySQL.add("alter table `" + tableName + "` add constraint `PK_"
                 + tableName + "` primary key (`" + oSerTable.getId().getName()
@@ -188,7 +187,7 @@ public class MySqlDBManager extends SQLTableDBManager {
             // Field field = (Field) fld;
             String defValue = field.getDefaultValue();
             if (defValue != null) {
-                if (!ExpUtil.isFormula(defValue))
+                if (!ExpUtil.isFormula(defValue)) // 不是公式才能给DB字段设置默认值
                     if (fldType == AbstractCommonFieldJavaTypeType.STRING
                             || fldType == AbstractCommonFieldJavaTypeType.DATE) {
                         generateSQL += " default '" + defValue + "'";

@@ -3,6 +3,9 @@
  */
 package haiyan.orm.database.sql;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+
 import haiyan.common.StringUtil;
 import haiyan.common.config.DataConstant;
 import haiyan.common.exception.Warning;
@@ -12,11 +15,7 @@ import haiyan.config.castorgen.Field;
 import haiyan.config.castorgen.Id;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
-import haiyan.config.util.ConfigUtil;
 import haiyan.orm.intf.database.sql.ITableSQLRender;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
 
 /**
  * SQLServer
@@ -64,7 +63,7 @@ public class SqlServerDBManager extends SQLTableDBManager {
 		ArrayList<String> sKeySQL = new ArrayList<String>();
 		// int count = 0;
 		// alter table users add CONSTRAINT PRI_USER primary key(USERID);
-		String tableName = ConfigUtil.getRealTableName(oSerTable);
+		String tableName = getDBName(oSerTable);
 		if (oSerTable.getId() == null)
 			throw new Warning("table'pk lost.");
 		sKeySQL.add("alter table " + tableName + " add constraint PK_"

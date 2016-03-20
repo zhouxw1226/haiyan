@@ -25,6 +25,7 @@ import redis.clients.util.Pool;
 @SuppressWarnings("rawtypes")
 public abstract class AbstractRedisDataCache extends AbstractDataCache {
 
+	protected int reconn = 0;
 //	protected Jedis defaultJedis;//非切片额客户端连接
 	protected redis.clients.util.Pool<Jedis> masterJedisPool;//非切片连接池
     protected redis.clients.util.Pool<ShardedJedis> shardedJedisPool;//切片连接池
@@ -100,7 +101,6 @@ public abstract class AbstractRedisDataCache extends AbstractDataCache {
 	protected String getUserKey(String schema) {
     	return "Haiyan.USERS."+schema;
     } 
-	protected int reconn = 0;
 	@Override
 	public abstract IUser setUser(String sessionId, IUser user);
 	@Override
@@ -111,16 +111,23 @@ public abstract class AbstractRedisDataCache extends AbstractDataCache {
 	protected String getDataKey(String schema, Object key) {
 		return "Haiyan.DATAS." + schema+":"+key;
 	}
+    // ------------------------------------------------------ //
+	@Override
+	public abstract Object deleteData(String schema, Object key);
+	@Override
+	public abstract Object getData(String schema, Object key);
 	@Override
 	public abstract Object setData(String schema, Object key, Object ele);
 	@Override
-	public abstract Object getData(String schema, Object key);
+	public abstract Object setData(String schema, Object key, Object ele, int seconds);
 	@Override
 	public Object updateData(String schema, Object key, Object ele) {
 		return this.setData(schema, key, ele);
 	}
 	@Override
-	public abstract Object deleteData(String schema, Object key);
+	public Object updateData(String schema, Object key, Object ele, int seconds) {
+		return this.setData(schema, key, ele, seconds);
+	}
 //	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";
     // --------------------- local data cache --------------------- //
 	@Override

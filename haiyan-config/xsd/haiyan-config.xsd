@@ -126,15 +126,19 @@
 			<xs:sequence>
 				<xs:element ref="id" minOccurs="0" />
 				<xs:element ref="field" minOccurs="0" maxOccurs="unbounded" />
+				<!-- ui start -->
 				<xs:element ref="Panel" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="TabPanel" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="PageView" minOccurs="0" maxOccurs="unbounded" />
+				<!-- ui end -->
 				<xs:element ref="querySQL" minOccurs="0" />
 				<xs:element ref="queryFilter" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="role" minOccurs="0" maxOccurs="unbounded" />
+				<!-- js start -->
 				<xs:element ref="javascript" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="isSelectable" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="isShowable" minOccurs="0" maxOccurs="unbounded" />
+				<!-- js end -->
 				<xs:element ref="pluginInterceptor" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="pluginOperation" minOccurs="0" maxOccurs="unbounded" />
 				<xs:element ref="Operation" minOccurs="0" />

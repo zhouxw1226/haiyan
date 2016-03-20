@@ -63,7 +63,7 @@ public class ByteUtil {
 			return null;
 //		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		Writer writer = null;
-		char[] buff = new char[1024];
+		char[] buff = new char[1024]; 
 		try {
 //			writer = new OutputStreamWriter(baos);
 			writer = new StringWriter();

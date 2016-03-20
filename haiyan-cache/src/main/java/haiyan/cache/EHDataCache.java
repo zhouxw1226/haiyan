@@ -1,18 +1,18 @@
 package haiyan.cache;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.util.ArrayList;
+
 import haiyan.common.DebugUtil;
 import haiyan.common.FileUtil;
 import haiyan.common.StringUtil;
 import haiyan.common.config.PathUtil;
 import haiyan.common.exception.Warning;
+import haiyan.common.intf.cache.ILocalDataCache;
 import haiyan.common.intf.config.IBillConfig;
 import haiyan.common.intf.config.ITableConfig;
 import haiyan.common.intf.session.IUser;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.util.ArrayList;
-
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -22,8 +22,7 @@ import net.sf.ehcache.Element;
  * @author zhouxw
  *
  */
-public class EHDataCache extends AbstractDataCache {
-
+public class EHDataCache extends AbstractDataCache implements ILocalDataCache {
     // // <!--缓存可以存储的总记录量-->
     // private final int maxElementsInMemory = 10000;
     // // // <!--磁盘可以存储的总记录量-->
@@ -393,7 +392,7 @@ public class EHDataCache extends AbstractDataCache {
         return this.setLocalData(cacheID, key, ele);
     }
     @Override
-    public Object updateData(String cacheID, Object key, Object ele) {
+    public Object setData(String cacheID, Object key, Object ele, int seconds) {
         return this.setLocalData(cacheID, key, ele);
     }
     @Override

@@ -34,6 +34,7 @@ public interface IDBBill extends Serializable {
 
 	IDBRecord insertRowBefore(int tableIndex, int rowIndex) throws Throwable;
 	IDBRecord insertRowAfter(int tableIndex, int rowIndex) throws Throwable;
+	IDBRecord getRow(int tableIndex, int rowIndex) throws Throwable;
 	IDBRecord appendRow(int tableIndex) throws Throwable;
 	IDBRecord deleteRow(int tableIndex, int rowIndex) throws Throwable;
 	

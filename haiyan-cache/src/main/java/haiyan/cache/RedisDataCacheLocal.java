@@ -1,14 +1,14 @@
 package haiyan.cache;
 
-import haiyan.common.ByteUtil;
-import haiyan.common.VarUtil;
-import haiyan.common.exception.Warning;
-import haiyan.common.intf.session.IUser;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import bsh.StringUtil;
+import haiyan.common.ByteUtil;
+import haiyan.common.VarUtil;
+import haiyan.common.exception.Warning;
+import haiyan.common.intf.session.IUser;
 import redis.clients.jedis.BinaryJedisCommands;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -16,15 +16,13 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
-import bsh.StringUtil;
-
 
 /**
  * @author zhouxw
  *
  */
+@Deprecated
 public class RedisDataCacheLocal extends EHDataCache {
-
 //	private Jedis defaultJedis;//非切片额客户端连接
     private JedisPool masterJedisPool;//非切片连接池
     private ShardedJedisPool shardedJedisPool;//切片连接池
@@ -156,22 +154,27 @@ public class RedisDataCacheLocal extends EHDataCache {
 	}
 	@Override
 	public Object setData(String cacheID, Object key, Object ele) {
-		String mk = getDataKey(cacheID, key);
-		getJedisWriter().set(mk.getBytes(), ByteUtil.toBytes((Serializable)ele));
-		return ele;
+		return setData(cacheID, key, ele, -1);
 	}
+    @Override
+    public Object setData(String cacheID, Object key, Object ele, int seconds) {
+		String mk = getDataKey(cacheID, key);
+		byte[] kb = mk.getBytes();
+		byte[] bytes = ByteUtil.toBytes((Serializable) ele);
+		getJedisWriter().set(kb, bytes);
+		if (seconds > 0)
+			getJedisWriter().expire(kb, seconds);
+		return ele;
+    }
 	@Override
 	public Object getData(String cacheID, Object key) {
 		String mk = getDataKey(cacheID, key);
-		byte[] bytes = getJedisReader().get(mk.getBytes());
+		byte[] kb = mk.getBytes();
+		byte[] bytes = getJedisReader().get(kb);
 		if (bytes!=null) {
 			return ByteUtil.toObject(bytes);
 		}
 		return null;
-	}
-	@Override
-	public Object updateData(String cacheID, Object key, Object ele) {
-		return this.setData(cacheID, key, ele);
 	}
 	@Override
 	public Object deleteData(String cacheID, Object key) {
@@ -184,5 +187,4 @@ public class RedisDataCacheLocal extends EHDataCache {
 		return o;
     }
 //	public final static String VERSION_WARNING = "当前单据数据已被修改,请重新打开当前单据后继续操作.";
-	
 }

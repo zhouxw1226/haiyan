@@ -398,13 +398,13 @@ public class DateUtil implements Serializable {
 	/**
 	 * @param days
 	 */
-	public void advanceDays(int days) {
-		fromJulian(toJulian() + days);
+	public Date advanceDays(int days) {
+		return fromJulian(toJulian() + days);
 	}
 	/**
 	 * @param j
 	 */
-	private void fromJulian(int j) {
+	private Date fromJulian(int j) {
 		int ja = j;
 		int JGREG = 0x231519;
 		if (j >= JGREG) {
@@ -427,6 +427,7 @@ public class DateUtil implements Serializable {
 		if (m_year <= 0) {
 			m_year--;
 		}
+		return this.getUtilDate();
 	}
 	/**
 	 * @return int
@@ -755,7 +756,9 @@ public class DateUtil implements Serializable {
 	 */
 	public final static java.util.Date getDate(String timeStr, String dateStyle) {
 		try {
-			return new SimpleDateFormat(dateStyle).parse(timeStr);
+			SimpleDateFormat sdf = new SimpleDateFormat(dateStyle);
+			Date date = sdf.parse(timeStr);
+			return date;
 		} catch (Throwable ex) {
 			throw Warning.getWarning(ex);
 		}

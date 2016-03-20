@@ -287,7 +287,7 @@ public class DBColumn {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		HyStringBuffer sb = new HyStringBuffer("{");
+		StringBufferUtil sb = new StringBufferUtil("{");
 		sb.append("schema:").append(schema);
 		sb.append(";table:").append(table);
 		sb.append(";column:").append(column);

@@ -24,6 +24,7 @@ import haiyan.config.castorgen.Option;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.config.util.NamingUtil;
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 @SuppressWarnings({"rawtypes","unchecked"})
@@ -37,10 +38,10 @@ public abstract class AbstractDBRecord implements IDBRecord {
     protected abstract void setParameterValues(String key, Object[] values);
     protected abstract Object[] getParameterValues(String key);
     public abstract Map<String, Object> getDataMap(); // 内存数据容器
-    private Map<String, Object> oreignDataMap = new HashMap<String, Object>(10, 1); // 原数据容器
-    private Set<String> updatedKeys = new HashSet<String>(10, 1); // 修改的key
-    private Set<String> deletedKeys = new HashSet<String>(10, 1); // 删除的key
-    private String tableName;
+    protected Map<String, Object> oreignDataMap = new HashMap<String, Object>(10, 1); // 原数据容器
+    protected Set<String> updatedKeys = new HashSet<String>(10, 1); // 修改的key
+    protected Set<String> deletedKeys = new HashSet<String>(10, 1); // 删除的key
+    protected String tableName;
     public String getTableName() {
         return this.tableName;
     }
@@ -80,15 +81,6 @@ public abstract class AbstractDBRecord implements IDBRecord {
 	@Override
 	public void commit() {
 		try {
-//			for (String b:blobs) {
-//				if (b!=null) {
-//					File f = new File(b+".bak");
-//					File f2 = new File(b);
-//					FileUtil.copy(f, f2);
-//					if (f.exists())
-//						f.delete();
-//				}
-//			}
 	    	this.deletedKeys.clear();
 			this.updatedKeys.clear();
 			this.blobs.clear();
@@ -97,10 +89,8 @@ public abstract class AbstractDBRecord implements IDBRecord {
 			Map dataMap = this.getDataMap();
 			if (dataMap!=null && dataMap.size()>0) {
 				Map oreignMap = this.oreignDataMap;
-				if (oreignMap!=null) {
-					//oreignMap.clear();
+				if (oreignMap!=null) 
 					oreignMap.putAll(dataMap);
-				}
 			}
 		} catch(Throwable e) {
 			throw new RuntimeException(e);
@@ -109,13 +99,6 @@ public abstract class AbstractDBRecord implements IDBRecord {
 	@Override
 	public boolean rollback() throws Throwable {
 		try {
-//			for (String b:blobs) {
-//				if (b!=null) {
-//					File f = new File(b+".bak");
-//					if (f.exists())
-//						f.delete();
-//				}
-//			}
 	    	this.deletedKeys.clear();
 			this.updatedKeys.clear();
 			this.blobs.clear();
@@ -123,11 +106,8 @@ public abstract class AbstractDBRecord implements IDBRecord {
 			Map oreignMap = this.oreignDataMap;
 			if (oreignMap!=null && oreignMap.size()>0) {
 				Map dataMap = this.getDataMap();
-				if (dataMap!=null) {
-					//dataMap.clear();
+				if (dataMap!=null) 
 					dataMap.putAll(oreignMap);
-				}
-				//this.setDataMap(this.origiDataMap);
 				return true;
 			}
 			return false;
@@ -137,24 +117,6 @@ public abstract class AbstractDBRecord implements IDBRecord {
 	}
     @Override
     public String toString() {
-//        StringBuffer buf = new StringBuffer("");
-//        Iterator<?> key = getDataMap().keySet().iterator();
-//        while (key.hasNext()) {
-//            String keyName = (String) key.next();
-//            if (isIgnoredTo(keyName))
-//                continue;
-//            buf.append(keyName + "=");
-//            Object[] values = getParameterValues(keyName);
-//            if (values != null)
-//                for (int i = 0; i < values.length; i++) {
-//                    if (!StringUtil.isEmpty(values[i])) {
-//                        buf.append(values[i]);
-//                    }
-//                    buf.append(" ");
-//                }
-//            buf.append(" ");
-//        }
-//        return buf.toString();
         return this.toJSon().toString();
     }
 	/**
@@ -162,12 +124,12 @@ public abstract class AbstractDBRecord implements IDBRecord {
 	 */
     @Override
 	public JSONObject toJSon() {
-		return toJSon(true, null);
+		return this.toJSon(true, null);
 	}
     /**
      * @return JSONObject
      */
-    public JSONObject toJSon(boolean showAll, ArrayList<String> ignore) {
+    protected JSONObject toJSon(boolean showAll, ArrayList<String> ignore) {
         JSONObject obj = new JSONObject();
         Iterator<?> key = getDataMap().keySet().iterator();
         while (key.hasNext()) {
@@ -185,8 +147,8 @@ public abstract class AbstractDBRecord implements IDBRecord {
         return obj;
     }
     @Override
-	public IDBRecord fromJSon(JSONObject json2) {
-    	return fromJSon(json2, false);
+	public IDBRecord fromJSon(JSONObject json) {
+    	return this.fromJSon(json, false);
     }
     @Override
 	public IDBRecord fromJSon(JSONObject clientJSON, boolean ignoreJSON) {
@@ -202,39 +164,15 @@ public abstract class AbstractDBRecord implements IDBRecord {
 		while(iter.hasNext()) {
 			k = iter.next();
 			o = json.get(k);
-			if (o instanceof JSONObject || o instanceof JSONArray) {
+			if (o instanceof JSON) {
 				if (ignoreJSON) { // nothing
 					continue;
 				}
 			}
-//			setParameter(k.toUpperCase(), o==null?"":o);
 			set(k.toUpperCase(), o);
-//			if (o instanceof net.sf.json.JSONObject) {
-//				this.fromJSon((net.sf.json.JSONObject)o);
-//				break;
-//			}
-//			setParameter(k.toUpperCase(), o==null?"":o.toString());
 		}
 		return this;
 	}
-    /**
-     * @param json
-     */
-    public void json2Form(JSONObject json) {
-        Iterator<?> iter = json.keys();
-        while (iter.hasNext()) {
-            String key = (String) iter.next();
-            if (!json.containsKey(key))
-            	continue;
-            Object val = json.get(key);
-            if (val != null) {
-                //if (val.startsWith("\"") && val.endsWith("\""))
-                //    val = val.substring(0, val.length() - 2).substring(2);
-                //setParameter(key, val);
-                set(key, val);
-            }
-        }
-    }
     /**
      * @param record
      * @param fieldNames
@@ -281,41 +219,6 @@ public abstract class AbstractDBRecord implements IDBRecord {
      */
     protected boolean isIgnoredTo(String keyName) {
         return (keyName != null && Arrays.binarySearch(DataConstant.FORM_IGNORE, keyName) >= 0);
-    }
-    @Override
-    public void applyIf(IDBRecord etcRecord) {
-    	Map<String,Object> map = this.getDataMap();
-    	Map<String,Object> etcMap = etcRecord.getDataMap();
-		Iterator<?> key = etcMap.keySet().iterator();
-		while (key.hasNext()) {
-			String keyName = (String) key.next();
-			if (!map.containsKey(keyName)||StringUtil.isEmpty(map.get(keyName))) {
-				Object v = etcMap.get(keyName);
-				this.set(keyName, v);
-			}
-		}
-    }
-    /**
-     * @param tgtRecord
-     */
-    public void copyTo(AbstractDBRecord tgtRecord) {
-        Iterator<?> key = getDataMap().keySet().iterator();
-        while (key.hasNext()) {
-            String keyName = (String) key.next();
-            if (isIgnoredTo(keyName))
-                continue;
-            Object[] values = getParameterValues(keyName);
-            StringBuffer buf = new StringBuffer("");
-            if (values != null)
-                for (int i = 0; i < values.length; i++) {
-                    if (!StringUtil.isEmpty(values[i])) {
-                        if (buf.length() > 0)
-                            buf.append(",");
-                        buf.append(values[i]);
-                    }
-                }
-            tgtRecord.setParameter(keyName, buf.toString());
-        }
     }
     /**
      * @param record
@@ -409,20 +312,36 @@ public abstract class AbstractDBRecord implements IDBRecord {
                 if (!StringUtil.isEmpty(field.getReferenceTable())) {
                     disSrcValue = this.getParameter(NamingUtil.getDisplayFieldAlias(field));
                     disNowValue = record.getParameter(NamingUtil.getDisplayFieldAlias(field));
-                    // list.add(fields[i].getName());
                     info += "{" + field.getDescription() + ": '"  + disSrcValue + "-->" + disNowValue + "'}\t\n";
                     if (!hasAll)
                         continue;
                 }
-                // list.add(fields[i].getName());
                 info += "{" + field.getDescription() + ": '" + srcValue  + "-->" + nowValue + "'}\t\n";
             }
         }
         return info;
     }
     @Override
-    public boolean contains(String key) {
-        return this.containsKey(key);
+    public void applyIf(IDBRecord etcRecord) {
+    	Map<String,Object> thisMap = this.getDataMap();
+    	Map<String,Object> etcMap = etcRecord.getDataMap();
+		Iterator<?> key = etcMap.keySet().iterator();
+		while (key.hasNext()) {
+			String keyName = (String) key.next();
+			if (!thisMap.containsKey(keyName) || StringUtil.isEmpty(thisMap.get(keyName))) {
+				Object v = etcMap.get(keyName);
+				this.set(keyName, v);
+			}
+		}
+    }
+    @Override
+    public void apply(IDBRecord etcRecord) {
+    	this.getDataMap().putAll(etcRecord.getDataMap());
+//    	this.oreignDataMap.potAll(etcRecord.or)
+    }
+    @Override
+    public boolean contains(String name) {
+        return this.containsKey(name);
     }
     @Override
     public Object remove(String name) {
@@ -440,6 +359,13 @@ public abstract class AbstractDBRecord implements IDBRecord {
     }
     @Override
     public void set(String name, Object value) {
+    	Object oldValue = this.getParameter(name);
+    	if (oldValue!=null && oldValue.equals(value)) { // 值相同不做update标记处理
+    		return;
+    	}
+    	if (oldValue==null && value==null) { // 值相同不做update标记处理
+    		return;
+    	}
     	this.updatedKeys.add(name);
     	this.deletedKeys.remove(name);
         this.setParameter(name, value);
@@ -579,6 +505,10 @@ public abstract class AbstractDBRecord implements IDBRecord {
 		int t = VarUtil.toInt(v) + 1;
 		this.set(DataConstant.HYVERSION, "" + t);
 	}
+    @Override
+	public void rollbackVersion() {
+    	// TODO rollbackVersion
+    }
     // ================================================================================== //
     private static boolean sameValue(Object v1, Object v2) {
         if (!StringUtil.isEmpty(v1) && StringUtil.isEmpty(v2))

@@ -1,6 +1,7 @@
 package haiyan.orm.database.sql;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Savepoint;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 	protected transient ISQLDBClear dbClear = new SQLDBClear();
 	protected transient ISQLDatabase database;
 	protected transient Connection connection;
-	protected transient Savepoint savePoint;
+	private transient Savepoint savePoint;
 	// ================================================= //
 	protected transient volatile boolean autoCommit = true;
 	protected transient volatile boolean commited = false;
@@ -40,35 +41,33 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 	protected void beforeCommit() {
 	}
 	protected void afterCommit() {
+		if (this.connection!=null && this.savePoint!=null)
+			try {
+				this.connection.releaseSavepoint(this.savePoint);
+			} catch (SQLException ignore) {
+				ignore.printStackTrace();
+			}
 		this.savePoint = null;
 	}
 	protected void beforeRollback() {
 	}
 	protected void afterRollback() {
+		if (this.connection!=null && this.savePoint!=null)
+			try {
+				this.connection.releaseSavepoint(this.savePoint);
+			} catch (SQLException ignore) {
+				ignore.printStackTrace();
+			}
 		this.savePoint = null;
 	}
-//	@Override
-//	public String getMasterDSNSuffix() {
-//		return masterDSNSuffix;
-//	}
-//	@Override
-//	public void setMasterDSNSuffix(String masterDSNSuffix) {
-//		this.masterDSNSuffix = masterDSNSuffix;
-//	}
-//	@Override
-//	public String getSlaveDSNSuffix() {
-//		return slaveDSNSuffix;
-//	}
-//	@Override
-//	public void setSlaveDSNSuffix(String slaveDSNSuffix) {
-//		this.slaveDSNSuffix = slaveDSNSuffix;
-//	}
 	@Override
 	public IDatabase getDatabase() {
 		return this.database;
 	}
 	@Override
 	public String getDSN() {
+		if (this.database == null)
+			throw new Warning("未知数据库类型");
 		return this.database.getDSN();
 	}
 	@Override
@@ -164,53 +163,73 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 	public Boolean isAlive() {
 		try {
 			return this.connection != null && !this.connection.isClosed();
-		}catch(Throwable e){
+		} catch (Throwable e) {
 			throw Warning.wrapException(e);
 		}
 	}
+//	@Override
+//	public String getMasterDSNSuffix() {
+//		return masterDSNSuffix;
+//	}
+//	@Override
+//	public void setMasterDSNSuffix(String masterDSNSuffix) {
+//		this.masterDSNSuffix = masterDSNSuffix;
+//	}
+//	@Override
+//	public String getSlaveDSNSuffix() {
+//		return slaveDSNSuffix;
+//	}
+//	@Override
+//	public void setSlaveDSNSuffix(String slaveDSNSuffix) {
+//		this.slaveDSNSuffix = slaveDSNSuffix;
+//	}
 	// ------------------------------------------------------ Cache ------------------------------------------------------ //
 	protected Map<Short,ITableDBRecordCacheManager> cacheMgr = new HashMap<Short, ITableDBRecordCacheManager>(); // 事务缓存管理器
 	protected ITableDBRecordCacheManager getCacheMgr(short type) {
-		if (!cacheMgr.containsKey(type)) {
+		if (!cacheMgr.containsKey(type)) 
 			synchronized(this) {
 				if (!cacheMgr.containsKey(type)) {
 					ITableDBRecordCacheManager m = TableDBRecordCacheFactory.getCacheManager(type);
 					cacheMgr.put(type, m);
 				}
 			}
-		}
 		return cacheMgr.get(type);
 	}
+	@Override
 	public IDBRecord getCache(ITableDBContext context, Table table, String id, short type) throws Throwable {
 		ITableDBRecordCacheManager cacheMgr = getCacheMgr(type);
-		if (cacheMgr!=null) {
+		if (cacheMgr != null) {
 			return cacheMgr.getCache(context, table, id);
 		}
 		return null;
 	}
+	@Override
 	public void removeCache(ITableDBContext context, Table table, String[] ids, short type) throws Throwable {
 		ITableDBRecordCacheManager cacheMgr = getCacheMgr(type);
-		if (cacheMgr!=null) {
+		if (cacheMgr != null) {
 			cacheMgr.removeCache(context, table, ids);
 		}
 	}
 	// NOTICE 在getFormByRow|insertNoSyn|update执行后在会调用到
+	@Override
 	public void updateCache(ITableDBContext context, Table table, IDBRecord record, short type) throws Throwable {
 		ITableDBRecordCacheManager cacheMgr = getCacheMgr(type);
 		if (cacheMgr!=null) {
 			cacheMgr.updateCache(context, table, record);
 		}
 	}
+	// -------------------------------------------------- Transaction --------------------------------------------------- //
+	@Override
 	public void commit() throws Throwable {
 		// --------------------------------------------------------- //
 		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
 		try { // 内存记录提交
-			if (cacheMgr!=null) 
+			if (cacheMgr != null)
 				cacheMgr.commit();
-		}catch(Throwable ex){
+		} catch (Throwable ex) {
 			throw Warning.wrapException(ex);
-		}finally {
-			if (cacheMgr!=null)
+		} finally {
+			if (cacheMgr != null)
 				cacheMgr.clear();
 		}
 		// --------------------------------------------------------- //
@@ -229,16 +248,17 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 //		});
 //		//this.autoCommit = true;
 	}
+	@Override
 	public void rollback() throws Throwable {
 		// --------------------------------------------------------- //
 		final IDBRecordCacheManager cacheMgr = this.getCacheMgr(IDBRecordCacheManager.CONTEXT_SESSION);
 		try { // 内存记录提交
-			if (cacheMgr!=null)
+			if (cacheMgr != null)
 				cacheMgr.rollback();
-		}catch(Throwable ex){
+		} catch (Throwable ex) {
 			throw Warning.wrapException(ex);
-		}finally {
-			if (cacheMgr!=null)
+		} finally {
+			if (cacheMgr != null)
 				cacheMgr.clear();
 		}
 		// --------------------------------------------------------- //
@@ -257,6 +277,7 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 //		});
 //		//this.autoCommit = true;
 	}
+	@Override
 	public void clear() {
 		//LOCAL.remove();
 		try {
@@ -285,7 +306,6 @@ public abstract class AbstractSQLDBManager extends AbstractCacheDBManager implem
 		int connHash = -1;
 		try {
 			if (this.isAlive()) {
-//			if (this.connection!=null) {
 				connHash = this.connection.hashCode();
 				this.connection.close();
 			}

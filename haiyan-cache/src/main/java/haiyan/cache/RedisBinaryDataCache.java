@@ -31,12 +31,12 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			reconn = 0;
 			return user;
 		}catch (JedisConnectionException ex) {
-			DebugUtil.error(ex);
 			if (reconn>=3) {
 				reconn = 0;
-				return null;
+				throw ex;
 			}
 			reconn++;
+			DebugUtil.error(ex);
 			this.initialize();
 			return setUser(sessionId, user);
 		}catch(Throwable e){
@@ -81,12 +81,12 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			reconn = 0;
 			return user;
 		}catch (JedisConnectionException ex) {
-			DebugUtil.error(ex);
 			if (reconn>=3) {
 				reconn = 0;
-				return null;
+				throw ex;
 			}
 			reconn++;
+			DebugUtil.error(ex);
 			this.initialize();
 			return getUser(sessionId);
 		}catch(Throwable e){
@@ -112,12 +112,12 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			reconn = 0;
 			return true;
 		}catch (JedisConnectionException ex) {
-			DebugUtil.error(ex);
 			if (reconn>=3) {
 				reconn = 0;
-				return false;
+				throw ex;
 			}
 			reconn++;
+			DebugUtil.error(ex);
 			this.initialize();
 			return removeUser(sessionId);
 		}catch(Throwable e){
@@ -129,7 +129,7 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 	}
     // --------------------- data cache --------------------- //
 	@Override
-	public Object setData(String schema, Object key, Object ele) {
+	public Object setData(String schema, Object key, Object ele, int seconds) {
 		BinaryJedisCommands writer = null;
 		try {
 			writer = getJedisMaster();
@@ -137,20 +137,26 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			byte[] kBytes = mk.getBytes();
 			byte[] vBytes = ByteUtil.toBytes((Serializable)ele);
 			writer.set(kBytes, vBytes);
+			if (seconds>0)
+				writer.expire(kBytes, seconds); // seconds
 			reconn = 0;
 			return ele;
-		} catch (JedisConnectionException e) {
-			DebugUtil.error(e);
+		} catch (JedisConnectionException ex) {
 			if (reconn>=3) {
 				reconn = 0;
-				return null;
+				throw ex;
 			}
 			reconn++;
+			DebugUtil.error(ex);
 			this.initialize();
-			return setData(schema,key,ele);
+			return setData(schema, key, ele, seconds);
 		}finally{
 			recycleJedisResource((JedisCommands)writer);
 		}
+	}
+	@Override
+	public Object setData(String schema, Object key, Object ele) {
+		return setData(schema, key, ele, -1);
 	}
 	@Override
 	public Object getData(String schema, Object key) {
@@ -165,13 +171,13 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 				return ByteUtil.toObject(bytes);
 			}
 			return null;
-		} catch (JedisConnectionException e) {
-			DebugUtil.error(e);
+		} catch (JedisConnectionException ex) {
 			if (reconn>=3) {
 				reconn = 0;
-				return null;
+				throw ex;
 			}
 			reconn++;
+			DebugUtil.error(ex);
 			this.initialize();
 			return getData(schema,key);
 		} catch(Throwable e){
@@ -196,13 +202,13 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			}
 			reconn = 0;
 			return o;
-		} catch (JedisConnectionException e) {
-			DebugUtil.error(e);
+		} catch (JedisConnectionException ex) {
 			if (reconn>=3) {
 				reconn = 0;
-				return null;
+				throw ex;
 			}
 			reconn++;
+			DebugUtil.error(ex);
 			this.initialize();
 			return deleteData(schema,key);
 		} catch(Throwable e){
@@ -212,5 +218,4 @@ public class RedisBinaryDataCache extends AbstractRedisDataCache {
 			recycleJedisResource((JedisCommands)writer);
 		}
     }
-	
 }

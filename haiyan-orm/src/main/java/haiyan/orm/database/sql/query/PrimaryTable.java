@@ -3,7 +3,7 @@
  */
 package haiyan.orm.database.sql.query;
 
-import haiyan.common.HyStringBuffer;
+import haiyan.common.StringBufferUtil;
 import haiyan.common.SysCode;
 import haiyan.common.exception.Warning;
 
@@ -30,7 +30,7 @@ public class PrimaryTable extends SQLTable {
 	 * @return String
 	 */
 	public String getFormSQL() {
-		HyStringBuffer buf = new HyStringBuffer();
+		StringBufferUtil buf = new StringBufferUtil();
 		if (this.primaryTableSQL!=null) 
 			buf.append(this.primaryTableSQL).append(" ").append(getFirstTableAlias());
 		else

@@ -5,6 +5,15 @@ package haiyan.orm.database.sql;
 
 import static haiyan.common.StringUtil.isBlankOrNull;
 import static haiyan.common.StringUtil.isEmpty;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
 import haiyan.common.CloseUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.InvokeUtil;
@@ -51,14 +60,6 @@ import haiyan.orm.database.sql.query.RefLikeCriticalItem;
 import haiyan.orm.database.sql.query.UpperThanCriticalItem;
 import haiyan.orm.intf.database.sql.ITableSQLRender;
 import haiyan.orm.intf.session.ITableDBContext;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * @author zhouxw
@@ -145,42 +146,42 @@ class SQLRender implements ITableSQLRender {
 			}
 		};
 		StringBuffer cols = new StringBuffer();
-		PrimaryTable pTable = new PrimaryTable(ConfigUtil.getRealTableName(table), "");
+		PrimaryTable pTable = new PrimaryTable(getDBName(table), "");
 		template.deal(table, new Object[] { cols, pTable });
 		pTable.setSelectColumnSQL("select " + cols.toString() + " from ");
 		QuerySQL qs = table.getQuerySQL();
-		if (qs!=null) {
-			String className = qs.getClassName();
-			String methodName = qs.getMethodName();
-			String parameter = qs.getParameter();
-			String content = qs.getContent();
-			if (isExpMethod(methodName)) {
-				IExpUtil expUtil = context.getExpUtil();
-				if (expUtil==null) {
-					throw new Warning("context.exp is null");
-				}
-				boolean needContent = true;
-				if (needContent && content!=null) {
-					String sql, sContent = content.trim();
-					if (ExpUtil.isFormula(sContent))
-						sql = VarUtil.toString(expUtil.evalExp(sContent.substring(1)));
-					else if (sContent.startsWith("{"))
-						sql = VarUtil.toString(expUtil.evalExp(sContent));
-					else
-						sql = sContent;
-					pTable.setPrimaryTableSQL(sql);
-				}
-			} else {
-				if (!isEmpty(methodName) && !isEmpty(className)) {
-					// NOTICE 后面有pf.getContent()的处理
-					DebugUtil.info(">doQuerySQL:" + className + " " + methodName);
-					String sql =  InvokeUtil.getString(className, methodName, 
-						new Class[] { IContext.class, Table.class, String.class, String.class },
-						new Object[] { context, table, pTable.getFirstTableAlias(), parameter });
-					pTable.setPrimaryTableSQL(sql);
-				} else if (!isEmpty(content)){
-					pTable.setPrimaryTableSQL(content);
-				}
+		if (qs == null) // SQL查询对象为空
+			return pTable;
+		String className = qs.getClassName();
+		String methodName = qs.getMethodName();
+		String parameter = qs.getParameter();
+		String content = qs.getContent();
+		if (isExpMethod(methodName)) { // 如果是公式
+			IExpUtil expUtil = context.getExpUtil();
+			if (expUtil==null) {
+				throw new Warning("context.exp is null");
+			}
+			boolean needContent = true;
+			if (needContent && content!=null) {
+				String sql, sContent = content.trim();
+				if (ExpUtil.isFormula(sContent))
+					sql = VarUtil.toString(expUtil.evalExp(sContent.substring(1)));
+				else if (sContent.startsWith("{"))
+					sql = VarUtil.toString(expUtil.evalExp(sContent));
+				else
+					sql = sContent;
+				pTable.setPrimaryTableSQL(sql);
+			}
+		} else {
+			if (!isEmpty(methodName) && !isEmpty(className)) {
+				// NOTICE 后面有pf.getContent()的处理
+				DebugUtil.info(">doQuerySQL:" + className + " " + methodName);
+				String sql =  InvokeUtil.getString(className, methodName, 
+					new Class[] { IContext.class, Table.class, String.class, String.class },
+					new Object[] { context, table, pTable.getFirstTableAlias(), parameter });
+				pTable.setPrimaryTableSQL(sql);
+			} else if (!isEmpty(content)){
+				pTable.setPrimaryTableSQL(content);
 			}
 		}
 		return pTable;
@@ -643,7 +644,8 @@ class SQLRender implements ITableSQLRender {
 	 */
 	protected String getUpdateSQL(Table table, Field[] validFields, IDBFilter filter)
 			throws Throwable {
-		StringBuffer buf = new StringBuffer().append("update ").append(ConfigUtil.getRealTableName(table)).append(" set ");
+		String dbTableName = getDBName(table)+" t_1"; // 只能更新主表t_1
+		StringBuffer buf = new StringBuffer().append("update ").append(dbTableName).append(" set ");
 		for (int i = 0; i < validFields.length; i++) {
 			if (i > 0)
 				buf.append(",");
@@ -741,7 +743,7 @@ class SQLRender implements ITableSQLRender {
 				if (ExpUtil.isFormula(defValue)) {
 					if (exp == null)
 						exp = new ExpUtil(context, table, record);
-					value = "" + exp.evalExp(defValue.substring(1));
+					value = VarUtil.toString(exp.evalExp(defValue.substring(1)));
 				} else {
 					value = defValue;
 				}
@@ -755,6 +757,8 @@ class SQLRender implements ITableSQLRender {
 	public PreparedStatement getInsertPreparedStatement(ITableDBContext context, Table table, IDBRecord record, String newID) throws Throwable {
 		// 2007-01-09 zhouxw
 		Field[] fields = getInsertValidField(context, table, record);
+		if (fields.length == 0)
+			return null;
 		mainSQL = getInsertSQL(table, fields);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
 		if (record!=null) {
@@ -767,6 +771,8 @@ class SQLRender implements ITableSQLRender {
 	public PreparedStatement getInsertPreparedStatement(ITableDBContext context, Table table) throws Throwable {
 		// 2007-01-09 zhouxw
 		Field[] fields = getInsertValidField(context, table);
+		if (fields.length == 0)
+			return null;
 		mainSQL = getInsertSQL(table, fields);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
 		DebugUtil.info("------insert_().end------");
@@ -789,7 +795,7 @@ class SQLRender implements ITableSQLRender {
 					if (ExpUtil.isFormula(defValue)) {
 						if (exp == null)
 							exp = new ExpUtil(context, table, record);
-						value = "" + exp.evalExp(defValue.substring(1));
+						value = VarUtil.toString(exp.evalExp(defValue.substring(1)));
 					} else {
 						value = defValue;
 					}
@@ -798,20 +804,20 @@ class SQLRender implements ITableSQLRender {
 				ss.append("##update(" + fieldName + "):"+value+"\t");
 			}
 		}
-		if(filter == null){
+		if (filter == null) {
 			Object obj = record.get(table.getId().getName());
 			String newID = null;
-			if(!StringUtil.isBlankOrNull(obj)){
+			if (!StringUtil.isBlankOrNull(obj)) {
 				newID = obj.toString();
 			}
-			ps.setString(i+1, newID);
-		
-		}else{
+			ps.setString(i + 1, newID);
+		} else {
 			Object[] paras = filter.getParas();
-			for(int j=0;j<paras.length;j++){
-				Object obj = paras[j];
-				ps.setObject(i+j+1, obj);
-			}
+			if (paras!=null)
+				for (int j = 0; j < paras.length; j++) {
+					Object obj = paras[j];
+					ps.setObject(i + j + 1, obj);
+				}
 		}
 		ss.append("##update(" + table.getId().getName() + "):"+record.get(table.getId().getName())+"\t");
 		DebugUtil.info(ss.toString());
@@ -820,9 +826,11 @@ class SQLRender implements ITableSQLRender {
 	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table, IDBRecord record, IDBFilter filter) throws Throwable {
 		// 2007-01-09 zhouxw
 		Field[] fields = getUpdateValidField(context, table, record);
+		if (fields.length == 0)
+			return null;
 		mainSQL = getUpdateSQL(table, fields, filter);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
-		if (record!=null) {
+		if (record != null) {
 			this.updatePreparedStatementValue(context, table, record, ps, fields, filter);
 		}
 		DebugUtil.info("------update().end------");
@@ -832,6 +840,8 @@ class SQLRender implements ITableSQLRender {
 	public PreparedStatement getUpdatePreparedStatement(ITableDBContext context, Table table) throws Throwable {
 		// 2007-01-09 zhouxw
 		Field[] fields = getUpdateValidField(context, table);
+		if (fields.length == 0)
+			return null;
 		mainSQL = getUpdateSQL(table, fields, null);
 		PreparedStatement ps = getConnection(context, true).prepareStatement(mainSQL);
 		DebugUtil.info("------update_().end------");
@@ -839,7 +849,7 @@ class SQLRender implements ITableSQLRender {
 	}
 	@Override
 	public PreparedStatement getDeletePreparedStatement(ITableDBContext context, Table table, String[] ids) throws Throwable {
-		mainSQL = "delete from " + ConfigUtil.getRealTableName(table) + " where " + getDBName(table.getId()) + " in (";
+		mainSQL = "delete from " + getDBName(table) + " where " + getDBName(table.getId()) + " in (";
 		for (int i=0;i<ids.length;i++) {
 			if (i>0)
 				mainSQL += ",";
@@ -917,8 +927,8 @@ class SQLRender implements ITableSQLRender {
 		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
 		Query countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
 		dealExtFilter(context, table, countQry, null);
-		mainSQL = countQry.getSQL(); // 4 log
 		// deal
+		mainSQL = countQry.getSQL(); // 4 log
 		ResultSet rs = null;
 		try {
 			rs = countQry.build(getConnection(context)).executeQuery();
@@ -930,6 +940,9 @@ class SQLRender implements ITableSQLRender {
 			CloseUtil.close(rs);
 		}
 		return -1;
+	}
+	private static boolean ignoreSQLCount(ITableDBContext context) {
+		return VarUtil.toBool(context.getAttribute(DataConstant.COUNT_IGNORE));
 	}
 	@Override
 	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBFilter filter, ISQLRecordFactory factory, 
@@ -944,7 +957,7 @@ class SQLRender implements ITableSQLRender {
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
 		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
 		Query countQry = null;
-		if (!VarUtil.toBool(context.getAttribute(DataConstant.COUNT_IGNORE))) {
+		if (!ignoreSQLCount(context)) {
 			countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
 			dealExtFilter(context, table, countQry, filter);
 		}
@@ -976,7 +989,7 @@ class SQLRender implements ITableSQLRender {
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
 		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
 		Query countQry = null;
-		if (!VarUtil.toBool(context.getAttribute(DataConstant.COUNT_IGNORE))) {
+		if (!ignoreSQLCount(context)) {
 			countQry = new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
 			dealExtFilter(context, table, countQry, null);
 		}
@@ -1004,18 +1017,10 @@ class SQLRender implements ITableSQLRender {
 		// items
 //		ArrayList<CriticalItem> criticalItems = getCriticalItems(context, table, pTable, queryRecord, null);
 		ArrayList<OrderByItem> orderByItems = getOrderByItems(context, table, null);
-//		    // count
-////		String sCoundSQL; // NOTICE 可能是联立SQL无法取count(id)
-////		Id id = table.getId();
-////		if (id!=null) {
-////			sCoundSQL = "select count("+table.getId().getName()+") from " + pTable.getFormSQL();
-////		} else {
-////			sCoundSQL = "select count("+table.getId().getName()+") from " + pTable.getFormSQL();
-////		}
 		String sFilterC = calFilter(context, table, pTableAlias, filter, false);
 		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
 		Query countQry = null;
-		if (!VarUtil.toBool(context.getAttribute(DataConstant.COUNT_IGNORE))) {
+		if (!ignoreSQLCount(context)) { // NOTICE 是联立SQL无法取count(id)
 			countQry =  new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC); // count不需要order
 			dealExtFilter(context, table, countQry, filter);
 		}
@@ -1049,7 +1054,7 @@ class SQLRender implements ITableSQLRender {
 		String sFilterC = calFilter(context, table, pTableAlias, null, false);
 		// ("+pTableAlias+"."+table.getId().getName()+") 考虑到left join的情况
 		Query countQry = null;
-		if (!VarUtil.toBool(context.getAttribute(DataConstant.COUNT_IGNORE))) {
+		if (!ignoreSQLCount(context)) { // NOTICE 是联立SQL无法取count(id)
 			countQry =  new Query("select count("+pTableAlias+"."+table.getId().getName()+") from " + pTable.getFormSQL(), sFilterC, criticalItems, null); // count不需要order
 			dealExtFilter(context, table, countQry, null);
 		}
@@ -1255,11 +1260,11 @@ class SQLRender implements ITableSQLRender {
 //		fixedQueryFilter += calFilter(context, table, pTableAlias, null, true);
 //		//
 //		mainSQL = "select distinct(" + table.getId().getName() + ") from "
-//				+ ConfigUtil.getRealTableName(table) + " " + pTableAlias
+//				+ getDBName(table) + " " + pTableAlias
 //				+ " where 1<>1 ";
 //		if (parentField != null)
 //			mainSQL = "select distinct(" + parentField.getName() + ") from "
-//					+ ConfigUtil.getRealTableName(table) + " " + pTableAlias
+//					+ getDBName(table) + " " + pTableAlias
 //					+ " where 1=1 ";
 //		mainSQL += fixedQueryFilter;
 //		//
@@ -1359,23 +1364,25 @@ class SQLRender implements ITableSQLRender {
 				if (isExpMethod(methodName)) {
 					IExpUtil expUtil = context.getExpUtil();
 					if (expUtil==null) {
-						throw new Warning("context.exp is null");
+						throw new Warning("context.exp lost");
 					}
 					boolean needContent = false;
 					if (isEmpty(parameter)) {
-						throw new Warning("PluggedFilter.parameter is null");
+						throw new Warning("PluggedFilter.parameter lost");
 					} else {
 						Object v = expUtil.evalExp(parameter);
 						if (v instanceof Boolean && v==Boolean.TRUE) {
 							needContent = true;
 						}
 					}
-					if (needContent) {
-						String sFilter;
-						if (ExpUtil.isFormula(content))
-							sFilter = VarUtil.toString(expUtil.evalExp(content));
+					if (needContent && content!=null) {
+						String sFilter, sContent = content.trim();
+						if (ExpUtil.isFormula(sContent))
+							sFilter = VarUtil.toString(expUtil.evalExp(sContent.substring(1)));
+						else if (sContent.startsWith("{"))
+							sFilter = VarUtil.toString(expUtil.evalExp(sContent));
 						else
-							sFilter = content;
+							sFilter = sContent;
 						filterStr += sFilter;
 					}
 				} else {

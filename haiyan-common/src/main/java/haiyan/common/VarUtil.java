@@ -346,13 +346,14 @@ public class VarUtil {
 		return "";
 	}
 	public static boolean toBool(Object obj) {
-		if (StringUtil.isNumeric(obj)) {
-			return toInt(obj) != 0;
-		}
-		if (StringUtil.isBoolean(obj)) {
-			return new Boolean(obj.toString()).booleanValue();
-		}
-		return false;
+//		if (StringUtil.isNumeric(obj)) {
+//			return toInt(obj) != 0;
+//		}
+//		if (StringUtil.isBoolean(obj)) {
+//			return new Boolean(obj.toString()).booleanValue();
+//		}
+//		return false;
+		return toBoolean(obj);
 	}
 	public static boolean toBoolean(Object value) {
 		if (value == null)
@@ -408,15 +409,15 @@ public class VarUtil {
 	public static BigDecimal toBigDecimal(Object o) {
 		if (o == null)
 			return BigDecimal.ZERO;
-		if ((o instanceof Double))
-			return new BigDecimal(Double.toString(((Double) o).doubleValue()));
-		if ((o instanceof Integer))
-			return BigDecimal.valueOf(((Integer) o).intValue());
-		if ((o instanceof Long))
-			return BigDecimal.valueOf(((Long) o).longValue());
-		if ((o instanceof BigDecimal))
+		else if ((o instanceof Double))
+			return new BigDecimal((Double) o);
+		else if ((o instanceof Integer))
+			return BigDecimal.valueOf(((Integer) o));
+		else if ((o instanceof Long))
+			return BigDecimal.valueOf(((Long) o));
+		else if ((o instanceof BigDecimal))
 			return (BigDecimal) o;
-		if ((o instanceof String)) {
+		else if ((o instanceof String)) {
 //			o = o.toString().trim();
 //			o = StringUtil.replaceAll(o, "", "");
 			if (((String) o).isEmpty()) {

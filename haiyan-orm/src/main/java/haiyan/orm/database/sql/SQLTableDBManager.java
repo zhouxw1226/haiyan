@@ -863,7 +863,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 			String SQL = String.format(
 				"select count(%s) from %s where %s=? and %s in (%s)", //
 				table.getId().getName(),
-				ConfigUtil.getRealTableName(table),
+				getDBName(table),
 				DataConstant.USEDSTATUS,
 				label + "1" + label, 
 				table.getId().getName(), 
@@ -882,11 +882,11 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 				continue;
 			String[] vs = StringUtil.split(fv, ",");
 			for (String v : vs) {
-				IDBRecord recored = getDBM(context).select(context, ConfigUtil.getTable(f.linkTable), v);
-				if (recored == null || "1".equals(recored.get(DataConstant.USEDSTATUS)))
+				IDBRecord rec = getDBM(context).select(context, ConfigUtil.getTable(f.linkTable), v);
+				if (rec == null || "1".equals(rec.get(DataConstant.USEDSTATUS)))
 					continue;
-				recored.set(DataConstant.USEDSTATUS, "1");
-				getDBM(context).update(context, ConfigUtil.getTable(f.linkTable), recored);
+				rec.set(DataConstant.USEDSTATUS, "1");
+				getDBM(context).update(context, ConfigUtil.getTable(f.linkTable), rec);
 			}
 		}
 	}
@@ -929,20 +929,34 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 		PreparedStatement ps = null;
 		try {
 			ps = getSQLRender().getInsertPreparedStatement(context, table);
+			if (ps == null) {
+				for (IDBRecord record : records) {
+					record.setStatus(IDBRecord.INSERT_FAIL);
+				}
+				return records;
+			}
 			Field[] fields = getSQLRender().getInsertValidField(context, table);
-			for (IDBRecord form:records) {
-				String newID = (String)form.get(table.getId().getName()); // context.getNextID(table);
-				form.updateVersion();
-				getSQLRender().insertPreparedStatement(context, table, form, ps, fields, newID);
-				ps.addBatch();
-				SQLMappingDBManager.setMappingTableValue(context, table, form, newID,
-						MappingDBManager.SET_MAPPING_TABLE_WHEN_CREATE);
-//				SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID,
-//						DBTableManager.SET_MAPPING_TABLE_WHEN_CREATE);
-				// 2006-12-06
-				form.set(table.getId().getName(), newID);
-				this.updateCache(context, table, form, IDBRecordCacheManager.CONTEXT_SESSION);
-				this.changeUsedStatus(context, table, form);
+			for (IDBRecord record:records) {
+				String newID = record.getString(table.getId().getName()); // context.getNextID(table);
+				if (StringUtil.isEmpty(newID)) {
+					throw new Warning("insert时既没有ID也没有Filter");
+				}
+				try {
+					record.updateVersion();
+					getSQLRender().insertPreparedStatement(context, table, record, ps, fields, newID);
+					ps.addBatch();
+					SQLMappingDBManager.setMappingTableValue(context, table, record, newID,
+							MappingDBManager.SET_MAPPING_TABLE_WHEN_CREATE);
+	//				SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID,
+	//						DBTableManager.SET_MAPPING_TABLE_WHEN_CREATE);
+					// 2006-12-06
+					record.set(table.getId().getName(), newID);
+					this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
+					this.changeUsedStatus(context, table, record);
+				} catch (Throwable e) {
+					record.rollbackVersion();
+					throw e;
+				}
 			}
 			ps.executeBatch(); 
 		} catch (SQLException ex) {
@@ -987,17 +1001,22 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 	 */
 	protected IDBRecord insertNoSyn(ITableDBContext context, Table table, IDBRecord record,
 			int... args) throws Throwable {
+		String newID = record.getString(table.getId().getName()); // context.getNextID(table);
+		if (StringUtil.isEmpty(newID)) {
+			throw new Warning("insert时既没有ID也没有Filter");
+		}
 		PreparedStatement ps = null;
 		try {
-			Object obj = record.get(table.getId().getName());
-			String newID = null;
-			if(!StringUtil.isBlankOrNull(obj)){
-				newID = obj.toString();
-			}
 			record.updateVersion();
 			ps = getSQLRender().getInsertPreparedStatement(context, table, record, newID);
+			if (ps == null) {
+				record.setStatus(IDBRecord.INSERT_FAIL);
+				return record;
+			}
 			// ps.executeUpdate();
-			ps.execute();
+			if (!ps.execute()) {
+				record.setStatus(IDBRecord.INSERT_FAIL);
+			}
 			// LogUtil.info(" execute-time:" + DateUtil.getLastTime() + " execute-sql:" + getSQLDBTemplate().getSQL());
 			SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_CREATE);
 //			SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_CREATE);
@@ -1011,6 +1030,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 				if (isDeep(args))
 					return insertNoSyn(context, table, record, getDeep(args));
 			}
+			record.rollbackVersion();
 			throw ex;
 		} finally {
 			CloseUtil.close(ps);
@@ -1051,27 +1071,39 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 	 * @throws Throwable
 	 */
 	protected List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records, IDBFilter filter, int... args) throws Throwable {
-		for (IDBRecord record:records)
+		for (IDBRecord record:records) {
 			this.checkVersion(context, table, record);
+		}
 		PreparedStatement ps = null;
 		try {
 			ps = getSQLRender().getUpdatePreparedStatement(context, table);
+			if (ps == null) {
+				for (IDBRecord record : records) {
+					record.setStatus(IDBRecord.UPDATE_FAIL);
+				}
+				return records;
+			}
 			Field[] fields = getSQLRender().getUpdateValidField(context, table);
 			for (IDBRecord record:records) {
-				Object obj = record.get(table.getId().getName());
-				String newID = null;
-				if(!StringUtil.isBlankOrNull(obj)){
-					newID = obj.toString();
+				String newID = record.getString(table.getId().getName()); // context.getNextID(table);
+				if (StringUtil.isEmpty(newID)) {
+					throw new Warning("update时既没有ID也没有Filter");
 				}
-				record.updateVersion();
-				getSQLRender().updatePreparedStatementValue(context, table, record, ps, fields,filter);
-				ps.addBatch();
-				SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
-//				SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
-				this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
-				this.changeUsedStatus(context, table, record);
+				try {
+					record.updateVersion();
+					getSQLRender().updatePreparedStatementValue(context, table, record, ps, fields,filter);
+					ps.addBatch();
+					SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
+	//				SQLDBOne2OneManager.setOne2OneTableValue(context, table, form, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
+					this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
+					this.changeUsedStatus(context, table, record);
+				} catch (Throwable e) {
+					record.rollbackVersion();
+					throw e;
+				}
 			}
 			ps.executeBatch(); 
+			return records;
 		} catch (SQLException ex) {
 			if (isDBCorrect(ex)) {
 				this.tableErrHandle(getSQLRender().getSQL());
@@ -1082,7 +1114,6 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 		} finally {
 			CloseUtil.close(ps);
 		}
-		return records;
 	}
 	@Override
 	public List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records) throws Throwable {
@@ -1102,24 +1133,28 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 	 */
 	protected IDBRecord update(ITableDBContext context, Table table, IDBRecord record, IDBFilter filter, int... args) throws Throwable {
 		this.checkVersion(context, table, record);
+		String newID = record.getString(table.getId().getName()); // context.getNextID(table);
+		if (StringUtil.isEmpty(newID) && filter==null) {
+			throw new Warning("update时既没有ID也没有Filter");
+		}
 		PreparedStatement ps = null;
 		try {
-			Object objID = record.get(table.getId().getName());
-			String newID = null;
-			if (!StringUtil.isBlankOrNull(objID)) {
-				newID = objID.toString();
-			} else if (filter==null) {
-				throw new Warning("update时既没有ID也没有Filter");
-			}
             record.updateVersion();
 			ps = getSQLRender().getUpdatePreparedStatement(context, table, record, filter);
+			if (ps == null) {
+				record.setStatus(IDBRecord.UPDATE_FAIL);
+				return record;
+			}
 			// ps.executeUpdate();
-			ps.execute();
+			if (!ps.execute()) {
+				record.setStatus(IDBRecord.UPDATE_FAIL);
+			}
 			SQLMappingDBManager.setMappingTableValue(context, table, record, newID, MappingDBManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 //			SQLDBOne2OneManager.setOne2OneTableValue(context, table, record, newID, DBTableManager.SET_MAPPING_TABLE_WHEN_MODIFY);
 			this.updateCache(context, table, record, IDBRecordCacheManager.CONTEXT_SESSION);
 			this.changeUsedStatus(context, table, record);
 		} catch (SQLException ex) {
+			record.rollbackVersion();
 			if (isDBCorrect(ex)) {
 				this.tableErrHandle(getSQLRender().getSQL());
 				if (isDeep(args))
@@ -1157,7 +1192,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 //				SQLDBOne2OneManager.setOne2OneTableValue(context, table, null, ids[i], DBTableManager.SET_MAPPING_TABLE_WHEN_REMOVE);
 			}
 			ps = getSQLRender().getDeletePreparedStatement(context, table, ids);
-			// return ps.executeUpdate();
+			// ps.executeUpdate();
 			boolean flag = ps.execute();
 			removeCache(context, table, ids, IDBRecordCacheManager.CONTEXT_SESSION);
 			return flag;
@@ -1265,7 +1300,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 				placeholder+=",";
 			placeholder+="?";
 		}
-		IDBFilter filter = new SQLDBFilter("and t_1."+table.getId().getName()+" in ("+placeholder+")", ids);
+		IDBFilter filter = new SQLDBFilter(" and t_1."+table.getId().getName()+" in ("+placeholder+")", ids);
 		return this.select(context, table, filter, ids.length, 1);
 	}
 	@Override
@@ -1970,7 +2005,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
 				}
 			}
 		}
-		String sTableName = ConfigUtil.getRealTableName(oSerTable);
+		String sTableName = getDBName(oSerTable);
 		DebugUtil.debug(">exist fields[" + sTableName + "]:" + sFlds.refValue);
 		if (notExistCols.size() > 0)
 			DebugUtil.debug(">not exist fields["+ sTableName+"]:"
@@ -2496,7 +2531,7 @@ abstract class SQLTableDBManager extends AbstractSQLDBManager implements ITableD
         ArrayList<String> sKeySQL = new ArrayList<String>();
         // int count = 0;
         // alter table users add constraint PK_users primary key(USERID);
-        String tableName = ConfigUtil.getRealTableName(oSerTable);
+        String tableName = getDBName(oSerTable);
         // tableName = this.genTableName(tableName);
         sKeySQL.add("alter table " + tableName + " add constraint PK_"
 			+ tableName + " primary key (" + oSerTable.getId().getName()

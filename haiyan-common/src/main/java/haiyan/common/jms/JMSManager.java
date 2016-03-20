@@ -1,23 +1,16 @@
 package haiyan.common.jms;
 
-import haiyan.common.PropUtil;
-import haiyan.common.intf.session.ISession;
-
 import javax.jms.Connection;
-import javax.jms.Destination;
-import javax.jms.JMSException;
-import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnection;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.pool.PooledConnectionFactory;
 
-public abstract class JMSManager implements ISession {
+import haiyan.common.PropUtil;
+import haiyan.common.intf.session.ISession;
 
-	protected String url = PropUtil.getProperty("server.soa.jmsurl","tcp://0.0.0.0:61616");
-	protected String user = PropUtil.getProperty("server.soa.jmsuser",ActiveMQConnection.DEFAULT_USER);
-	protected String password = PropUtil.getProperty("server.soa.jmspass",ActiveMQConnection.DEFAULT_PASSWORD);
-	protected String subject = "CHANNEL.DEFAULT";
+public abstract class JMSManager implements ISession {
+	protected Enum<?> subject; // "CHANNEL.DEFAULT";
 	protected long sleepTime;
 	protected long timeToLive = 3600000L;
 	protected int soTimeout = 5000;
@@ -28,62 +21,47 @@ public abstract class JMSManager implements ISession {
 	//在事务状态下进行发送操作，消息并未真正投递到中间件，而只有进行session.commit操作之后，消息才会发送到中间件
 	protected boolean transacted = true;
 	protected boolean persistent = true;
-	protected Destination destination;
-	protected Session session;
 	protected Connection connection;
 	protected static PooledConnectionFactory PCF;
 	private synchronized PooledConnectionFactory getPoolFactory() {
-		if (PCF==null)
-			synchronized(JMSManager.class) {
+		if (PCF == null)
+			synchronized (JMSManager.class) {
 				if (PCF == null) {
 					ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
-							this.user, this.password, this.url);
+							this.getUser(), this.getPassword(), this.getUrl());
 					connectionFactory.setSendTimeout(this.soTimeout);
 					connectionFactory.setCloseTimeout(this.soTimeout);
 					connectionFactory.setUseAsyncSend(true);
 					connectionFactory.setUseCompression(true);
-//					connectionFactory.setMaxThreadPoolSize(maxThreadPool);
+					// connectionFactory.setMaxThreadPoolSize(maxThreadPool);
 					PCF = new PooledConnectionFactory(connectionFactory);
 				}
 			}
 		return PCF;
+	}
+	private String DSN;
+	public JMSManager() {
+	}
+	public JMSManager(String DSN) {
+		this.DSN = DSN;
+	}
+	public String getDSN() {
+		return DSN;
 	}
 	protected String getName() {
 		return getClass().getCanonicalName();
 	}
 	protected void createConnection() throws Throwable {
 		this.connection = getPoolFactory().createConnection();
+		//this.connection.setClientID(UUID.randomUUID().toString());
 		this.connection.start();
 	}
-	private void createSession(int sessionType) throws Throwable {
-		//Session.AUTO_ACKNOWLEDGE 处理完消息自动确认
-		//Session.CLIENT_ACKNOWLEDGE 处理完消息手动确认
-		//Session.DUPS_OK_ACKNOWLEDGE 批量确认
-		//Session.SESSION_TRANSACTED 开启同步事务
-		this.session = this.connection.createSession(this.transacted, sessionType<0?Session.CLIENT_ACKNOWLEDGE:sessionType);
+	@Override
+	public Boolean isAlive() { 
+		return this.connection!=null;
 	}
-	public void commit() {
-		if (this.session!=null)
-			try {
-				this.session.commit();
-			} catch (JMSException ignore) {
-				ignore.printStackTrace();
-			}
-	}
-	public void rollback() {
-		if (this.session!=null)
-			try {
-				this.session.rollback();
-			} catch (JMSException ignore) {
-				ignore.printStackTrace();
-			}
-	}
+	@Override
 	public void close() {
-		if (this.session != null)
-			try {
-				this.session.close();
-			} catch (Throwable ignore) {
-			}
 		if (this.connection != null)
 			try {
 				this.connection.stop();
@@ -94,50 +72,36 @@ public abstract class JMSManager implements ISession {
 				this.connection.close();
 			} catch (Throwable ignore) {
 			}
-		this.destination = null;
-		this.session = null;
 		this.connection = null;
-	}
-	public void openTransaction(int sessionType) throws Throwable {
-		this.transacted = true;
-		this.createConnection();
-		this.createSession(sessionType);
-	}
-	public void openConnection(int sessionType) throws Throwable {
-		this.transacted = false;
-		this.createConnection();
-		this.createSession(sessionType);
-	}
-	@Override
-	public Boolean isAlive() { 
-		return this.connection!=null && this.session!=null;
 	}
 	public abstract void execute() throws Throwable;
 	// ========================================================================================= //
+	protected String url = PropUtil.getProperty("server.soa.jmsurl", "tcp://0.0.0.0:61616");
+	protected String user = PropUtil.getProperty("server.soa.jmsuser", ActiveMQConnection.DEFAULT_USER);
+	protected String password = PropUtil.getProperty("server.soa.jmspass", ActiveMQConnection.DEFAULT_PASSWORD);
 	public String getUrl() {
 		return url;
-	}
-	public void setUrl(String url) {
-		this.url = url;
 	}
 	public String getUser() {
 		return user;
 	}
-	public void setUser(String user) {
-		this.user = user;
-	}
 	public String getPassword() {
 		return password;
 	}
-	public void setPassword(String password) {
-		this.password = password;
-	}
-	public String getSubject() {
+	// ========================================================================================= //
+	public Enum<?> getSubject() {
 		return subject;
 	}
-	public void setSubject(String subject) {
+	public void setSubject(Enum<?> subject) {
 		this.subject = subject;
 	}
+	public boolean isTopic() {
+		return topic;
+	}
+	public void setTopic(boolean topic) {
+		this.topic = topic;
+	}
+	// ========================================================================================= //
 	public long getSleepTime() {
 		return sleepTime;
 	}
@@ -162,12 +126,6 @@ public abstract class JMSManager implements ISession {
 	public void setVerbose(boolean verbose) {
 		this.verbose = verbose;
 	}
-	public boolean isTopic() {
-		return topic;
-	}
-	public void setTopic(boolean topic) {
-		this.topic = topic;
-	}
 	public boolean isTransacted() {
 		return transacted;
 	}
@@ -180,5 +138,16 @@ public abstract class JMSManager implements ISession {
 	public void setPersistent(boolean persistent) {
 		this.persistent = persistent;
 	}
-	
+//	public void setUrl(String url) {
+//		this.url = url;
+//	}
+//	public void setUser(String user) {
+//		this.user = user;
+//	}
+//	public void setPassword(String pass) {
+//		this.password = pass;
+//	}
+//	public abstract void setUrl(String url);
+//	public abstract void setUser(String user);
+//	public abstract void setPassword(String pass);
 }

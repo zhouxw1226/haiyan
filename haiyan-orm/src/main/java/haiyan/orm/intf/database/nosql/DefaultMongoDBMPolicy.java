@@ -1,5 +1,7 @@
 package haiyan.orm.intf.database.nosql;
 
+import static haiyan.config.util.ConfigUtil.getDBName;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -158,7 +160,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	@Override
 	public boolean doDelete(ITableDBContext context, Table table, String[] ids) throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table));
+		DBCollection coll = db.getCollection(getDBName(table));
 		for (String id:ids) {
 			coll.remove(new BasicDBObject("_id", new ObjectId(id))); 
 //			coll.remove(new BasicDBObject(table.getId().getName(), new ObjectId(id))); 
@@ -168,7 +170,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	@Override
 	public IDBRecord insertNoSyn(ITableDBContext context, Table table, IDBRecord record) throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table)); 
+		DBCollection coll = db.getCollection(getDBName(table)); 
         DBObject bean = new BasicDBObject();
         bean.putAll(record.getDataMap());
         bean.put("_id", new ObjectId(record.getString(table.getId().getName())));
@@ -185,7 +187,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 		String id = new ObjectId().toHexString();
 		record.set(table.getId().getName(), id);
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table)); 
+		DBCollection coll = db.getCollection(getDBName(table)); 
         DBObject bean = new BasicDBObject(); 
         bean.putAll(record.getDataMap());
         bean.put("_id", new ObjectId(record.getString(table.getId().getName())));
@@ -196,7 +198,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	@Override
 	public List<IDBRecord> insert(ITableDBContext context, Table table, List<IDBRecord> records) throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table));
+		DBCollection coll = db.getCollection(getDBName(table));
 		List<DBObject> list = new ArrayList<DBObject>();
 		for (IDBRecord record:records) {
 	        DBObject bean = new BasicDBObject();
@@ -215,7 +217,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	@Override
 	public IDBRecord doUpdate(ITableDBContext context, Table table, IDBRecord record) throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table)); 
+		DBCollection coll = db.getCollection(getDBName(table)); 
         DBObject query = new BasicDBObject(); 
 //      query.put(table.getId().getName(), record.get(table.getId().getName()));
         query.put("_id", new ObjectId(record.getString(table.getId().getName())));
@@ -232,7 +234,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	@Override
 	public List<IDBRecord> update(ITableDBContext context, Table table, List<IDBRecord> records) throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table));
+		DBCollection coll = db.getCollection(getDBName(table));
 		for (IDBRecord record:records) {
 	        DBObject query = new BasicDBObject(); 
 //	        query.put(table.getId().getName(), record.get(table.getId().getName()));
@@ -256,7 +258,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	@Override
 	public IDBRecord select(ITableDBContext context, Table table, String id, short type, int... args) throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table));
+		DBCollection coll = db.getCollection(getDBName(table));
 //		DBObject bean = coll.findOne(new BasicDBObject(table.getId().getName(), new ObjectId(id)));
 		DBObject bean = coll.findOne(new BasicDBObject("_id", new ObjectId(id)));
 		if (bean==null)
@@ -272,7 +274,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	@Override
 	public IDBResultSet select(ITableDBContext context, Table table, String[] ids, int... args) throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table));
+		DBCollection coll = db.getCollection(getDBName(table));
 		List<IDBRecord> list = new ArrayList<IDBRecord>();
 		for (String id:ids) {
 //			DBObject bean = coll.findOne(new BasicDBObject(table.getId().getName(), new ObjectId(id)));
@@ -291,7 +293,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	public IDBResultSet selectByLimit(ITableDBContext context, Table table, IDBRecord recordQ, long startRow, int count)
 			throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table));
+		DBCollection coll = db.getCollection(getDBName(table));
 		List<IDBRecord> list = new ArrayList<IDBRecord>();
         DBObject query = new BasicDBObject(); 
         query.putAll(recordQ.getDataMap());
@@ -320,7 +322,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 			throws Throwable {
 		int startRow = pageSize*pageIndex;
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table));
+		DBCollection coll = db.getCollection(getDBName(table));
 		List<IDBRecord> list = new ArrayList<IDBRecord>();
         DBObject query = new BasicDBObject(); 
         query.putAll(recordQ.getDataMap());
@@ -347,7 +349,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	public void loopBy(ITableDBContext context, Table table, IDBRecord recordQ, IDBRecordCallBack callback)
 			throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table));
+		DBCollection coll = db.getCollection(getDBName(table));
         DBObject query = new BasicDBObject(); 
         query.putAll(recordQ.getDataMap());
         DBObject protection = new BasicDBObject(); 
@@ -368,7 +370,7 @@ public class DefaultMongoDBMPolicy implements IMongoDBMPolicy {
 	@Override
 	public long countBy(ITableDBContext context, Table table, IDBRecord recordQ) throws Throwable {
 		DB db = getDB();
-		DBCollection coll = db.getCollection(ConfigUtil.getRealTableName(table));
+		DBCollection coll = db.getCollection(getDBName(table));
         DBObject query = new BasicDBObject(); 
         query.putAll(recordQ.getDataMap());
         DBObject protection = new BasicDBObject(); 

@@ -4,19 +4,7 @@
 package haiyan.orm.database.sql;
 
 import static haiyan.common.DebugUtil.debug;
-import haiyan.common.CloseUtil;
-import haiyan.common.DBColumn;
-import haiyan.common.DBColumnVO;
-import haiyan.common.DebugUtil;
-import haiyan.common.StringUtil;
-import haiyan.common.exception.Warning;
-import haiyan.common.intf.database.sql.ISQLDBListener;
-import haiyan.config.castorgen.AbstractField;
-import haiyan.config.castorgen.Field;
-import haiyan.config.castorgen.Table;
-import haiyan.config.util.ConfigUtil;
-import haiyan.orm.database.sql.query.LeftOuterJoinedTable;
-import haiyan.orm.database.sql.query.PrimaryTable;
+import static haiyan.config.util.ConfigUtil.getDBName;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -30,6 +18,20 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
+
+import haiyan.common.CloseUtil;
+import haiyan.common.DBColumn;
+import haiyan.common.DBColumnVO;
+import haiyan.common.DebugUtil;
+import haiyan.common.StringUtil;
+import haiyan.common.exception.Warning;
+import haiyan.common.intf.database.sql.ISQLDBListener;
+import haiyan.config.castorgen.AbstractField;
+import haiyan.config.castorgen.Field;
+import haiyan.config.castorgen.Table;
+import haiyan.config.util.ConfigUtil;
+import haiyan.orm.database.sql.query.LeftOuterJoinedTable;
+import haiyan.orm.database.sql.query.PrimaryTable;
 
 /**
  * @author zhouxw
@@ -865,7 +867,7 @@ public class SQLDBHelper {
             visFlds.put(fld.getName(), fld.getName());
         }
         ArrayList<String[]> list = new ArrayList<String[]>();
-        PrimaryTable pTable = new PrimaryTable(ConfigUtil.getRealTableName(table), ""); // realTable,selectColumnSQL
+        PrimaryTable pTable = new PrimaryTable(getDBName(table), ""); // realTable,selectColumnSQL
         TableDBTemplate temp = getTableDBTemp(visFlds, field);
         temp.deal(table, new Object[] { list, pTable });
         return list.toArray(new String[0][0]);

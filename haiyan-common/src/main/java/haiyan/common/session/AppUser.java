@@ -1,5 +1,7 @@
 package haiyan.common.session;
 
+import haiyan.common.annotation.GetMethod;
+import haiyan.common.annotation.SetMethod;
 import haiyan.common.intf.session.IRole;
 
 /**
@@ -11,19 +13,37 @@ public class AppUser extends User {
 	public AppUser() { 
 		super();
 	}
+	// SSO多品牌用户联合ID
+	private String unionID;
+	@SetMethod("unionID")
+	public void setUnionID(String unionID) {
+		this.unionID = unionID;
+	}
+	@GetMethod("unionID")
+	public String getUnionID() {
+		return unionID;
+	}
+	// SSO多品牌登录用户SessionID
+	private String ssoSessionID;
+	@SetMethod("ssoSessionID")
+	public void setSSOSessionID(String gwSessionID) {
+		this.ssoSessionID = gwSessionID;
+	}
+	@GetMethod("ssoSessionID")
+	public String getSSOSessionID() {
+		return ssoSessionID;
+	}
+	// 表权限
 	private String[] tables;
+	@SetMethod("tables")
+	@Deprecated
 	public void setTables(String[] tables) {
 		this.tables = tables;
 	}
+	@GetMethod("tables")
+	@Deprecated
 	public String[] getTables() {
 		return this.tables;
-	}
-	private String gwSessionID;
-	public String getGwSessionID() {
-		return gwSessionID;
-	}
-	public void setGwSessionID(String gwSessionID) {
-		this.gwSessionID = gwSessionID;
 	}
 	public boolean isMemberOf(IRole role) {
 		IRole[] roles = this.getRoles();

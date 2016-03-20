@@ -1,15 +1,15 @@
 package haiyan.cache;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import bsh.StringUtil;
 import haiyan.common.ByteUtil;
 import haiyan.common.DebugUtil;
 import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.session.IUser;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 import redis.clients.jedis.BinaryJedisCommands;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -18,15 +18,14 @@ import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import bsh.StringUtil;
 
 
 /**
  * @author zhouxw
  *
  */
+@Deprecated
 public class RedisDataCacheRemote extends AbstractDataCache {
-
 //	private Jedis defaultJedis;//非切片额客户端连接
     private JedisPool masterJedisPool;//非切片连接池
     private ShardedJedisPool shardedJedisPool;//切片连接池
@@ -198,23 +197,28 @@ public class RedisDataCacheRemote extends AbstractDataCache {
 		return "Haiyan.DATAS." + schema+":"+key;
 	}
 	@Override
-	public Object setData(String schema, Object key, Object ele) {
+	public Object setData(String schema, Object key, Object ele, int seconds) {
 		String mk = getDataKey(schema, key);
-		getJedisWriter().set(mk.getBytes(), ByteUtil.toBytes((Serializable)ele));
+		byte[] bk = mk.getBytes();
+		byte[] bytes = ByteUtil.toBytes((Serializable)ele);
+		getJedisWriter().set(bk, bytes);
+		if (seconds > 0)
+			getJedisWriter().expire(bk, seconds);
 		return ele;
+	}
+	@Override
+	public Object setData(String schema, Object key, Object ele) {
+		return setData(schema, key, ele, -1);
 	}
 	@Override
 	public Object getData(String schema, Object key) {
 		String mk = getDataKey(schema, key);
-		byte[] bytes = getJedisReader().get(mk.getBytes());
-		if (bytes!=null) {
+		byte[] bk = mk.getBytes();
+		byte[] bytes = getJedisReader().get(bk);
+		if (bytes != null) {
 			return ByteUtil.toObject(bytes);
 		}
 		return null;
-	}
-	@Override
-	public Object updateData(String schema, Object key, Object ele) {
-		return this.setData(schema, key, ele);
 	}
 	@Override
 	public Object deleteData(String schema, Object key) {
@@ -230,22 +234,17 @@ public class RedisDataCacheRemote extends AbstractDataCache {
     // --------------------- local data cache --------------------- //
 	@Override
 	public Object setLocalData(String cacheID, Object key, Object ele) {
-		
 		return null;
 	}
 	@Override
 	public Object getLocalData(String cacheID, Object key) {
-		
 		return null;
 	}
 	@Override
 	public Object removeLocalData(String cacheID, Object key) {
-		
 		return null;
 	}
 	@Override
 	public void clearData(String cacheID) {
-		
 	}
-	
 }

@@ -16,11 +16,13 @@ import net.sf.json.JSONObject;
  */
 public interface IDBRecord extends Serializable {
 
-	static byte DEFAULT = (byte)0;
-	static byte INSERT = (byte)1;
-	static byte UPDATE = (byte)2;
-	static byte DELETE = (byte)3;
-	static byte INSERT_DELETE = (byte)4;
+	static byte DEFAULT = (byte) 0;
+	static byte INSERT = (byte) 1;
+	static byte UPDATE = (byte) 2;
+	static byte DELETE = (byte) 3;
+	static byte INSERT_DELETE = (byte) 4;
+	static byte UPDATE_FAIL = (byte) 5;
+	static byte INSERT_FAIL = (byte) 6;
 	/**
 	 * 把DB读出的数据刷新到record中的一级缓存中
 	 * @throws Throwable
@@ -43,14 +45,16 @@ public interface IDBRecord extends Serializable {
 	 */
 	void commit() throws Throwable;
 	/**
+     * 设置元数据持久化状态
 	 * @param status
 	 */
 	void setStatus(byte status);
     /**
-     * 
+     * 清空元数据持久化状态
      */
     public void clearStatus();
     /**
+     * 获取元数据持久化状态
      * @return
      */
     public byte getStatus();
@@ -75,6 +79,12 @@ public interface IDBRecord extends Serializable {
 	 */
 	void updateVersion() throws Throwable;
 	/**
+	 * 回滚元数据版本
+	 * @throws Throwable
+	 */
+	void rollbackVersion() throws Throwable;
+	/**
+	 * 获取元数据版本
 	 * @return
 	 */
 	int getVersion();
@@ -112,5 +122,6 @@ public interface IDBRecord extends Serializable {
 	// ----------------------------------------------------------------------- //
 	void putAll(Map<?, ?> map);
 	void applyIf(IDBRecord etcRecord);
+	void apply(IDBRecord etcRecord);
 
 }

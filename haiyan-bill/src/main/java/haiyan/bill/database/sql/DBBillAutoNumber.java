@@ -1,5 +1,11 @@
 package haiyan.bill.database.sql;
 
+import static haiyan.config.util.ConfigUtil.getDBName;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.UUID;
+
 import haiyan.common.CloseUtil;
 import haiyan.common.Ref;
 import haiyan.common.StringUtil;
@@ -12,10 +18,6 @@ import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.config.util.ConfigUtil;
 import haiyan.orm.database.TableDBContextFactory;
 import haiyan.orm.intf.session.ITableDBContext;
-
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.UUID;
  
 /** 
  *
@@ -55,7 +57,7 @@ class DBBillAutoNumber {
 		if (lngNumber <= 0) {
 			throw new Warning("申请的ID个数不能小于等于零.");
 		}
-		String key = ConfigUtil.getRealTableName(table);
+		String key = getDBName(table);
 		BigDecimal spNumber = BigDecimal.valueOf(lngNumber);
 		BigDecimal spBegin = cacheID.get(key + ".start");
 		BigDecimal spEnd = cacheID.get(key + ".end");
@@ -102,7 +104,7 @@ class DBBillAutoNumber {
 	private static void dbGetNumber(IContext context, Table table,
 			BigDecimal lngDBIDRequestNumber, Ref<BigDecimal> lngRBeginNumber,
 			Ref<BigDecimal> lngREndNumber) throws Throwable {
-		String strObjName = ConfigUtil.getRealTableName(table);
+		String strObjName = getDBName(table);
 		strObjName = strObjName.toUpperCase();
 		ITableDBContext subContext = TableDBContextFactory.createDBContext(context); // 开启一个独立事务
 		try {

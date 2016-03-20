@@ -78,6 +78,8 @@ public class RecordBeanTranceferUtil {
 						map.putAll(json);
 						value = map;
 //						value = Byte.parseByte(value.toString());
+					} else if (firstClass==Object[].class) { // 内存数组都直接放入
+						//value = value;
 					} else {
 						value = value.toString();
 					}
@@ -132,11 +134,13 @@ public class RecordBeanTranceferUtil {
 						map.putAll(json);
 						value = map;
 //						value = Byte.parseByte(value.toString());
+					} else if (firstClass==Object[].class) { // 内存数组都直接放入
+						//value = value;
 					} else {
 						value = value.toString();
 					}
 				} 
-				method.invoke(bean,value);
+				method.invoke(bean, value);
 			} catch (Throwable e) {
 				DebugUtil.error("key:"+key+",value:"+value, e);
 //				throw e;

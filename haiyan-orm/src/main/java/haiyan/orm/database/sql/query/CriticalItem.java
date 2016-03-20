@@ -1,5 +1,11 @@
 package haiyan.orm.database.sql.query;
 
+import java.math.BigDecimal;
+import java.sql.Blob;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
 import haiyan.common.VarUtil;
 import haiyan.common.exception.Warning;
 import haiyan.common.intf.database.orm.IDBRecord;
@@ -7,12 +13,6 @@ import haiyan.config.castorgen.AbstractField;
 import haiyan.config.castorgen.Table;
 import haiyan.config.castorgen.types.AbstractCommonFieldJavaTypeType;
 import haiyan.orm.database.sql.SQLDBTypeConvert;
-
-import java.math.BigDecimal;
-import java.sql.Blob;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 
 /**
  * @author zhouxw
@@ -90,7 +90,9 @@ public abstract class CriticalItem extends Item {
 			ps.setTimestamp(number, (Timestamp) value);
 		} else if (type.equals(java.sql.Date.class)) {
 			ps.setDate(number, (java.sql.Date) value);
-		}  else if (type.equals(Blob.class)) {
+		} else if (type.equals(java.util.Date.class)) {
+			ps.setDate(number, new java.sql.Date(((java.util.Date)value).getTime()));
+		} else if (type.equals(Blob.class)) {
 			throw new RuntimeException("unknown data type:" + type.getName());
 		} else {
 			throw new RuntimeException("unknown data type:" + type.getName());
